@@ -1,0 +1,29 @@
+﻿# urlFido Release Notes
+
+**Copyright:** © 2026 Jamal Mazrui — Released under the [MIT License](https://opensource.org/license/mit/)
+**Project home:** <https://github.com/JamalMazrui/urlFido>
+
+## Version 1.0.0
+
+The first release of urlFido, a 64-bit GUI/CLI hybrid tool that downloads files from web pages by extension.
+
+### What it does
+
+- **Download by extension, or by wildcard pattern.** Give urlFido one or more source pages and a list of what to fetch (default: `docx pdf zip`). Short forms escalate: `pdf` is short for `.pdf`, which is short for `*.pdf`. Because each entry is a cmd.exe-style pattern, you can also write `*newsletter*.pdf` to take only the newsletters, or `report?.xlsx` for a single-character match. Matching ignores case. Unix glob syntax is deliberately not supported, keeping the field predictable.
+- **Real browser retrieval.** urlFido drives your installed Microsoft Edge to open each page, so scripts run, cookies apply, and JavaScript-generated links are found — files are far more likely to be reachable than with a browserless download. PDFs are saved to disk rather than opened in Edge's viewer.
+- **Authenticate mode (`-a`).** Pause at the first page of each site so you can sign in, accept cookies, or complete two-factor in the visible Edge window, then continue; the session is reused for the rest of that site during the run. urlFido detaches and reattaches its automation channel around the pause to improve success on sites that resist automation.
+- **Main-profile mode (`-m`).** Use your real Edge profile so existing logins apply. Requires Edge to be fully closed; urlFido checks and reports clearly if it is running.
+- **Single executable.** urlFido.exe is one 64-bit file. It speaks the Chrome DevTools Protocol to Edge using only .NET Framework classes, so there is no Node.js driver and no bundled browser to ship. The shared Homer modules — Lbc.cs, Say.cs, Inix.cs, Util.cs, and Web.cs — are compiled into the same assembly rather than referenced as libraries. NVDA support is included too, with nothing to install alongside: because NVDA does not ship its controller client in the end-user installation, that native library is embedded in the executable as a resource and extracted to `%LOCALAPPDATA%\urlFido` on first use — and then only when NVDA is actually running, so users of JAWS, Narrator, or SAPI never see the file written and urlFido leaves no footprint of its own.
+- **Dialog built on shared Lbc primitives.** The parameter dialog is constructed from the Homer Layout-by-Code classes, so it inherits the whole shared convenience set rather than reimplementing any of it: Control+Enter clicks OK from any control; Control+C copies the selection or, with nothing selected, the current line; Alt+C and Alt+X append to the clipboard; Control+D deletes a line; Alt+F8 reads all; Alt+Y gives line and character counts; and Shift+F1 speaks a focus tip written for every field. The Help button is generated from those same labels and tips. Improvements made to Lbc in DbDo, EdSharp, or FileDir reach urlFido by replacing one file.
+- **CLI parallel to urlCheck.** The command-line switches and dialog controls mirror urlCheck as closely as the different purpose allows, so the two tools feel the same to use.
+- **Structured results summary.** The end-of-run summary follows the 2htm and extCheck convention: up to three sections — Downloaded, Failed to download, Skipped — each shown only when its count is non-zero, singular or plural to match, failures given as `name: reason`, and the output directory on a closing line. GUI mode puts it in the final message box with the names listed; command-line mode prints the headings without repeating names that already scrolled by. A short spoken line gives the outcome at a glance.
+- **Smart file naming, shared with FileDir.** urlFido calls the same Web helper FileDir's Web Download command uses. Names come from the url's final path segment; when the url carries no usable name, the server is asked, so links like `example.com/download?id=42` still get a proper name and extension from Content-Disposition or the MIME type. Ordinary links cost no extra request.
+- **Configuration and logging.** With Use configuration (`-u`), settings persist at `%LOCALAPPDATA%\urlFido\urlFido.inix`, written through the shared Inix codec so the file round-trips in order and keeps any comments or extra sections you add by hand. Without the option, urlFido leaves nothing on disk. With Log session (`-l`), a fresh urlFido.log is written to the output directory. The build script now logs the full compiler output to `buildUrlFido.log` as well.
+- **Desktop hotkey Alt+Control+U.** The installer adds a desktop shortcut on Alt+Control+U that opens the dialog from anywhere in Windows.
+- **Camel Type coding standard.** All identifiers follow the project's Camel Type style, and shared-concept names match across the companion tools urlCheck, extCheck, and 2htm.
+
+- **New icon.** urlFido now carries a dog-fetching-a-document mark: a dog's head in profile with a white page, folded corner and all, carried in its mouth. It is original artwork drawn as vector-style shapes and rendered to every icon size from 16 to 256 pixels, so nothing is licensed from a third party. The small sizes drop the pupil and the page's text lines, leaving the two shapes that still read at 16 pixels: the dark head and the white page.
+
+### Note on the desktop hotkey
+
+urlFido claims Alt+Control+U, which urlCheck currently uses. Because urlFido is expected to be the more frequently used tool, the plan is for urlCheck to move to Alt+Control+Shift+U in a future version. Until then, if both are installed, adjust one shortcut's hotkey via Alt+Enter (properties) on its desktop icon.

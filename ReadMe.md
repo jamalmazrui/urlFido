@@ -1,6 +1,6 @@
 ﻿# urlFido — User Guide
 
-**Version 1.0.0**
+**Version 1.1.0**
 July 2026
 Copyright (c) 2026 Jamal Mazrui
 MIT License — <https://github.com/JamalMazrui/urlFido>
@@ -12,7 +12,9 @@ MIT License — <https://github.com/JamalMazrui/urlFido>
 - [Quick Start](#quick-start)
 - [The Parameter Dialog](#the-parameter-dialog)
 - [Dialog Editing Keys](#dialog-editing-keys)
+- [Source Lists](#source-lists)
 - [Command-Line Options](#command-line-options)
+- [Output Folders](#output-folders)
 - [Extensions and Wildcards](#extensions-and-wildcards)
 - [How Downloading Works](#how-downloading-works)
 - [Authenticated Pages and the Main Profile](#authenticated-pages-and-the-main-profile)
@@ -20,6 +22,7 @@ MIT License — <https://github.com/JamalMazrui/urlFido>
 - [Configuration and Logging](#configuration-and-logging)
 - [Results Summary](#results-summary)
 - [Hotkey Summary](#hotkey-summary)
+- [Saved Settings](#saved-settings)
 - [Requirements](#requirements)
 - [Releasing](#releasing)
 - [Development Notes](#development-notes)
@@ -73,48 +76,82 @@ To do the same through the dialog, press **Alt+Control+U**, paste the address in
 
 A note on what you will see: the download links on that page end in long identifiers rather than readable names. urlFido asks the browser for the name the server recommends, so the files usually land with meaningful names — but where a server declines to supply one, you will get the identifier with the right extension. That is the same behavior described under [File Names](#file-names).
 
-### Other things to try
+### Other pages worth trying
 
-Download every PDF linked from a page into the current directory:
+**The Unicode Standard.** Each version of the standard is published as a set of chapter PDFs plus a single combined volume — a genuine document collection, and a good demonstration of fetching many files at once:
 
 ```
-urlFido -e pdf https://example.com/reports
+urlFido -e pdf -o "C:\Downloads\Unicode" https://www.unicode.org/versions/Unicode15.0.0/
 ```
 
-Take only the newsletters, and open the folder when finished:
+**A page you already have.** Point urlFido at any local page you have saved, and it will fetch the files that page links to:
+
+```
+urlFido -e pdf -o "C:\Downloads" "C:\Saved\research page.htm"
+```
+
+**Only what you want.** Take the newsletters and nothing else, then open the folder when finished:
 
 ```
 urlFido -e "*newsletter*.pdf" -o "C:\Downloads" --view-output https://example.com/archive
 ```
 
-Sign in first, then download from a members-only page:
+**Behind a sign-in.** Pause so you can authenticate, then download:
 
 ```
 urlFido -a -o "C:\Downloads" https://example.com/members/documents
 ```
 
+### If a page yields nothing
+
+Some pages carry no direct file links at all. A government or news home page, for instance, is mostly navigation — its documents live a level or two deeper, on the section or publication pages. urlFido reads the page you give it and does not follow links to other pages, so aim it at the page that actually lists the documents rather than at the site's front door.
+
+urlFido tells you what it found: how many links were on the page, how many matched, and how many carried no file extension in their address. If that last number is large and the match count is zero, try `-p` — the files may be behind addresses that reveal nothing until the server is asked.
+
 ## The Parameter Dialog
+
+The dialog is arranged in bands — a band being a horizontal run of related controls. Each of the first three bands holds a label, its edit box, and, where one applies, the button that fills it in:
+
+```
+Source urls:       [__________________]  [ Browse source... ]
+File extensions:   [__________________]
+Output directory:  [__________________]  [ Choose output... ]
+```
+
+Tab therefore moves from a field straight to the way of changing it, rather than past everything else to a button row at the bottom.
+
+When the dialog is ready for input, urlFido gives a single short woof — Fido announcing he is ready to fetch. At about a fifth of a second it is over before it can become tiresome, it identifies the program faster than a spoken "ready" would, and it stays out of the way of whatever your screen reader is saying about the focused field. The sound is generated audio, original to urlFido and covered by the same licence, embedded in the program itself. If your machine has no sound, nothing is lost: the dialog simply opens.
+
+**Prefer a different sound?** The build embeds whatever `urlFido.wav` sits beside the sources. Replace that file with any recording you like — a real bark, a chime, anything — rebuild, and it becomes the audio icon. Nothing in the program depends on the supplied one.
+
+Every field and check box has an access key, shown in parentheses below, so you can jump straight to any of them. Each one matches its command-line switch, so `-e` and Alt+E reach the same setting.
+
+**OK and Cancel deliberately have no access key.** Cancel is Escape. OK is Enter — or **Control+Enter**, which submits from any control, including those that consume a plain Enter themselves. That leaves the letters free for the fields.
 
 The dialog is reached by launching urlFido with no arguments from a GUI shell (double-click, Start Menu, or the Alt+Control+U desktop hotkey), or explicitly with `-g`. It is built from the shared Layout-by-Code (Lbc) classes, so it behaves exactly like the dialogs in DbDo, EdSharp, and FileDir — see [Dialog Editing Keys](#dialog-editing-keys).
 
 Fields, in tab order:
 
-1. **Source urls** (Alt+S) — one or more urls, local HTML files, or url-list text files, separated by spaces. Put double quotes around any single item that contains a space. The **Browse source** button (Alt+B) opens a file picker for a local HTML page or a url-list text file.
-2. **File extensions** — what to download, separated by commas or spaces. See [Extensions and Wildcards](#extensions-and-wildcards). The default is `docx pdf zip`.
+1. **Source urls** (Alt+S) — one or more urls, local web pages, or url-list text files, separated by spaces. Put double quotes around any single item that contains a space. See [Source Lists](#source-lists). When empty, the field offers `acb.org afb.org nfb.org wbu.ngo` — the American Council of the Blind, the American Foundation for the Blind, the National Federation of the Blind, and the World Blind Union — so there is something real to run against straight away.
+2. **File extensions** (Alt+E) — what to download, separated by commas or spaces. See [Extensions and Wildcards](#extensions-and-wildcards). The default is `docx pdf zip`.
 3. **Output directory** — where downloaded files are saved. Leave it empty for the current directory. If you type a folder that does not exist and press OK, urlFido offers to create it.
-4. **Authenticate credentials** — pause at the first page of each site so you can sign in. See [Authenticated Pages](#authenticated-pages-and-the-main-profile).
-5. **Main profile** — use your real Edge profile so existing logins apply. Requires Edge to be closed.
-6. **Invisible browser** — run Edge with no visible window. Ignored when Authenticate is on, since you need to see the window to sign in.
-7. **Force overwrite** — overwrite existing files instead of skipping ones that are already present.
-8. **View output** — open the output directory in File Explorer when finished.
-9. **Log session** — write a diagnostic urlFido.log to the output directory.
-10. **Use configuration** — load settings at startup and save them when you press OK.
+4. **Authenticate credentials** (Alt+A) — pause at the first page of each site so you can sign in. See [Authenticated Pages](#authenticated-pages-and-the-main-profile).
+5. **Main profile** (Alt+M) — use your real Edge profile so existing logins apply. Requires Edge to be closed.
+6. **Invisible browser** (Alt+I) — run Edge with no visible window. Ignored when Authenticate is on, since you need to see the window to sign in.
+7. **Force overwrite** (Alt+F) — overwrite existing files instead of skipping ones that are already present.
+8. **View output** (Alt+V) — open the output directory in File Explorer when finished.
+9. **Log session** (Alt+L) — write a diagnostic urlFido.log to the output directory.
+10. **Use configuration** (Alt+U) — load settings at startup and save them when you press OK.
 
 Every field carries a focus tip describing it; press **Shift+F1** to hear the tip for the field you are on.
 
 Buttons: **OK** runs; **Browse source** opens a file picker for a local HTML page or url-list file; **Choose output** opens a folder picker; **Default settings** resets every field and erases the saved configuration; **Cancel** closes without running; **Help** (Alt+H or F1) describes every field with its tip plus the universal dialog keys. Each button is reachable by Alt plus its first letter.
 
 The two picker buttons close the dialog, run the picker, and reopen the dialog with the chosen value filled in and everything else you typed preserved.
+
+While a run is in progress, urlFido shows a small status window. Its status line reports each step — launching Edge, opening the page, matching links, and then each file as it downloads, with a running count and percentage. The line is exposed as a status bar, so a screen reader announces it as it changes and the JAWS read-status-bar command, Insert+PageDown, reads it on demand. **Cancel** stops after the current file.
+
+As in 2htm and extCheck, the count reflects work already finished rather than the item just started, so you never see 100% while the last file is still arriving.
 
 When the run finishes in GUI mode, a message box shows the structured results summary, and a short spoken line gives the outcome without your having to read the whole box.
 
@@ -141,23 +178,74 @@ Because the dialog is built from Lbc primitives, every text field offers the sha
 
 ## Command-Line Options
 
+Sources are **positional and repeating**: list as many as you like, with no switch in front of them. Each may be a url, a local web page, or a text file of urls, and the forms can be mixed freely:
+
+```
+urlFido -e pdf -o "C:\Downloads" afb.org nfb.org "C:\lists\more.txt"
+```
+
+Everything else is a named option. Each one's short form is the same letter as its access key in the dialog, so `-e` and Alt+E reach the same setting, `-o` and Alt+O the same, and so on.
+
 ```
 urlFido [options] <url, local html file, or url-list text file> [...]
 ```
 
-- `-e, --extensions <list>` — what to download, comma- or space-separated. Bare extensions and cmd.exe wildcard patterns both work: `pdf`, `.pdf`, `*.pdf`, `*newsletter*.pdf`. Case-insensitive. Default: `docx pdf zip`.
+- `-e, --file-extensions <list>` — what to download, comma- or space-separated. Bare extensions and cmd.exe wildcard patterns both work: `pdf`, `.pdf`, `*.pdf`, `*newsletter*.pdf`. Case-insensitive. Default: `docx pdf zip`. (`--extensions` is still accepted, as version 1.0.0 used that name.)
 - `-o, --output-folder <dir>` — output directory. Default: the current directory.
 - `-g, --gui-mode` — show the parameter dialog.
 - `-f, --force` — overwrite existing files instead of numbering.
 - `-i, --invisible` — run Edge headless (no visible window).
 - `-a, --authenticate` — pause at the first url of each site to sign in. Overrides `-i`.
 - `-m, --main-profile` — use your real Edge profile. Requires Edge closed.
-- `-u, --use-configuration` — load and save settings in urlFido.inix.
-- `-l, --log` — write urlFido.log to the output directory.
+- `-u, --use-configuration` — load and save settings in urlFido.inix. See [Saved Settings](#saved-settings).
+- `-l, --log` — write urlFido.log to the output directory. Appends across runs; combine with `-f` to replace the previous log instead.
 - `--view-output` — open the output directory when done.
 - `-h, --help` — show help. `-v, --version` shows the version.
 
 Command-line values take precedence over saved configuration for any option you specify explicitly.
+
+## Source Lists
+
+A source can be any of three things, and they can be mixed freely in one run:
+
+- **A url**, with or without a scheme. `example.com/docs` and `https://example.com/docs` mean the same thing.
+- **A local web page** — an `.htm`, `.html`, or `.xhtml` file on disk. urlFido opens it and downloads the files it links to, so a page you saved earlier can be harvested later.
+- **A text file listing one url per line.** This is the form worth knowing about for repeated work: keep the pages you regularly harvest from in a text file, and hand urlFido the file instead of retyping the addresses.
+
+A list file looks like this:
+
+```
+# Accessibility templates and standards
+https://www.itic.org/policy/accessibility/vpat
+https://www.unicode.org/versions/Unicode15.0.0/
+
+; This one is on hold for now
+; https://example.com/archive
+example.org/reports
+```
+
+Blank lines are ignored. A line starting with `#` or `;` is a comment, so a list can be annotated and entries can be commented out rather than deleted. Each line is interpreted exactly as if you had typed it, so bare domains work, and a line naming a local `.htm` file is accepted too.
+
+Any existing file that is not a web page is read as a list, so `.txt`, `.lst`, `.urls`, or no extension at all all behave the same — there is no required extension to remember. urlFido reports how many urls it read, and names any line it could not use.
+
+## Output Folders
+
+The output directory is a **parent**. Within it, each source gets its own folder named after the page title, so a run covering several sources produces output you can tell apart without opening anything:
+
+```
+Documents\
+  Home | American Foundation for the Blind\
+    AFB_Barriers_To_Digital_Inclusion_2_ACCESSIBLE_FINAL.pdf
+  VPAT - Information Technology Industry Council\
+    VPAT2.5Rev-508.docx
+    VPAT2.5Rev-WCAG.docx
+```
+
+The folder name keeps the title's own capitalization and spacing, because it is meant to be read in File Explorer. Only the characters Windows forbids are removed, and reserved device names are defanged. The title is not shortened to some arbitrary length: it is trimmed only when the file system would otherwise refuse the name, and the log says so when that happens.
+
+**A folder is created only when there is something to put in it.** A page that yields no matching files leaves nothing behind, so browsing the output shows only the pages that actually produced downloads.
+
+If a folder for a page already exists, urlFido **skips that source** and leaves the earlier download untouched. **Force overwrite** (`-f`) removes the old folder and downloads afresh. The skip happens as soon as the title is known, so nothing is examined or fetched needlessly.
 
 ## Extensions and Wildcards
 
@@ -180,11 +268,23 @@ Only the two command-prompt wildcards are supported: `*` matches any run of char
 
 **Matching ignores case**, so `*Newsletter*.PDF` and `*newsletter*.pdf` behave identically.
 
-Patterns are matched against the **file name the link would be saved as**, not the raw url. urlFido works that name out the same way FileDir's Web Download command does: it uses the last part of the url when that is a real file name, and otherwise asks the server, so links like `example.com/download?id=42` still get a proper name and extension and can still be matched.
+### How urlFido knows what a link is
+
+Most links announce themselves: the address ends in a file name, and that name is all urlFido needs. Matching those costs nothing.
+
+Some links say nothing. `example.com/download?id=42` carries no extension, and only the server knows a PDF is on the way. Working that out is the point of the program, so urlFido always does it — there is no setting to turn it on.
+
+It is made quick rather than optional. Links that could not yield a file are ruled out by inspection first: non-web addresses, bare site addresses, paths ending in a slash, and anything ending in a page extension. Links differing only by the `#` part are one address. What remains is asked about in parallel rather than one at a time, and each question is a headers-only request, so a server replying "this is a web page" settles the matter without sending the page. Answers are remembered, so an address linked five times is asked about once.
+
+The status line reports progress while this happens, with a count and percentage, so a slow site never leaves you wondering whether anything is happening.
+
+Patterns are matched against the file name, not the raw url. urlFido works that name out the same way FileDir's Web Download command does: it uses the last part of the url when that is a real file name, and otherwise asks the server, so links like `example.com/download?id=42` still get a proper name and extension and can still be matched.
 
 ## How Downloading Works
 
-For each source, urlFido opens the page in Edge, waits for it to finish loading and for network activity to settle, and then reads every link on the page (anchors, image-map areas, and embedded frames or objects). It keeps the links whose file extension matches your list — comparing only the file-name part of the url, ignoring any query string or fragment — and downloads each one.
+For each source, urlFido launches Edge with a fresh temporary profile, and takes some care to make that profile inert: extensions, component updates, background networking, sign-in, and sync are all switched off. Edge would otherwise sign a new profile into your Windows account and begin syncing it, which is reasonable for a browser you are adopting and quite wrong for a throwaway profile that exists to fetch a file.
+
+Only the page being scanned is opened. Files are retrieved with a direct request that replays the browser's own cookies and identity, so nothing is downloaded that the browser could not have downloaded — but no extra tab appears for each file. When a direct request will not do, urlFido falls back to asking the browser itself. (With **Main profile** that suppression is lifted, since the point of that option is to reproduce your real browsing environment.) It opens the page in Edge, waits for it to finish loading and for network activity to settle, and then reads every link on the page (anchors, image-map areas, and embedded frames or objects). It keeps the links whose file extension matches your list — comparing only the file-name part of the url, ignoring any query string or fragment — and downloads each one.
 
 Downloads are handled by the browser itself wherever possible, so any cookies or session established while loading the page apply to the download too. PDFs are downloaded to disk rather than opened in Edge's built-in viewer. If a particular link cannot be downloaded through the browser, urlFido falls back to a direct download that replays the browser's cookies and identity, so authenticated files still come through.
 
@@ -217,7 +317,9 @@ The `.inix` format is the shared superset of the classic `.ini` file used across
 
 Without that option, urlFido leaves no settings on disk. The **Default settings** button erases this file and the urlFido folder.
 
-With **Log session** (`-l`), urlFido writes a fresh urlFido.log to the output directory, capturing the version, the resolved parameters, per-page and per-file events, and any errors. Each run truncates any previous log.
+With **Log session** (`-l`), urlFido writes a fresh urlFido.log to the output directory. The log is deliberately detailed, because the interesting failures happen inside a browser you may not be watching. It records the resolved parameters and environment; the exact Edge command line, profile directory, and how long the automation channel took to come up; every link harvested, with the file name it was matched against and whether it matched; each download attempt, which method served it, the HTTP status and content type when the fallback is used, the byte count and elapsed time; and every status line shown in the progress window. Each run truncates any previous log.
+
+If something goes wrong, that file is the thing to send.
 
 ## Results Summary
 
@@ -243,6 +345,21 @@ A file is reported as **Skipped** when a file of the same name is already in the
 
 The text-field editing keys are listed under [Dialog Editing Keys](#dialog-editing-keys).
 
+## Saved Settings
+
+urlFido can remember the dialog's contents between runs, in `urlFido.inix` under `%LOCALAPPDATA%\urlFido`. Tick **Use configuration** and press Enter; the next time the dialog opens, it comes back the way you left it.
+
+The behavior differs between the two modes, deliberately:
+
+- **In the dialog**, an existing settings file is loaded automatically. You do not need to pass anything on the command line — ticking the box once is enough, and it stays that way.
+- **On the command line**, `-u` is required. A script picks up no state it did not ask for, so a command means the same thing wherever it runs.
+
+Clearing the checkbox deletes the stored settings. That matters because of the automatic loading above: if the file were left behind, the next run in the dialog would find it and load it again, and the setting could never be switched off.
+
+Anything given on the command line wins over a saved value, so `urlFido -e zip` fetches zip files this once without disturbing what you saved.
+
+Without this option urlFido leaves no trace of its own beyond the files you asked it to download.
+
 ## Requirements
 
 - 64-bit Windows 10 (version 1903 or later) or Windows 11.
@@ -262,7 +379,7 @@ urlFido is published with the shared `tagRelease` script, which takes the app na
 3. `git add -A`, commit, push.
 4. `tagRelease.cmd`.
 
-The repository directory must be named `urlFido`, and an `origin` remote must be configured, since the script derives both the app name and the owner/repo from them. Bump `AppVer` in `urlFido_setup.iss` and `sProgramVersion` in `urlFido.cs` together — nothing synchronizes them automatically.
+The repository directory must be named `urlFido`, and an `origin` remote must be configured, since the script derives both the app name and the owner/repo from them. Bump `AppVer` in `urlFido_setup.iss` and `sProgramVersion` in `urlFido.cs` together — nothing synchronizes them automatically, and `tagRelease` refuses to publish a version that is already released, so a rebuilt installer carrying the old number stops the run.
 
 The published installer is then always available at a stable address:
 

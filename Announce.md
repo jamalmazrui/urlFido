@@ -3,6 +3,20 @@
 **Copyright:** © 2026 Jamal Mazrui — Released under the [MIT License](https://opensource.org/license/mit/)
 **Project home:** <https://github.com/JamalMazrui/urlFido>
 
+## Version 1.1.0
+
+This release is about knowing what a page really offers, and about the dialog behaving the way Windows dialogs behave.
+
+- **Link analysis is automatic.** urlFido works out what every link would actually deliver, including addresses like `/download?id=42` that reveal nothing until the server is asked. There is no setting to switch it on. It is kept quick instead: links that could not be files are ruled out by inspection, the rest are asked about in parallel with headers-only requests that stop as soon as a server says "web page", and answers are cached.
+- **A folder per page.** The output directory is a parent; each source gets its own subfolder named after the page title, so a run over several sites produces output you can tell apart at a glance. A page already downloaded is skipped, preserving what you have, unless Force overwrite is set. A page with nothing to download leaves no folder at all.
+- **Fido barks when he is ready.** The dialog announces itself with a single short woof instead of a spoken "ready" — quicker to recognize, and it does not talk over your screen reader. The sound is original to urlFido and embedded in the program.
+- **Progress you can hear.** The status line reports each step with a count and percentage, using the status-bar role that the JAWS read-status-bar command reads on demand.
+- **Settings that stick.** Ticking Use configuration is now enough; the dialog reopens the way you left it, with no command-line switch required. On the command line `-u` is still needed, so scripts pick up no state they did not ask for.
+- **Access keys throughout.** Every field and check box has one, and each matches its command-line switch. OK and Cancel deliberately have none: Cancel is Escape, OK is Enter or Control+Enter.
+- **Only the page you asked for opens.** Downloads are retrieved directly, replaying the browser's cookies and identity, so no extra tab appears per file.
+- **A quieter browser.** The temporary profile launches with extensions, component updates, sign-in, and sync all switched off.
+- **Sensible defaults.** Sources start at the major blindness organizations; the output directory starts at Documents rather than wherever the program happened to be launched from.
+
 ## Version 1.0.0
 
 The first release of urlFido, a 64-bit GUI/CLI hybrid tool that downloads files from web pages by extension.
@@ -23,6 +37,17 @@ The first release of urlFido, a 64-bit GUI/CLI hybrid tool that downloads files 
 - **Camel Type coding standard.** All identifiers follow the project's Camel Type style, and shared-concept names match across the companion tools urlCheck, extCheck, and 2htm.
 
 - **New icon.** urlFido now carries a dog-fetching-a-document mark: a dog's head in profile with a white page, folded corner and all, carried in its mouth. It is original artwork drawn as vector-style shapes and rendered to every icon size from 16 to 256 pixels, so nothing is licensed from a third party. The small sizes drop the pupil and the page's text lines, leaving the two shapes that still read at 16 pixels: the dark head and the white page.
+
+- **A folder per page.** The output directory is a parent; each source gets its own subfolder named after the page title, so a run over several sites produces output you can tell apart at a glance. A page already downloaded is skipped, preserving what you have, unless Force overwrite is set. A page with nothing to download leaves no folder at all.
+- **Fido barks when he is ready.** The dialog announces itself with a single short woof instead of a spoken "ready" — quicker to recognize, and it does not talk over your screen reader. The sound is original to urlFido and embedded in the program.
+- **Progress you can hear.** A run shows a status window whose status line names each step and counts files as they arrive. The line carries the status-bar accessible role — the same technique used in 2htm and extCheck — so screen readers announce changes automatically and the JAWS read-status-bar command reads it on demand. A Cancel button stops after the current file.
+- **A log worth sending.** With `-l`, urlFido records the Edge command line, the profile in use, every link and whether it matched, each download attempt and which method served it, HTTP statuses, byte counts, and timings.
+- **It works out what a link really is.** Where the address names a file, that is enough. Where it does not — `/download?id=42` and its kind — urlFido asks the server, always, with no switch to remember. Links that could not be files are ruled out first, the rest are asked in parallel with headers-only requests, and answers are cached, so knowing what a page truly offers costs seconds rather than minutes.
+- **A clean browser every time.** The temporary profile launches with extensions, component updates, background networking, sign-in, and sync all switched off, so nothing from your everyday browser loads, updates, or interrupts — and Edge does not sign the throwaway profile into your account.
+- **Only the page you asked for.** Files are retrieved with a direct request that replays the browser's cookies and identity, so no extra tab opens for each download. The browser download path remains as a fallback.
+- **Source lists.** A source can be a url, a local web page, or a text file listing one url per line, with `#` or `;` comments — keep the pages you harvest from in a file and hand urlFido the file.
+
+- **Settings that stick.** Tick Use configuration and the dialog reopens the way you left it — no command-line switch needed. On the command line `-u` is still required, so a script picks up no state it did not ask for.
 
 ### Note on the desktop hotkey
 

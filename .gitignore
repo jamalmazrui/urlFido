@@ -4,6 +4,8 @@
 createUrlFido.cmd
 createUrlFido.ps1
 createUrlFido.log
+downloadBark.py
+bark_source.*
 tagRelease.cmd
 tagRelease.ps1
 tagRelease.log

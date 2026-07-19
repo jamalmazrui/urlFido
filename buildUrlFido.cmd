@@ -222,12 +222,20 @@ rem succeeds -- urlFido simply has no NVDA path.
 set "sNvdaRes="
 if exist "nvdaControllerClient.dll" set "sNvdaRes=/resource:nvdaControllerClient.dll,nvdaControllerClient.dll"
 
+rem AUDIO ICON: urlFido.wav is the short bark played when the dialog is ready
+rem for input. It is embedded so the program stays a single file; the code
+rem plays it straight from the resource stream and carries on quietly if the
+rem resource is absent, so the build still succeeds without it.
+set "sWavRes="
+if exist "urlFido.wav" set "sWavRes=/resource:urlFido.wav,urlFido.wav"
+
 set "sLog=%CD%\buildUrlFido.log"
 echo [INFO] Build log: %sLog%
 echo urlFido build started %DATE% %TIME%> "%sLog%"
 echo Compiler: %sCsc%>> "%sLog%"
 echo UI Automation: %sUiaDir%>> "%sLog%"
 if defined sNvdaRes (echo NVDA client: embedded as a resource>> "%sLog%") else (echo NVDA client: not embedded ^(DLL not found^)>> "%sLog%")
+if defined sWavRes (echo Audio icon: urlFido.wav embedded as a resource>> "%sLog%") else (echo Audio icon: not embedded ^(urlFido.wav not found^)>> "%sLog%")
 echo(>> "%sLog%"
 
 "%sCsc%" /nologo /target:exe /platform:x64 /optimize+ ^
@@ -243,6 +251,7 @@ echo(>> "%sLog%"
     /reference:"%sUiaDir%\UIAutomationProvider.dll" ^
     /reference:"%sUiaDir%\UIAutomationTypes.dll" ^
     %sNvdaRes% ^
+    %sWavRes% ^
     /win32icon:urlFido.ico ^
     /out:urlFido.exe ^
     urlFido.cs Lbc.cs Say.cs Inix.cs Util.cs Web.cs >> "%sLog%" 2>&1

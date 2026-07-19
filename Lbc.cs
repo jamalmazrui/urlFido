@@ -600,6 +600,7 @@ public class LbcDialog : IDisposable
     // Layout constants, all alphabetical. Sized for screen-reader
     // users who often run at 125-150% display scaling -- generous
     // padding makes the dialog readable without crowding labels.
+    private const int DefaultBandGap      = 6;
     private const int DefaultButtonHeight = 28;
     private const int DefaultButtonWidth  = 90;
     private const int DefaultDialogWidth  = 520;
@@ -623,6 +624,18 @@ public class LbcDialog : IDisposable
     private IWin32Window                owner;
     private Button                      btnSavedAccept;
     private FlowLayoutPanel             pnlStack;
+
+    // The band currently open, or null when controls are being stacked one
+    // per row. A BAND is a horizontal series of related controls sharing one
+    // row -- a label, its edit box, and the button that fills it in. This is
+    // the layout concept LbC has carried since the AutoIt original, where
+    // _lbcStartBand acted as a carriage return: controls flow rightwards
+    // along the current band until a new band is started.
+    //
+    // It is null by default, so a dialog that never calls addBand behaves
+    // exactly as before -- one control per row. Nothing that already uses
+    // this class changes.
+    private FlowLayoutPanel             pnlBand = null;
     private Label                       lblStatusBar;
     private int                         iTabIndex;
     // Most-recent case-insensitive substring searched via Ctrl+J
@@ -730,7 +743,7 @@ public class LbcDialog : IDisposable
         lbl.Margin = new Padding(0, 0, 0, DefaultRowGap);
         lbl.TextAlign = ContentAlignment.MiddleLeft;
         registerWidget(lbl, "Label", sText);
-        pnlStack.Controls.Add(lbl);
+        bandTarget().Controls.Add(lbl);
         return lbl;
     }
 
@@ -751,7 +764,7 @@ public class LbcDialog : IDisposable
         tb.GotFocus += handleGotFocus;
         registerWidget(tb, "TextBox", tb.AccessibleName);
         if (!string.IsNullOrEmpty(sTip)) { dFocusTips[tb] = sTip; tb.Tip = sTip; }
-        pnlStack.Controls.Add(tb);
+        bandTarget().Controls.Add(tb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = tb;
         return tb;
     }
@@ -807,7 +820,7 @@ public class LbcDialog : IDisposable
         if (!string.IsNullOrEmpty(sTip)) { dFocusTips[tb] = sTip; tb.Tip = sTip; }
         pnlRow.Controls.Add(tb, 1, 0);
 
-        pnlStack.Controls.Add(pnlRow);
+        bandTarget().Controls.Add(pnlRow);
         if (ctlFirstFocusable == null) ctlFirstFocusable = tb;
         return tb;
     }
@@ -866,7 +879,7 @@ public class LbcDialog : IDisposable
         tb.LostFocus += handleMemoLostFocus;
         registerWidget(tb, "Memo", tb.AccessibleName);
         if (!string.IsNullOrEmpty(sTip)) { dFocusTips[tb] = sTip; tb.Tip = sTip; }
-        pnlStack.Controls.Add(tb);
+        bandTarget().Controls.Add(tb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = tb;
         return tb;
     }
@@ -903,7 +916,7 @@ public class LbcDialog : IDisposable
         cb.GotFocus += handleGotFocus;
         registerWidget(cb, "CheckBox", sLabel);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[cb] = sTip;
-        pnlStack.Controls.Add(cb);
+        bandTarget().Controls.Add(cb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = cb;
         return cb;
     }
@@ -934,7 +947,7 @@ public class LbcDialog : IDisposable
         lb.KeyDown += new KeyEventHandler(handleListBoxCopyKeys);
         registerWidget(lb, "ListBox", lb.AccessibleName);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[lb] = sTip;
-        pnlStack.Controls.Add(lb);
+        bandTarget().Controls.Add(lb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = lb;
         return lb;
     }
@@ -959,7 +972,7 @@ public class LbcDialog : IDisposable
         clb.GotFocus += handleGotFocus;
         registerWidget(clb, "CheckedListBox", clb.AccessibleName);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[clb] = sTip;
-        pnlStack.Controls.Add(clb);
+        bandTarget().Controls.Add(clb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = clb;
         return clb;
     }
@@ -1129,7 +1142,7 @@ public class LbcDialog : IDisposable
         cb.GotFocus += handleGotFocus;
         registerWidget(cb, "ComboBox", cb.AccessibleName);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[cb] = sTip;
-        pnlStack.Controls.Add(cb);
+        bandTarget().Controls.Add(cb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = cb;
         return cb;
     }
@@ -1175,7 +1188,7 @@ public class LbcDialog : IDisposable
         cb.GotFocus += handleGotFocus;
         registerWidget(cb, "ComboBox", cb.AccessibleName);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[cb] = sTip;
-        pnlStack.Controls.Add(cb);
+        bandTarget().Controls.Add(cb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = cb;
         return cb;
     }
@@ -1196,7 +1209,7 @@ public class LbcDialog : IDisposable
         rb.GotFocus += handleGotFocus;
         registerWidget(rb, "RadioButton", sLabel);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[rb] = sTip;
-        pnlStack.Controls.Add(rb);
+        bandTarget().Controls.Add(rb);
         if (ctlFirstFocusable == null) ctlFirstFocusable = rb;
         return rb;
     }
@@ -1224,20 +1237,69 @@ public class LbcDialog : IDisposable
         nud.GotFocus += handleGotFocus;
         registerWidget(nud, "NumericUpDown", sLabel);
         if (!string.IsNullOrEmpty(sTip)) dFocusTips[nud] = sTip;
-        pnlStack.Controls.Add(nud);
+        bandTarget().Controls.Add(nud);
         if (ctlFirstFocusable == null) ctlFirstFocusable = nud;
         return nud;
     }
 
     // addSeparator: a thin horizontal divider, for visually
     // grouping related fields. Not focusable.
+    // Start a new horizontal band. Controls added after this call sit side
+    // by side on one row, until the next addBand or addSeparator. Returns
+    // the band panel so a caller can adjust it if it wants to.
+    public FlowLayoutPanel addBand()
+    {
+        endBand();
+        pnlBand = new FlowLayoutPanel();
+        pnlBand.FlowDirection = FlowDirection.LeftToRight;
+        pnlBand.WrapContents = false;
+        pnlBand.AutoSize = true;
+        pnlBand.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        pnlBand.Margin = new Padding(0, 0, 0, DefaultRowGap);
+        pnlBand.Padding = new Padding(0);
+        pnlStack.Controls.Add(pnlBand);
+        return pnlBand;
+    }
+
+    // Close the open band, so later controls go back to one per row.
+    public void endBand() { pnlBand = null; }
+
+    // Where the next control goes: the open band, or the stack.
+    private Control bandTarget()
+    {
+        return pnlBand != null ? (Control) pnlBand : (Control) pnlStack;
+    }
+
+    // A push button on the current band -- the "..." button that fills in the
+    // edit box beside it. Placed here rather than left to the caller so it
+    // joins the tab order in the right place automatically.
+    public Button addButton(string sLabel, string sTip)
+    {
+        Button btn = new Button();
+        string sPlain = (sLabel ?? "").Replace("&", "");
+        btn.Text = sLabel;
+        btn.AccessibleName = sPlain;
+        btn.AutoSize = true;
+        btn.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        btn.MinimumSize = new Size(DefaultButtonWidth, DefaultLineHeight);
+        btn.TabIndex = iTabIndex++;
+        btn.UseVisualStyleBackColor = true;
+        btn.Margin = new Padding(DefaultBandGap, 0, 0, 0);
+        btn.GotFocus += handleGotFocus;
+        registerWidget(btn, "Button", sPlain);
+        if (!string.IsNullOrEmpty(sTip)) { dFocusTips[btn] = sTip; }
+        bandTarget().Controls.Add(btn);
+        return btn;
+    }
+
     public void addSeparator()
     {
+        endBand();
         Label sep = new Label();
         sep.Size = new Size(innerWidth(), 2);
         sep.BorderStyle = BorderStyle.Fixed3D;
         sep.Margin = new Padding(0, DefaultRowGap, 0, DefaultRowGap);
-        pnlStack.Controls.Add(sep);
+        bandTarget().Controls.Add(sep);
     }
 
     // ------- Widget lookup helpers -------
@@ -1331,8 +1393,20 @@ public class LbcDialog : IDisposable
         {
             string sLabel = aButtonLabels[i] ?? "";
             Button btn = new Button();
-            btn.Text = "&" + sLabel.Replace("&", "");
-            btn.AccessibleName = sLabel.Replace("&", "");
+            // OK and Cancel take no mnemonic. Both already have a key, and
+            // those keys are the Windows convention: Escape for Cancel, wired
+            // through frm.CancelButton below, and Enter for OK, wired through
+            // frm.AcceptButton -- plus Control+Enter, which Lbc adds so that
+            // submitting works from ANY control, including the ones that
+            // consume a bare Enter themselves. Giving either button a letter
+            // as well is contrary to convention and consumes a letter that a
+            // field or another button in the same dialog may want.
+            string sPlain = sLabel.Replace("&", "");
+            bool bNoMnemonic =
+                string.Equals(sPlain, "OK", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(sPlain, "Cancel", StringComparison.OrdinalIgnoreCase);
+            btn.Text = bNoMnemonic ? sPlain : "&" + sPlain;
+            btn.AccessibleName = sPlain;
             btn.Size = new Size(DefaultButtonWidth, DefaultButtonHeight);
             btn.TabIndex = iTabIndex++;
             btn.Margin = new Padding(DefaultRowGap, 0, 0, 0);
@@ -2068,7 +2142,7 @@ public class LbcDialog : IDisposable
         lbl.Size = new Size(innerWidth(), DefaultLabelHeight);
         lbl.Margin = new Padding(0, 0, 0, 0);
         lbl.TextAlign = ContentAlignment.MiddleLeft;
-        pnlStack.Controls.Add(lbl);
+        bandTarget().Controls.Add(lbl);
     }
 
     // populateListBox: shared logic for filling a ListBox with

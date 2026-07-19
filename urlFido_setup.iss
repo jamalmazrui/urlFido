@@ -34,7 +34,7 @@
 ; ============================================================================
 
 #define AppName       "urlFido"
-#define AppVer        "1.0.0"
+#define AppVer        "1.1.0"
 #define Publisher     "Jamal Mazrui"
 #define AppUrl        "https://github.com/JamalMazrui/urlFido"
 #define AppExeName    "urlFido.exe"
@@ -57,8 +57,8 @@ AppUpdatesURL={#AppUrl}/releases
 AppCopyright={#Copyright}
 ; tagRelease reads the version from THIS installer's version resource and
 ; tags v<that>. VersionInfoTextVersion is set explicitly so the string that
-; .NET's FileVersionInfo.FileVersion reports is exactly "1.0.0" and the tag
-; is a predictable v1.0.0 rather than a padded v1.0.0.0.
+; .NET's FileVersionInfo.FileVersion reports is exactly the number above and the tag
+; is predictable (v1.1.0) rather than a padded four-part number.
 VersionInfoVersion={#AppVer}
 VersionInfoTextVersion={#AppVer}
 
@@ -128,7 +128,7 @@ Name: "{group}\Uninstall {#AppName}"; \
   Filename: "{uninstallexe}"; \
   Comment: "Remove {#AppName} from this computer"
 
-; Desktop shortcut with the Alt+Ctrl+U hotkey. Launches urlFido in GUI
+; Desktop shortcut with the Alt+Control+U hotkey. Launches urlFido in GUI
 ; mode (-g) with saved-configuration loading (-u). WorkingDir is the
 ; user's Documents folder for the same writability reason as above.
 Name: "{userdesktop}\{#AppName}"; \

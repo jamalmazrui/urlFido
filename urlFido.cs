@@ -95,21 +95,43 @@ static class program {
     public const int iDownloadTimeoutMs = 300000;
     public const int iNetworkIdleTimeoutMs = 8000;
     public const int iNetworkQuietWindowMs = 500;
+    public const int iProbeTimeoutMs = 8000;
+    public const int iProbeConcurrency = 8;
+    // The longest single name a Windows path component may hold. Nothing
+    // shorter is imposed: a page title is trimmed only when the file system
+    // would actually refuse it.
+    public const int iMaxPathComponent = 255;
+
+    // Room kept free inside a page folder for the file names that will go in
+    // it, so a long title cannot leave a folder whose contents are
+    // uncreatable. Windows paths are capped at 259 characters unless long
+    // path support is switched on.
+    public const int iPathBudget = 259;
+    public const int iFileNameAllowance = 64;
+    public const string sFallbackTitle = "untitled-page";
     public const int iAuthPostConfirmSettleDelayMs = 4000;
 
     public const string sConfigDirName = "urlFido";
     public const string sConfigFileName = "urlFido.inix";
     public const string sDefaultExtensions = "docx pdf zip";
+
+    // Sources the dialog offers when it has nothing else to show: the major
+    // organizations of and for blind people. They give a new user something
+    // real to run against immediately, and each publishes documents worth
+    // having. Note wbu.ngo, not wbu.org — the World Blind Union is on the
+    // .ngo top-level domain.
+    public const string sDefaultSources =
+        "acb.org afb.org nfb.org wbu.ngo";
     public const string sLogFileName = "urlFido.log";
     public const string sProgramName = "urlFido";
     // Keep in step with sAppVersion in urlFido_setup.iss. tagRelease tags
     // the version stamped into urlFido_setup.exe, so a mismatch here would
     // make -v report something the release does not.
-    public const string sProgramVersion = "1.0.0";
+    public const string sProgramVersion = "1.1.0";
     public const string sReadmeUrl = "https://github.com/JamalMazrui/urlFido#readme";
     public const string sUsage =
         "Usage: urlFido [options] <url, local html file, or url-list text file> [...]";
-    public const string sUserAgentSuffix = " urlFido/1.0.0";
+    public const string sUserAgentSuffix = " urlFido/1.1.0";
     public const string sWebdriverOverrideScript =
         "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });";
 
@@ -135,6 +157,23 @@ static class program {
     public static string sExtensions = sDefaultExtensions;
     public static string sOutputDir = "";
 
+    // Where the CURRENT source's files are being written: a subdirectory of
+    // sOutputDir named after the page title. sOutputDir is the parent.
+    public static string sTargetDir = "";
+
+    // The output directory the dialog offers when none has been chosen.
+    // 2htm and extCheck both settle on Documents for this, and it is the
+    // right answer here too: downloads should not land in whatever folder
+    // the program happened to start in, which is how a run launched from
+    // the source tree drops files among the sources.
+    public static string defaultOutputDirForGui() {
+        try {
+            string sDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (!string.IsNullOrEmpty(sDocs) && Directory.Exists(sDocs)) return sDocs;
+        } catch { }
+        return Directory.GetCurrentDirectory();
+    }
+
     public static List<string> lSources = new List<string>();
 
     public static int run(string[] aArgs) {
@@ -142,6 +181,20 @@ static class program {
         int iParse = parseArgs(aArgs, lFileArgs);
         if (iParse >= 0) return iParse;  // -h or -v handled, or a parse error
 
+        // Configuration is opt-in for the command line (-u is required, so a
+        // scripted run never picks up state the script did not ask for) but
+        // IMPLICIT in GUI mode whenever a config file already exists. That
+        // asymmetry is the convention established by 2htm and followed by
+        // extCheck and urlCheck, and it is what makes the dialog checkbox
+        // mean what a user expects: tick "Use configuration" once, and the
+        // next time the dialog opens it comes back the way you left it.
+        //
+        // Without this, checking the box saved settings that were never read
+        // back, because loading depended on a switch the user never typed.
+        if (bGuiMode && !bUseConfig && configManager.configExists()) {
+            bUseConfig = true;
+            logger.info("GUI mode: an existing configuration was found and loaded.");
+        }
         if (bUseConfig) configManager.loadInto(lFileArgs);
 
         if (bGuiMode) {
@@ -149,6 +202,12 @@ static class program {
             string sExt = sExtensions;
             string sOut = sOutputDir;
             bool bF = bForce, bV = bViewOutput, bL = bLog;
+            // Seed empty fields with the defaults. Only the DIALOG gets these:
+            // on the command line, the working directory stays the default, so
+            // a scripted run behaves the way every other command-line tool does.
+            if (sSource.Trim().Length == 0) sSource = sDefaultSources;
+            if (sOutputDir.Trim().Length == 0) sOutputDir = defaultOutputDirForGui();
+
             bool bU = bUseConfig, bI = bInvisible, bA = bAuthenticate, bM = bMainProfile;
             if (!guiDialog.show(ref sSource, ref sExt, ref sOut,
                     ref bA, ref bM, ref bI, ref bF, ref bV, ref bL, ref bU)) {
@@ -159,7 +218,14 @@ static class program {
             sOutputDir = sOut;
             bForce = bF; bViewOutput = bV; bLog = bL; bUseConfig = bU;
             bInvisible = bI; bAuthenticate = bA; bMainProfile = bM;
-            if (bUseConfig) {
+            if (!bUseConfig) {
+                // Because GUI mode now auto-loads an existing config, leaving
+                // the file behind after the box is cleared would make the
+                // setting impossible to switch off: the next run would find
+                // the file and load it again. Clearing the box therefore
+                // removes the stored settings, as it does in urlCheck.
+                configManager.eraseAll();
+            } else {
                 configManager.save(sSource, sExtensions, sOutputDir,
                     bAuthenticate, bMainProfile, bInvisible, bForce, bViewOutput, bLog);
             }
@@ -190,6 +256,11 @@ static class program {
         if (bLog) {
             logger.open(sOutputDir);
             logger.header(sProgramName, sProgramVersion, buildParamList(lFileArgs));
+            logger.info("Mode: " + (bGuiMode ? "GUI" : "command line"));
+            logger.info("Working directory: " + Directory.GetCurrentDirectory());
+            logger.info("Executable: " + Application.ExecutablePath);
+            logger.info("OS: " + Environment.OSVersion + ", 64-bit process: " + Environment.Is64BitProcess);
+            logger.info("NVDA client loaded: " + (nvdaLoader.bLoaded ? "yes" : "no"));
         }
 
         // Resolve the extension field into wildcard patterns.
@@ -275,6 +346,7 @@ static class program {
         l.Add(new KeyValuePair<string, string>("Output directory", sOutputDir));
         l.Add(new KeyValuePair<string, string>("Authenticate", bAuthenticate ? "yes" : "no"));
         l.Add(new KeyValuePair<string, string>("Main profile", bMainProfile ? "yes" : "no"));
+        l.Add(new KeyValuePair<string, string>("Use configuration", bUseConfig ? "yes" : "no"));
         l.Add(new KeyValuePair<string, string>("Invisible", bInvisible ? "yes" : "no"));
         l.Add(new KeyValuePair<string, string>("Force", bForce ? "yes" : "no"));
         l.Add(new KeyValuePair<string, string>("View output", bViewOutput ? "yes" : "no"));
@@ -295,10 +367,10 @@ static class program {
                     return 0;
                 case "-g": case "--gui-mode":
                     bGuiMode = true; break;
-                case "-e": case "--extensions":
+                case "-e": case "--file-extensions": case "--extensions":
                     if (i + 1 >= aArgs.Length) { Console.Error.WriteLine("Missing value after " + sArg); return 2; }
                     sExtensions = aArgs[++i]; bExtensionsFromCli = true; break;
-                case "-o": case "--output-folder":
+                case "-o": case "--output-dir": case "--output-folder":
                     if (i + 1 >= aArgs.Length) { Console.Error.WriteLine("Missing value after " + sArg); return 2; }
                     sOutputDir = aArgs[++i]; bOutputDirFromCli = true; break;
                 case "-f": case "--force":
@@ -335,11 +407,11 @@ static class program {
         Console.WriteLine(sUsage);
         Console.WriteLine();
         Console.WriteLine("Options:");
-        Console.WriteLine("  -e, --extensions <list>    File extensions to download, separated by");
+        Console.WriteLine("  -e, --file-extensions <list>  File extensions to download, separated by");
         Console.WriteLine("                             commas or spaces. A leading dot is optional:");
         Console.WriteLine("                             \"pdf\", \".pdf\", and \"*.pdf\" all work.");
         Console.WriteLine("                             Default: " + sDefaultExtensions);
-        Console.WriteLine("  -o, --output-folder <dir>  Directory that receives the downloaded files.");
+        Console.WriteLine("  -o, --output-dir <dir>     Directory that receives the downloaded files.");
         Console.WriteLine("                             Default: the current directory.");
         Console.WriteLine("  -g, --gui-mode             Show the parameter dialog instead of using");
         Console.WriteLine("                             command-line values alone.");
@@ -448,34 +520,98 @@ static class urlHelper {
         "ac", "co", "com", "edu", "gov", "net", "org"
     };
 
+    // Expand each source argument into one or more urls. A source may be:
+    //
+    //   * a url, with or without a scheme       https://example.com/docs
+    //   * a local web page                      C:\Saved\page.htm
+    //   * a TEXT FILE LISTING ONE URL PER LINE  C:\lists\sites.txt
+    //
+    // The third form is the urlCheck convention and is what makes a repeated
+    // job convenient: keep the pages you harvest from in a text file and hand
+    // urlFido the file. Blank lines are ignored, and a line beginning with #
+    // or ; is a comment, so a list can be annotated and entries can be
+    // commented out without deleting them. Each line goes through the same
+    // normalization as a typed url, so bare domains work there too, and a
+    // line naming a local .htm file is accepted as well.
+    //
+    // Any existing file that is not a web page is read as a list. That is
+    // deliberate: it means .txt, .lst, .urls, or no extension at all behave
+    // the same, and the user never has to remember a required extension.
     public static List<string> expandSources(List<string> lArgs) {
         var l = new List<string>();
-        foreach (string sArg in lArgs) {
+        foreach (string sArgRaw in lArgs) {
+            string sArg = (sArgRaw ?? "").Trim().Trim('"');
+            if (sArg.Length == 0) continue;
+
+            bool bLooksLikePath = sArg.IndexOf(":\\") > 0 || sArg.StartsWith("\\\\") ||
+                sArg.StartsWith(".") || sArg.IndexOf(Path.DirectorySeparatorChar) >= 0;
+
             if (File.Exists(sArg)) {
                 string sExt = Path.GetExtension(sArg).ToLowerInvariant();
                 if (sExt == ".htm" || sExt == ".html" || sExt == ".xhtml") {
-                    l.Add(new Uri(Path.GetFullPath(sArg)).AbsoluteUri);
+                    string sFileUrl = new Uri(Path.GetFullPath(sArg)).AbsoluteUri;
+                    logger.info("Source is a local page: " + sArg);
+                    l.Add(sFileUrl);
                     continue;
                 }
-                // Treat any other existing file as a url-list text file.
-                try {
-                    foreach (string sLineRaw in File.ReadAllLines(sArg)) {
-                        string sLine = sLineRaw.Trim();
-                        if (sLine.Length == 0 || sLine.StartsWith("#") || sLine.StartsWith(";"))
-                            continue;
-                        string sNorm = normalize(sLine);
-                        if (sNorm != "") l.Add(sNorm);
-                    }
-                } catch (Exception ex) {
-                    program.notify("Could not read url list '" + sArg + "': " + ex.Message);
-                }
+                l.AddRange(readUrlList(sArg));
                 continue;
             }
+
+            if (bLooksLikePath) {
+                // Named something path-shaped that is not there. Say so
+                // plainly rather than trying to normalize it into a url and
+                // reporting a confusing "unrecognized source".
+                program.notify("File not found: " + sArg);
+                continue;
+            }
+
             string sUrl = normalize(sArg);
             if (sUrl != "") l.Add(sUrl);
             else program.notify("Skipping unrecognized source: " + sArg);
         }
-        return l.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        var lUnique = l.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (lUnique.Count < l.Count)
+            logger.info("Removed " + (l.Count - lUnique.Count) + " duplicate source url(s).");
+        return lUnique;
+    }
+
+    // Read one url per line, skipping blanks and # or ; comments. Reports
+    // what it found, so a mistyped list does not fail silently.
+    static List<string> readUrlList(string sPath) {
+        var l = new List<string>();
+        int iLine = 0, iBad = 0;
+        try {
+            foreach (string sLineRaw in File.ReadAllLines(sPath, new UTF8Encoding(true))) {
+                iLine++;
+                string sLine = (sLineRaw ?? "").Trim();
+                if (sLine.Length == 0) continue;
+                if (sLine.StartsWith("#") || sLine.StartsWith(";")) continue;
+
+                if (File.Exists(sLine)) {
+                    string sExt = Path.GetExtension(sLine).ToLowerInvariant();
+                    if (sExt == ".htm" || sExt == ".html" || sExt == ".xhtml") {
+                        l.Add(new Uri(Path.GetFullPath(sLine)).AbsoluteUri);
+                        continue;
+                    }
+                }
+                string sNorm = normalize(sLine);
+                if (sNorm != "") {
+                    l.Add(sNorm);
+                } else {
+                    iBad++;
+                    logger.warn("Line " + iLine + " of " + sPath + " is not a usable url: " + sLine);
+                }
+            }
+        } catch (Exception ex) {
+            program.notify("Could not read the url list '" + sPath + "': " + ex.Message);
+            return l;
+        }
+        program.notify("Read " + Util.stringPlural("url", l.Count) + " from " +
+            Path.GetFileName(sPath) +
+            (iBad > 0 ? " (" + iBad + " unusable line(s) skipped; see the log)" : "") + ".");
+        return l;
     }
 
     // Accept bare domains ("example.com") by assuming https.
@@ -512,21 +648,220 @@ static class urlHelper {
         }
     }
 
-    // The name this url would be saved as on disk, and its extension.
-    // Both delegate to Homer.Web, which is the same logic FileDir's Web
-    // Download command uses: the last path segment when it carries a real
-    // file name, otherwise a HEAD request whose Content-Disposition or
-    // MIME type supplies the name and extension, otherwise a sanitized
-    // fallback. Ordinary links that already end in a file name cost no
-    // network call.
-    public static string fileNameForUrl(string sUrl) {
-        try { return Web.suggestedName(sUrl); }
-        catch { return "download"; }
+    // The name this url would be saved as on disk, worked out WITHOUT any
+    // network traffic: the last path segment, percent-decoded. Returns ""
+    // when the address carries no usable file name.
+    public static string quickNameForUrl(string sUrl) {
+        try { return Web.nameFromUrl(sUrl); }
+        catch { return ""; }
     }
 
-    public static string extensionOfUrl(string sUrl) {
-        try { return Web.extensionOf(sUrl); }
-        catch { return ""; }
+    // Does the address itself carry a usable extension? Pure string work.
+    public static bool hasExtensionInPath(string sUrl) {
+        string sName = quickNameForUrl(sUrl);
+        return sName.Length > 0 && Path.GetExtension(sName).Length > 1;
+    }
+
+    // Everything after '#' identifies a place within a page, never a
+    // different resource, so two links differing only by fragment are one
+    // address as far as downloading is concerned.
+    public static string stripFragment(string sUrl) {
+        int i = sUrl.IndexOf('#');
+        return i >= 0 ? sUrl.Substring(0, i) : sUrl;
+    }
+
+    // Is this address worth asking a server about? Answering no here is what
+    // keeps automatic analysis quick: the great majority of links on a page
+    // can be ruled out by inspection, for free.
+    public static bool isWorthAsking(string sUrl) {
+        if (string.IsNullOrEmpty(sUrl)) return false;
+
+        // Only the web schemes can yield a download. mailto:, tel:,
+        // javascript: and friends never can.
+        if (!sUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !sUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return false;
+
+        string sBare = stripFragment(sUrl);
+
+        // A bare origin, or a link that is only a fragment of the current
+        // page, is the page itself.
+        try {
+            var oUri = new Uri(sBare);
+            string sPath = oUri.AbsolutePath;
+            if (sPath.Length <= 1) return false;
+
+            // Paths that end in a slash name a directory index — a page.
+            if (sPath.EndsWith("/")) return false;
+
+            // A last segment that is plainly a page extension is a page.
+            string sExt = Path.GetExtension(sPath).ToLowerInvariant();
+            if (sExt == ".htm" || sExt == ".html" || sExt == ".xhtml" ||
+                sExt == ".asp" || sExt == ".aspx" || sExt == ".php" ||
+                sExt == ".jsp" || sExt == ".cfm") return false;
+        } catch {
+            return false;
+        }
+        return true;
+    }
+
+    // Answers already obtained in this run. A page often links the same
+    // address several times, and asking once is enough.
+    static readonly Dictionary<string, string> dProbeCache =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    // Ask a server what it would actually send. Returns the file name it
+    // would arrive as, or "" if this address does not yield a file.
+    //
+    // The decisive heuristic is the content type: a server answering
+    // text/html is serving a page, and no page is a download, so the answer
+    // is settled by the response headers alone without transferring a byte
+    // of the body. That is what makes asking about every unknown link
+    // affordable.
+    public static string probeName(string sUrl) {
+        string sKey = stripFragment(sUrl);
+        lock (dProbeCache) {
+            string sHit;
+            if (dProbeCache.TryGetValue(sKey, out sHit)) return sHit;
+        }
+
+        string sResult = "";
+        try {
+            Web.configure();
+            var oReq = (HttpWebRequest)WebRequest.Create(sKey);
+            oReq.Method = "HEAD";
+            oReq.UserAgent = Web.userAgent();
+            oReq.Accept = "*/*";
+            oReq.AllowAutoRedirect = true;
+            oReq.Timeout = program.iProbeTimeoutMs;
+            oReq.ReadWriteTimeout = program.iProbeTimeoutMs;
+            using (var oResp = (HttpWebResponse)oReq.GetResponse()) {
+                string sType = (oResp.ContentType ?? "").ToLowerInvariant();
+
+                // A page, not a file. Settled without reading the body.
+                if (sType.StartsWith("text/html") ||
+                    sType.StartsWith("application/xhtml")) {
+                    sResult = "";
+                } else {
+                    string sFromHeader = Web.fileFromDisposition(oResp.Headers["Content-Disposition"]);
+                    if (sFromHeader.Length > 0) {
+                        sResult = Web.sanitizeName(sFromHeader);
+                    } else {
+                        string sName = "";
+                        try { sName = Path.GetFileName(oResp.ResponseUri.LocalPath); } catch { }
+                        if (sName.Length == 0) sName = "download";
+                        if (Path.GetExtension(sName).Length <= 1) {
+                            string sMimeExt = Web.mimeToExt(oResp.ContentType);
+                            if (sMimeExt.Length > 0) sName = sName + "." + sMimeExt;
+                        }
+                        sResult = Web.sanitizeName(sName);
+                    }
+                }
+            }
+        } catch {
+            sResult = "";
+        }
+
+        lock (dProbeCache) { dProbeCache[sKey] = sResult; }
+        return sResult;
+    }
+
+    // The name to save under, for a link already known to match.
+    public static string fileNameForUrl(string sUrl) {
+        string sName = quickNameForUrl(sUrl);
+        if (sName.Length > 0 && Path.GetExtension(sName).Length > 1) return Web.sanitizeName(sName);
+        string sProbed = probeName(sUrl);
+        if (sProbed.Length > 0) return sProbed;
+        return sName.Length > 0 ? Web.sanitizeName(sName) : "download";
+    }
+
+    // Turn a page title into a folder name, following urlCheck's rules.
+    //
+    // The name is meant to be read by a person browsing the output in File
+    // Explorer, so original capitalization and the spaces between words are
+    // preserved rather than being flattened into dashes: "Home | American
+    // Foundation for the Blind" reads better than "home-american-foundation".
+    // Only what Windows actually forbids is removed.
+    public static string folderNameFromTitle(string sTitle) { return folderNameFromTitle(sTitle, null); }
+
+    public static string folderNameFromTitle(string sTitle, string sParent) {
+        string sBase = (sTitle ?? "").Trim();
+        if (sBase.Length == 0) sBase = program.sFallbackTitle;
+
+        // Characters Windows forbids in a folder name, plus controls.
+        string sName = Regex.Replace(sBase, "[<>:\"/\\\\|?*\\x00-\\x1f]", "");
+        // Collapse internal whitespace runs so a title containing newlines or
+        // tabs does not leave multi-space gaps.
+        sName = Regex.Replace(sName, "\\s+", " ").Trim();
+        // Trailing dots and spaces are illegal at the end of a folder name.
+        while (sName.EndsWith(".") || sName.EndsWith(" ")) sName = sName.Substring(0, sName.Length - 1);
+
+        // Reserved device names would make an uncreatable folder.
+        string sCheck = sName.ToUpperInvariant().Split('.')[0];
+        var oReserved = new HashSet<string>(new string[] {
+            "CON","PRN","AUX","NUL",
+            "COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",
+            "LPT1","LPT2","LPT3","LPT4","LPT5","LPT6","LPT7","LPT8","LPT9" });
+        if (oReserved.Contains(sCheck)) sName = "_" + sName;
+
+        if (sName.Length == 0) sName = program.sFallbackTitle;
+
+        // Trim only as much as the file system requires. A component cannot
+        // exceed 255 characters, and the whole path -- folder plus the files
+        // that will sit inside it -- has to remain creatable.
+        int iLimit = program.iMaxPathComponent;
+        if (!string.IsNullOrEmpty(sParent)) {
+            int iRoom = program.iPathBudget - sParent.Length - 1 - program.iFileNameAllowance;
+            if (iRoom < iLimit) iLimit = iRoom;
+            if (iLimit < 8) iLimit = 8;   // never trim away to nothing
+        }
+        if (sName.Length > iLimit) {
+            logger.info("Folder name trimmed to " + iLimit + " characters to fit the path limit.");
+            sName = sName.Substring(0, iLimit);
+        }
+
+        while (sName.EndsWith(".") || sName.EndsWith(" ")) sName = sName.Substring(0, sName.Length - 1);
+        if (sName.Length == 0) sName = program.sFallbackTitle;
+        return sName;
+    }
+
+    // Decide the per-page folder under the output directory. Returns "" to
+    // mean "skip this source": the folder is already there from an earlier
+    // run and --force was not given, so previous downloads are preserved.
+    // With --force the folder is emptied and reused.
+    public static string chooseTargetDir(string sParent, string sTitle, bool bForce) {
+        string sDir = Path.Combine(sParent, folderNameFromTitle(sTitle, sParent));
+        if (Directory.Exists(sDir)) {
+            if (!bForce) return "";
+            // Remove it outright rather than emptying it. If this run then
+            // finds nothing to download, no hollow folder is left behind.
+            try {
+                Directory.Delete(sDir, true);
+                logger.info("Removed existing folder (--force): " + sDir);
+            } catch (Exception ex) {
+                logger.warn("Could not remove '" + sDir + "': " + ex.Message);
+            }
+        }
+        // Deliberately NOT created here. A page with nothing to download
+        // should leave nothing behind; an empty folder is just noise for
+        // someone browsing the results. See ensureDir.
+        return sDir;
+    }
+
+    // Create the page folder, at the last possible moment: the first time a
+    // file is actually about to be written into it.
+    public static bool ensureDir(string sDir) {
+        if (string.IsNullOrEmpty(sDir)) return false;
+        try {
+            if (!Directory.Exists(sDir)) {
+                Directory.CreateDirectory(sDir);
+                logger.info("Created folder: " + sDir);
+            }
+            return true;
+        } catch (Exception ex) {
+            logger.error("Could not create '" + sDir + "': " + ex.Message);
+            program.notify("Could not create the folder '" + sDir + "': " + ex.Message);
+            return false;
+        }
     }
 
     // Collision-free path in the output directory. With bForce the plain
@@ -659,6 +994,27 @@ static class edgeLauncher {
         }
 
         var lArgs = new List<string> {
+            // Edge signs a brand-new profile into the Windows account by
+            // default and immediately begins syncing. That is reasonable for
+            // a browser the user is adopting; it is entirely wrong for a
+            // throwaway profile that exists to fetch a file, and it produced
+            // a sync notification on every run. These switches shut down
+            // sign-in, sync, and the background services that drive them.
+            //
+            // The --disable-features list is best-effort: the Chromium
+            // entries are long-standing, while Edge's implicit sign-in
+            // feature has been named differently across versions, so several
+            // spellings are passed. An unrecognized feature name is ignored
+            // rather than rejected, so listing extras is safe.
+            "--disable-sync",
+            "--disable-background-networking",
+            "--disable-client-side-phishing-detection",
+            "--disable-default-apps",
+            "--no-service-autorun",
+            "--metrics-recording-only",
+            "--disable-features=msImplicitSignin,msEdgeImplicitSignin," +
+                "EdgeAutoSignIn,SyncPromo,SigninPromo,PrivacySandboxSettings4," +
+                "SearchEngineChoiceScreen",
             "--mute-audio",
             "--no-default-browser-check",
             "--no-first-run",
@@ -667,9 +1023,23 @@ static class edgeLauncher {
             "--user-data-dir=" + quote(sUserDataDir),
             "about:blank"
         };
+        // A fresh temporary profile should behave like a clean browser. Edge
+        // will still load and UPDATE any extension that policy or a bundled
+        // installer drops into a new profile, which is slow, produces windows
+        // the user has to dismiss, and has nothing to do with downloading a
+        // file. Suppress it — but only for the ephemeral profile, since -m is
+        // meant to reproduce the user's real browsing environment faithfully.
+        if (!bMainProfile) {
+            lArgs.Insert(0, "--disable-extensions");
+            lArgs.Insert(0, "--disable-component-update");
+        }
         if (bHeadless) lArgs.Insert(0, "--headless=new");
 
-        logger.info("Launching msedge.exe with --remote-debugging-port=0 and --user-data-dir=" + sUserDataDir);
+        logger.info("Edge executable: " + sEdgeExe);
+        logger.info("Profile mode: " + (bMainProfile ? "main profile" : "temporary profile"));
+        logger.info("User data dir: " + sUserDataDir);
+        logger.info("Headless: " + (bHeadless ? "yes" : "no"));
+        logger.info("Edge command line: " + string.Join(" ", lArgs));
         try {
             var oInfo = new ProcessStartInfo {
                 FileName = sEdgeExe,
@@ -693,7 +1063,9 @@ static class edgeLauncher {
                     string[] aLines = File.ReadAllLines(sPortFile);
                     if (aLines.Length >= 2 && int.TryParse(aLines[0].Trim(), out iDebugPort) && iDebugPort > 0) {
                         sWsBrowserUrl = "ws://127.0.0.1:" + iDebugPort + aLines[1].Trim();
-                        logger.info("DevTools port " + iDebugPort + " ready.");
+                        logger.info("DevTools ready after " +
+                            oWatch.Elapsed.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture) +
+                            " s; port " + iDebugPort + ", browser ws " + sWsBrowserUrl);
                         return true;
                     }
                 }
@@ -736,12 +1108,28 @@ static class edgeLauncher {
     // Seed Default\Preferences so Edge downloads PDFs rather than opening
     // its built-in viewer, and points downloads at the output directory.
     static void seedPreferences(string sProfileDir, string sDownloadDir) {
+        // Belt and braces alongside the command-line switches: writing these
+        // preferences before first launch means Edge never reaches the state
+        // where it would offer to sign in or sync in the first place.
         var d = new Dictionary<string, object> {
             { "plugins", new Dictionary<string, object> {
                 { "always_open_pdf_externally", true } } },
             { "download", new Dictionary<string, object> {
                 { "prompt_for_download", false },
-                { "default_directory", sDownloadDir } } }
+                { "default_directory", sDownloadDir } } },
+            { "signin", new Dictionary<string, object> {
+                { "allowed", false },
+                { "allowed_on_next_startup", false } } },
+            { "sync", new Dictionary<string, object> {
+                { "requested", false },
+                { "has_setup_completed", false } } },
+            { "credentials_enable_service", false },
+            { "browser", new Dictionary<string, object> {
+                { "has_seen_welcome_page", true } } },
+            { "profile", new Dictionary<string, object> {
+                { "password_manager_enabled", false },
+                { "exit_type", "Normal" },
+                { "exited_cleanly", true } } }
         };
         string sDefaultDir = Path.Combine(sProfileDir, "Default");
         Directory.CreateDirectory(sDefaultDir);
@@ -944,7 +1332,11 @@ static class pageDriver {
             program.notify("Navigation failed for " + sUrl + ": " + ex.Message);
             return false;
         }
+        var oNav = Stopwatch.StartNew();
         var dLoad = oPage.waitForEvent("Page.loadEventFired", null, program.iDefaultNavTimeoutMs);
+        logger.info("Load event after " +
+            (oNav.ElapsedMilliseconds / 1000.0).ToString("0.0", CultureInfo.InvariantCulture) +
+            " s for " + sUrl + (dLoad == null ? " (TIMED OUT)" : ""));
         if (dLoad == null) {
             program.notify("Timed out waiting for " + sUrl + " to load; continuing with " +
                 "whatever content is present.");
@@ -1019,12 +1411,26 @@ static class pageDriver {
 // ===========================================================================
 static class downloadEngine {
     static cdpClient oBrowser = null;
+
+    // Point browser-managed downloads at a directory. Re-issued for every
+    // source, because each source writes into its own folder.
+    public static void setDownloadDir(string sDir) {
+        if (oBrowser == null) return;
+        oBrowser.send("Browser.setDownloadBehavior", new Dictionary<string, object> {
+            { "behavior", "allowAndName" },
+            { "downloadPath", sDir },
+            { "eventsEnabled", true }
+        });
+        logger.info("Browser downloads directed to " + sDir);
+    }
     static cdpClient oPage = null;
     static readonly HashSet<string> setSeenDomains =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     public static int runAll(List<string> lSources, List<string> lPatterns) {
         var lRegexes = patternParser.compile(lPatterns);
+        guiProgress.open();
+        guiProgress.status("Launching Edge...");
         Console.WriteLine("Launching Edge...");
         if (!edgeLauncher.launch(program.bMainProfile, program.bInvisible, program.sOutputDir)) {
             return 1;
@@ -1045,7 +1451,9 @@ static class downloadEngine {
             return 1;
         } finally {
             disconnect();
+            guiProgress.status("Closing Edge...");
             edgeLauncher.shutdown();
+            guiProgress.close();
         }
     }
 
@@ -1058,18 +1466,18 @@ static class downloadEngine {
                 program.notify("Could not find a browser page to drive.");
                 return false;
             }
+            logger.info("Browser CDP connected: " + edgeLauncher.sWsBrowserUrl);
+            logger.info("Page CDP endpoint: " + sPageWs);
             oPage = new cdpClient();
             oPage.connect(sPageWs);
             pageDriver.preparePage(oPage);
             // Route downloads into the output directory, named by guid so we
             // control the final names; enable progress events.
-            oBrowser.send("Browser.setDownloadBehavior", new Dictionary<string, object> {
-                { "behavior", "allowAndName" },
-                { "downloadPath", program.sOutputDir },
-                { "eventsEnabled", true }
-            });
+            setDownloadDir(program.sOutputDir);
+            logger.info("Download behavior set to allowAndName into " + program.sOutputDir);
             return true;
         } catch (Exception ex) {
+            logger.error("CDP connect failed: " + ex.ToString());
             program.notify("Could not connect to Edge's automation channel: " + ex.Message);
             return false;
         }
@@ -1085,6 +1493,7 @@ static class downloadEngine {
     static void processSource(string sUrl, List<Regex> lRegexes) {
         program.notify("");
         program.notify("Source: " + sUrl);
+        guiProgress.status("Opening " + sUrl + "...");
 
         if (!pageDriver.navigate(oPage, sUrl)) {
             results.addSourceFailure(sUrl);
@@ -1096,24 +1505,143 @@ static class downloadEngine {
         string sTitle = pageDriver.getTitle(oPage);
         if (sTitle != "") program.notify("Page title: " + sTitle);
 
-        // Patterns are matched against the file name each url would be
-        // saved as -- not the raw url -- so *newsletter*.pdf behaves the way
-        // it would at a command prompt against the resulting files.
-        var lMatches = new List<string>();
-        if (patternParser.isMatch(lRegexes, urlHelper.fileNameForUrl(sUrl))) lMatches.Add(sUrl);
-
-        foreach (string sLink in pageDriver.harvestLinks(oPage)) {
-            if (lMatches.Contains(sLink, StringComparer.OrdinalIgnoreCase)) continue;
-            if (patternParser.isMatch(lRegexes, urlHelper.fileNameForUrl(sLink))) lMatches.Add(sLink);
-        }
-
-        if (lMatches.Count == 0) {
-            program.notify("No links matching the requested extensions were found on this page.");
+        // Each source gets its own folder under the output directory, named
+        // after the page title, so several sources in one run produce output
+        // a person can tell apart at a glance. This happens BEFORE the
+        // examination work, so a source that is going to be skipped costs
+        // nothing beyond loading the page.
+        program.sTargetDir = urlHelper.chooseTargetDir(program.sOutputDir, sTitle, program.bForce);
+        if (program.sTargetDir.Length == 0) {
+            program.notify("Already downloaded to \"" +
+                urlHelper.folderNameFromTitle(sTitle) +
+                "\"; skipping. Check \"Force overwrite\" to replace it.");
+            results.addSkipped(urlHelper.folderNameFromTitle(sTitle));
             return;
         }
-        program.notify(Util.stringPlural("matching link", lMatches.Count) + " found.");
+        // Browser-managed downloads land wherever the browser was last told,
+        // so the destination has to be re-stated for each source.
+        try {
+            downloadEngine.setDownloadDir(program.sTargetDir);
+        } catch (Exception ex) {
+            logger.warn("Could not retarget browser downloads: " + ex.Message);
+        }
 
+        // Working out what a page offers happens in two passes.
+        //
+        // The first is free: where the address itself carries a file name,
+        // that name is matched directly, with no network traffic at all.
+        //
+        // The second asks the server about the links the address could not
+        // settle — the /download?id=42 case, where only the server knows a
+        // PDF is coming. Knowing what a page really offers is the whole point
+        // of the program, so this is not optional and there is no switch for
+        // it. It is made affordable instead:
+        //
+        //   * Links that cannot yield a file are ruled out by inspection
+        //     first — non-web schemes, bare origins, directory paths, page
+        //     extensions, and duplicates that differ only by #fragment.
+        //   * The remainder are asked in parallel rather than one at a time,
+        //     which is the difference between seconds and minutes.
+        //   * Each question is a HEAD request, so a server answering
+        //     text/html settles the matter from its headers without sending
+        //     a page body.
+        //   * Answers are cached, so an address linked several times on one
+        //     page is asked about once.
+        //
+        // Progress is reported throughout, because the honest answer to "how
+        // long will this take" is "it depends on the site", and a user
+        // should never be left wondering whether the program has stopped.
+        var lLinks = pageDriver.harvestLinks(oPage);
+        logger.info("Harvested " + lLinks.Count + " links from " + sUrl);
+        guiProgress.status(Util.stringPlural("link", lLinks.Count) + " found; examining...");
+
+        var lMatches = new List<string>();
+        var lAsk = new List<string>();
+        var oSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int iAskedCount = 0, iFileCount = 0;
+
+        if (patternParser.isMatch(lRegexes, urlHelper.quickNameForUrl(sUrl))) lMatches.Add(sUrl);
+
+        foreach (string sLink in lLinks) {
+            string sBare = urlHelper.stripFragment(sLink);
+            if (!oSeen.Add(sBare)) continue;                 // same address already considered
+
+            if (urlHelper.hasExtensionInPath(sLink)) {
+                string sCandidate = urlHelper.quickNameForUrl(sLink);
+                if (patternParser.isMatch(lRegexes, sCandidate)) {
+                    logger.info("MATCH   " + sCandidate + "  <-  " + sLink);
+                    lMatches.Add(sLink);
+                } else {
+                    logger.debug("no match " + sCandidate + "  <-  " + sLink);
+                }
+            } else if (urlHelper.isWorthAsking(sLink)) {
+                lAsk.Add(sBare);
+            } else {
+                logger.debug("cannot yield a file: " + sLink);
+            }
+        }
+
+        if (lAsk.Count > 0) {
+            logger.info("Asking " + lAsk.Count + " server(s) what " +
+                (lAsk.Count == 1 ? "this address" : "these addresses") + " would send.");
+            var aFound = new string[lAsk.Count];
+            int iDone = 0;
+            var oClock = Stopwatch.StartNew();
+
+            // The requests run on worker threads; progress is reported from
+            // this thread, because guiProgress pumps the message queue and
+            // that must not happen anywhere but the thread owning the window.
+            var oWork = Task.Factory.StartNew(() =>
+                Parallel.For(0, lAsk.Count,
+                    new ParallelOptions { MaxDegreeOfParallelism = program.iProbeConcurrency },
+                    i => {
+                        aFound[i] = urlHelper.probeName(lAsk[i]);
+                        Interlocked.Increment(ref iDone);
+                    }));
+
+            while (!oWork.Wait(150)) {
+                guiProgress.update("Examining links", Thread.VolatileRead(ref iDone) + 1, lAsk.Count);
+            }
+            guiProgress.update("Examining links", lAsk.Count + 1, lAsk.Count);
+
+            int iFiles = 0;
+            for (int i = 0; i < lAsk.Count; i++) {
+                if (aFound[i].Length == 0) { logger.debug("not a file: " + lAsk[i]); continue; }
+                iFiles++;
+                if (patternParser.isMatch(lRegexes, aFound[i])) {
+                    logger.info("MATCH   " + aFound[i] + "  <-  " + lAsk[i]);
+                    lMatches.Add(lAsk[i]);
+                } else {
+                    logger.debug("is " + aFound[i] + " (no match)  <-  " + lAsk[i]);
+                }
+            }
+            iAskedCount = lAsk.Count; iFileCount = iFiles;
+            logger.info("Examined " + lAsk.Count + " address(es) in " +
+                (oClock.ElapsedMilliseconds / 1000.0).ToString("0.0", CultureInfo.InvariantCulture) +
+                " s; " + iFiles + " turned out to be files.");
+        }
+
+        if (guiProgress.bCancelled) return;
+
+        string sAccount = Util.stringPlural("link", lLinks.Count) + " examined";
+        if (iAskedCount > 0) {
+            sAccount += ", of which " + iAskedCount + " needed asking about (" +
+                Util.stringPlural("file", iFileCount) + ")";
+        }
+        if (lMatches.Count == 0) {
+            program.notify(sAccount + "; none matched " + program.sExtensions + ".");
+            return;
+        }
+        program.notify(sAccount + "; " +
+            Util.stringPlural("matching file", lMatches.Count) + " found.");
+        program.notify("Folder: " + Path.GetFileName(program.sTargetDir));
+
+        int iN = 0;
         foreach (string sFileUrl in lMatches) {
+            if (guiProgress.bCancelled) { program.notify("Cancelled."); return; }
+            iN++;
+            guiProgress.update(Path.GetFileName(urlHelper.quickNameForUrl(sFileUrl)),
+                iN, lMatches.Count);
             downloadOne(sFileUrl);
         }
     }
@@ -1177,6 +1705,7 @@ static class downloadEngine {
     }
 
     static void downloadOne(string sFileUrl) {
+        if (!urlHelper.ensureDir(program.sTargetDir)) return;
         string sName = urlHelper.fileNameForUrl(sFileUrl);
         var oWatch = Stopwatch.StartNew();
 
@@ -1185,7 +1714,7 @@ static class downloadEngine {
         // 2htm convention for the Skipped section of the summary.
         if (!program.bForce) {
             try {
-                if (File.Exists(Path.Combine(program.sOutputDir, sName))) {
+                if (File.Exists(Path.Combine(program.sTargetDir, sName))) {
                     results.addSkipped(sName);
                     program.notify("  Skipped (already present): " + sName);
                     return;
@@ -1193,11 +1722,26 @@ static class downloadEngine {
             } catch { }
         }
 
-        long iBytes = downloadViaBrowser(sFileUrl, ref sName);
+        // Retrieval order matters to what the user SEES. Asking the browser
+        // to download opens a throwaway tab per file, which flickers past and
+        // leaves Edge showing pages the user never asked for — the only page
+        // Edge should show is the one being scanned. A direct request opens
+        // nothing, and because it replays the live session's cookies and
+        // user agent it is just as authorized as the browser is. So the
+        // direct request goes first, and the browser is the fallback for the
+        // cases it cannot handle.
+        logger.info("Download start: " + sFileUrl + " -> " + sName);
+        long iBytes = httpFallback.download(oPage, sFileUrl, ref sName);
         if (iBytes < 0) {
-            logger.info("Browser download failed for " + sFileUrl + "; trying HTTP fallback.");
-            iBytes = httpFallback.download(oPage, sFileUrl, ref sName);
+            logger.info("Direct request failed for " + sFileUrl +
+                "; falling back to a browser download.");
+            iBytes = downloadViaBrowser(sFileUrl, ref sName);
+            if (iBytes >= 0) logger.info("Browser download succeeded for " + sFileUrl);
+        } else {
+            logger.info("Direct request succeeded for " + sFileUrl);
         }
+        logger.info("Download end: " + sName + ", " + iBytes + " bytes, " +
+            (oWatch.ElapsedMilliseconds / 1000.0).ToString("0.0", CultureInfo.InvariantCulture) + " s");
 
         if (iBytes >= 0) {
             results.addSuccess(sName, iBytes);
@@ -1247,9 +1791,9 @@ static class downloadEngine {
                 if (dProg == null) continue;
                 string sState = jsonHelper.getString(dProg, "state");
                 if (sState == "completed") {
-                    string sTempPath = Path.Combine(program.sOutputDir, sGuid);
+                    string sTempPath = Path.Combine(program.sTargetDir, sGuid);
                     string sFinalPath = urlHelper.uniquePath(
-                        program.sOutputDir, sName, program.bForce);
+                        program.sTargetDir, sName, program.bForce);
                     if (File.Exists(sFinalPath) && program.bForce) File.Delete(sFinalPath);
                     File.Move(sTempPath, sFinalPath);
                     sName = Path.GetFileName(sFinalPath);
@@ -1305,6 +1849,9 @@ static class httpFallback {
             if (sCookies != "") oReq.Headers[HttpRequestHeader.Cookie] = sCookies;
 
             using (var oResp = (HttpWebResponse)oReq.GetResponse()) {
+                logger.info("HTTP " + (int)oResp.StatusCode + " " + oResp.StatusCode +
+                    ", type " + (oResp.ContentType ?? "(none)") +
+                    ", length " + oResp.ContentLength + " for " + sFileUrl);
                 string sDisp = oResp.Headers["Content-Disposition"] ?? "";
                 var m = Regex.Match(sDisp, "filename\\*?=\"?([^\";]+)\"?",
                     RegexOptions.IgnoreCase);
@@ -1318,7 +1865,7 @@ static class httpFallback {
                     }
                 }
                 string sFinalPath = urlHelper.uniquePath(
-                    program.sOutputDir, sName, program.bForce);
+                    program.sTargetDir, sName, program.bForce);
                 using (var oIn = oResp.GetResponseStream())
                 using (var oOut = File.Create(sFinalPath)) {
                     oIn.CopyTo(oOut, 81920);
@@ -1358,6 +1905,122 @@ static class httpFallback {
         } catch {
             return "";
         }
+    }
+}
+
+// ===========================================================================
+// guiProgress — the modeless status form shown during a run in GUI mode.
+//
+// This reproduces the technique already proven in 2htm and extCheck, and the
+// detail that makes it work for screen reader users is one line:
+//
+//     lblStatus.AccessibleRole = AccessibleRole.StatusBar;
+//
+// A plain Label carrying the StatusBar accessible role is what the JAWS
+// read-status-bar command (Insert+PageDown) targets. Screen readers also
+// announce changes to it as they happen, so progress is spoken without the
+// user having to go looking. Application.DoEvents() pumps the message queue
+// so the new text actually paints between units of work.
+//
+// The same three-method API as 2htm and extCheck — open / update / close —
+// plus status() for the phases that have no meaningful denominator
+// (launching Edge, loading a page). As in those programs, the displayed
+// count reflects work ALREADY COMPLETED, not the item being started, so the
+// user never sees 100% while the last file is still downloading.
+//
+// In CLI mode every method is a no-op for the window but STILL logs, so a
+// -l log is equally detailed either way.
+// ===========================================================================
+static class guiProgress {
+    static Form frm = null;
+    static Label lblStatus = null;
+    static string sLastLogged = "";
+    public static volatile bool bCancelled = false;
+
+    public static void open() {
+        bCancelled = false;
+        logger.info("Run started.");
+        if (!program.bGuiMode) return;
+        try {
+            frm = new Form();
+            frm.Text = program.sProgramName + " — working";
+            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            frm.StartPosition = FormStartPosition.CenterScreen;
+            frm.MaximizeBox = false;
+            frm.MinimizeBox = false;
+            frm.ControlBox = false;
+            frm.ShowInTaskbar = true;
+            frm.ClientSize = new System.Drawing.Size(480, 128);
+            frm.Font = System.Drawing.SystemFonts.MessageBoxFont;
+
+            var lblIntro = new Label();
+            lblIntro.Text = "Downloading files. Please wait...";
+            lblIntro.AutoSize = false;
+            lblIntro.Location = new System.Drawing.Point(14, 14);
+            lblIntro.Size = new System.Drawing.Size(452, 22);
+            lblIntro.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            frm.Controls.Add(lblIntro);
+
+            lblStatus = new Label();
+            lblStatus.Text = "Starting...";
+            lblStatus.AutoSize = false;
+            lblStatus.Location = new System.Drawing.Point(14, 42);
+            lblStatus.Size = new System.Drawing.Size(452, 22);
+            lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblStatus.AccessibleName = "Download status";
+            lblStatus.AccessibleRole = AccessibleRole.StatusBar;
+            frm.Controls.Add(lblStatus);
+
+            // urlFido runs are network-bound and can be far longer than a
+            // local file conversion, so unlike 2htm and extCheck this form
+            // offers a way out. The button does not disturb the status
+            // label or its accessible role.
+            var btnCancel = new Button();
+            btnCancel.Text = "&Cancel";
+            btnCancel.AccessibleName = "Cancel";
+            btnCancel.Location = new System.Drawing.Point(356, 76);
+            btnCancel.Size = new System.Drawing.Size(110, 28);
+            btnCancel.TabIndex = 0;
+            btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Click += (o, e) => {
+                bCancelled = true;
+                status("Cancelling — finishing the current file...");
+            };
+            frm.Controls.Add(btnCancel);
+
+            frm.Show();
+            Application.DoEvents();
+        } catch (Exception ex) {
+            logger.warn("Could not open the progress window: " + ex.Message);
+            frm = null; lblStatus = null;
+        }
+    }
+
+    // A phase with no denominator.
+    public static void status(string sText) {
+        if (string.IsNullOrEmpty(sText)) return;
+        if (sText != sLastLogged) { logger.info("Status: " + sText); sLastLogged = sText; }
+        if (frm == null || lblStatus == null) return;
+        try { lblStatus.Text = sText; Application.DoEvents(); } catch { }
+    }
+
+    // A phase with a known total. iIndex is 1-based; the count and percent
+    // show work DONE, matching 2htm and extCheck.
+    public static void update(string sBase, int iIndex, int iTotal) {
+        int iCompleted = iIndex - 1;
+        int iPercent = iTotal > 0 ? (iCompleted * 100 / iTotal) : 0;
+        string sText = sBase + " \u2014 " + iCompleted + " of " + iTotal + ", " + iPercent + "%";
+        if (sText != sLastLogged) { logger.info("Status: " + sText); sLastLogged = sText; }
+        if (frm == null || lblStatus == null) return;
+        try { lblStatus.Text = sText; Application.DoEvents(); } catch { }
+    }
+
+    public static void close() {
+        logger.info("Run finished.");
+        if (frm == null) return;
+        try { frm.Close(); frm.Dispose(); } catch { }
+        frm = null; lblStatus = null;
+        try { Application.DoEvents(); } catch { }
     }
 }
 
@@ -1461,6 +2124,48 @@ static class results {
 }
 
 // ===========================================================================
+// bark — urlFido's audio icon.
+//
+// Played once when the dialog is ready for input, in place of a spoken
+// "ready" announcement. A short sound identifies the program faster than a
+// sentence does, and it does not collide with whatever the screen reader is
+// saying about the newly focused field.
+//
+// The audio is embedded in the executable, so the single-file property is
+// preserved; SoundPlayer can play straight from the resource stream without
+// anything being written to disk. Playback is asynchronous and every failure
+// is swallowed: a machine with no sound device, or a build without the
+// resource, must still show the dialog normally.
+// ===========================================================================
+static class bark {
+    const string sResourceName = "urlFido.wav";
+    static bool bPlayed = false;
+
+    public static void ready() {
+        if (bPlayed) return;      // once per run, not once per dialog loop
+        bPlayed = true;
+        play();
+    }
+
+    public static void play() {
+        try {
+            var oAsm = Assembly.GetExecutingAssembly();
+            using (Stream oStream = oAsm.GetManifestResourceStream(sResourceName)) {
+                if (oStream == null) {
+                    logger.debug("No embedded " + sResourceName + "; audio icon skipped.");
+                    return;
+                }
+                var oPlayer = new System.Media.SoundPlayer(oStream);
+                oPlayer.Play();
+                logger.debug("Audio icon played.");
+            }
+        } catch (Exception ex) {
+            logger.debug("Audio icon unavailable: " + ex.Message);
+        }
+    }
+}
+
+// ===========================================================================
 // guiDialog — the parameter dialog, built from Homer Lbc primitives so it
 // inherits the whole shared convenience set rather than reimplementing any
 // of it. Every text field is an LbcTextBox and so gets, for free:
@@ -1495,35 +2200,72 @@ public static class guiDialog {
         while (true) {
             string sButton;
             using (var dlg = new LbcDialog(program.sProgramName, null)) {
-                TextBox tbSource = dlg.addInputBox("Source urls:", sSource,
-                    "One or more urls, local HTML files, or text files listing one url per line. " +
-                    "Separate items with spaces; quote any single item containing a space.");
-                TextBox tbExt = dlg.addInputBox("File extensions:",
-                    string.IsNullOrWhiteSpace(sExtensions) ? program.sDefaultExtensions : sExtensions,
-                    "What to download, separated by commas or spaces. A bare extension like pdf " +
-                    "means .pdf, which means *.pdf. Wildcards * and ? work as in the command " +
-                    "prompt, so *newsletter*.pdf matches only newsletter PDFs. Matching ignores case.");
-                TextBox tbOut = dlg.addInputBox("Output directory:", sOutputDir,
-                    "Where downloaded files are saved. Leave empty for the current directory.");
+                // Three bands, each a label, its edit box, and -- where one
+                // applies -- the button that fills it in, sharing a row. This
+                // is LbC's band concept: related controls belong together on
+                // one horizontal run, so Tab moves from a field straight to
+                // the way of changing it rather than past everything else.
+                dlg.addBand();
+                TextBox tbSource = dlg.addInputBox("&Source urls:", sSource,
+                    "One or more urls, local web pages, or text files listing one url per line, " +
+                    "separated by spaces. Put double quotes around any item containing a space.");
+                Button btnBrowse = dlg.addButton("&Browse source...",
+                    "Choose a local web page or a text file of urls.");
+
+                dlg.addBand();
+                TextBox tbExt = dlg.addInputBox("File &extensions:", sExtensions,
+                    "What to download, separated by spaces or commas. Bare extensions and " +
+                    "cmd.exe wildcard patterns both work, for example pdf, *.pdf, or *newsletter*.pdf.");
+
+                dlg.addBand();
+                TextBox tbOut = dlg.addInputBox("&Output directory:", sOutputDir,
+                    "The parent directory. Each source gets its own folder inside it, " +
+                    "named after the page title.");
+                Button btnChoose = dlg.addButton("&Choose output...",
+                    "Choose the directory to download into.");
+                dlg.endBand();
+
+                bark.ready();
+
+                btnBrowse.Click += (o, e) => {
+                    string sPicked = tbSource.Text;
+                    if (browseSourceInto(ref sPicked)) {
+                        tbSource.Text = sPicked;
+                        tbSource.Focus();
+                    }
+                };
+                btnChoose.Click += (o, e) => {
+                    using (var dlgFolder = new FolderBrowserDialog()) {
+                        dlgFolder.Description = "Choose the output directory";
+                        dlgFolder.ShowNewFolderButton = true;
+                        try { dlgFolder.SelectedPath = getInitialBrowseDir(tbOut.Text); } catch { }
+                        if (dlgFolder.ShowDialog(dlg.form) == DialogResult.OK) {
+                            tbOut.Text = dlgFolder.SelectedPath;
+                            tbOut.Focus();
+                            Say.say("Output directory set");
+                        }
+                    }
+                };
+
                 dlg.addSeparator();
-                CheckBox cbAuth = dlg.addCheckBox("Authenticate credentials", bAuth,
+                CheckBox cbAuth = dlg.addCheckBox("&Authenticate credentials", bAuth,
                     "Pause at the first page of each site so you can sign in, accept cookies, " +
                     "or complete two-factor in the Edge window, then continue. Overrides Invisible.");
-                CheckBox cbMain = dlg.addCheckBox("Main profile", bMain,
+                CheckBox cbMain = dlg.addCheckBox("&Main profile", bMain,
                     "Use your real Edge profile so existing logins apply. Edge must be fully closed.");
-                CheckBox cbInvisible = dlg.addCheckBox("Invisible browser", bInvisible,
+                CheckBox cbInvisible = dlg.addCheckBox("&Invisible browser", bInvisible,
                     "Run Edge with no visible window. Ignored when Authenticate is checked.");
-                CheckBox cbForce = dlg.addCheckBox("Force overwrite", bForce,
+                CheckBox cbForce = dlg.addCheckBox("&Force overwrite", bForce,
                     "Overwrite existing files instead of adding a numeric suffix such as _001.");
-                CheckBox cbView = dlg.addCheckBox("View output", bView,
+                CheckBox cbView = dlg.addCheckBox("&View output", bView,
                     "Open the output directory in File Explorer when the run finishes.");
-                CheckBox cbLog = dlg.addCheckBox("Log session", bLog,
+                CheckBox cbLog = dlg.addCheckBox("&Log session", bLog,
                     "Write a fresh " + program.sLogFileName + " to the output directory.");
-                CheckBox cbUseCfg = dlg.addCheckBox("Use configuration", bUseCfg,
+                CheckBox cbUseCfg = dlg.addCheckBox("&Use configuration", bUseCfg,
                     "Load settings at startup and save them on OK, in " + program.sConfigFileName + ".");
 
                 sButton = dlg.runWithButtons(new string[] {
-                    "OK", "Browse source", "Choose output", "Default settings", "Cancel" });
+                    "OK", "Default settings", "Cancel" });
 
                 // Harvest every field before the dialog is disposed, so a
                 // browse round trip preserves whatever else was typed.
@@ -1544,18 +2286,14 @@ public static class guiDialog {
                 return false;
             }
 
-            if (string.Equals(sButton, "Browse source", StringComparison.OrdinalIgnoreCase)) {
-                browseSource(ref sSource, ref sOutputDir);
-                continue;
-            }
-
-            if (string.Equals(sButton, "Choose output", StringComparison.OrdinalIgnoreCase)) {
-                chooseOutput(ref sOutputDir);
-                continue;
-            }
-
             if (string.Equals(sButton, "Default settings", StringComparison.OrdinalIgnoreCase)) {
-                sSource = ""; sExtensions = program.sDefaultExtensions; sOutputDir = "";
+                // Restore the defaults, rather than emptying the fields and
+                // relying on something else to fill them in later: the seeding
+                // happens once before the dialog opens, so a blanked field
+                // would simply stay blank for the rest of this dialog session.
+                sSource = program.sDefaultSources;
+                sExtensions = program.sDefaultExtensions;
+                sOutputDir = program.defaultOutputDirForGui();
                 bAuth = false; bMain = false; bInvisible = false;
                 bForce = false; bView = false; bLog = false; bUseCfg = false;
                 configManager.eraseAll();
@@ -1570,7 +2308,10 @@ public static class guiDialog {
     }
 
     // Pick a local HTML page or a url-list text file.
-    static bool browseSource(ref string sSource, ref string sOutputDir) {
+    // Fill the source field from a file picker. Called from the Browse source
+    // button on the first band, so it works against the live text box rather
+    // than closing and reopening the dialog.
+    static bool browseSourceInto(ref string sSource) {
         using (var dialog = new OpenFileDialog()) {
             dialog.Title = "Choose a local HTML page or a url-list text file";
             dialog.Filter =
@@ -1583,22 +2324,7 @@ public static class guiDialog {
             if (dialog.ShowDialog() != DialogResult.OK) return false;
             string sPicked = dialog.FileName;
             sSource = sPicked.Contains(" ") ? "\"" + sPicked + "\"" : sPicked;
-            if (string.IsNullOrWhiteSpace(sOutputDir)) {
-                try { sOutputDir = Path.GetDirectoryName(dialog.FileName); } catch { }
-            }
             Say.say("Source set");
-            return true;
-        }
-    }
-
-    static bool chooseOutput(ref string sOutputDir) {
-        using (var dialog = new FolderBrowserDialog()) {
-            dialog.Description = "Choose the output directory";
-            dialog.ShowNewFolderButton = true;
-            try { dialog.SelectedPath = getInitialBrowseDir(sOutputDir); } catch { }
-            if (dialog.ShowDialog() != DialogResult.OK) return false;
-            sOutputDir = dialog.SelectedPath;
-            Say.say("Output directory set");
             return true;
         }
     }
@@ -1651,8 +2377,14 @@ public static class logger {
         } catch { sLogDir = Directory.GetCurrentDirectory(); }
         string sPath = Path.Combine(sLogDir, program.sLogFileName);
         try {
-            writer = new StreamWriter(sPath, false, new UTF8Encoding(true));
+            // Appends across runs so a sequence of attempts stays in one
+            // place, which is what you want when chasing an intermittent
+            // failure. --force replaces it instead, matching urlCheck.
+            bool bAppend = !program.bForce && File.Exists(sPath);
+            writer = new StreamWriter(sPath, bAppend, new UTF8Encoding(true));
             writer.AutoFlush = true;
+            foreach (string sHeld in lPending) writer.WriteLine(sHeld);
+            lPending.Clear();
         } catch (Exception ex) {
             Console.Error.WriteLine("Could not open log file '" + sPath + "': " + ex.Message);
             writer = null;
@@ -1667,6 +2399,7 @@ public static class logger {
     }
 
     public static void info(string sMsg) { write("INFO", sMsg); }
+    public static void debug(string sMsg) { write("DEBUG", sMsg); }
     public static void warn(string sMsg) { write("WARN", sMsg); }
     public static void error(string sMsg) { write("ERROR", sMsg); }
 
@@ -1691,8 +2424,18 @@ public static class logger {
             dt.ToString("h:mm tt", CultureInfo.InvariantCulture);
     }
 
+    // Messages logged before the output directory is known (configuration
+    // load and save both happen before the dialog resolves it) are held here
+    // and flushed when the file opens, so nothing is silently lost.
+    static readonly List<string> lPending = new List<string>();
+
     static void write(string sLevel, string sMsg) {
-        if (writer == null) return;
+        if (writer == null) {
+            if (program.bLog && lPending.Count < 200)
+                lPending.Add(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff") +
+                    " [" + sLevel + "] " + sMsg);
+            return;
+        }
         try { writer.WriteLine(stamp(sLevel) + " " + sMsg); } catch { }
     }
 

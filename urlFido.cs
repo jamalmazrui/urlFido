@@ -96,7 +96,13 @@ static class program {
     public const int iNetworkIdleTimeoutMs = 8000;
     public const int iNetworkQuietWindowMs = 500;
     public const int iProbeTimeoutMs = 8000;
-    public const int iProbeConcurrency = 8;
+    // Politeness. Servers throttle or block clients that arrive in a burst,
+    // and a tool that gets urlFido blacklisted from a site is worse than a
+    // slightly slower one. Concurrency is modest and each worker pauses
+    // between requests, so a site sees a steady trickle rather than a flood.
+    public const int iProbeConcurrency = 4;
+    public const int iRequestGapMs = 250;
+    public const int iDownloadGapMs = 400;
     // The longest single name a Windows path component may hold. Nothing
     // shorter is imposed: a page title is trimmed only when the file system
     // would actually refuse it.
@@ -161,6 +167,18 @@ static class program {
     // sOutputDir named after the page title. sOutputDir is the parent.
     public static string sTargetDir = "";
 
+    // The page currently being harvested. Sent as the Referer when files from
+    // it are downloaded: many sites serve a document only to a request that
+    // appears to come from the page linking it, and refuse or redirect
+    // anything that arrives cold.
+    public static string sCurrentPageUrl = "";
+
+    // Test Fetch: do everything except write anything. The page is loaded and
+    // examined exactly as for a real run, so the report reflects what would
+    // actually happen rather than a guess, but nothing is downloaded and no
+    // folder is created.
+    public static bool bSimulate = false;
+
     // The output directory the dialog offers when none has been chosen.
     // 2htm and extCheck both settle on Documents for this, and it is the
     // right answer here too: downloads should not land in whatever folder
@@ -198,6 +216,15 @@ static class program {
         if (bUseConfig) configManager.loadInto(lFileArgs);
 
         if (bGuiMode) {
+            // Started from Explorer, a shortcut, or the hotkey, Windows gives
+            // urlFido a console of its own that serves no purpose once the
+            // dialog is up. Hide it -- but only when it is ours alone; run
+            // from an existing cmd.exe, that window is the user's shell.
+            if (consoleWindow.launchedFromGui()) {
+                consoleWindow.hide();
+                logger.info("Console window hidden: launched from the GUI.");
+            }
+
             string sSource = string.Join(" ", lFileArgs.Select(quoteIfNeeded));
             string sExt = sExtensions;
             string sOut = sOutputDir;
@@ -729,6 +756,9 @@ static class urlHelper {
             Web.configure();
             var oReq = (HttpWebRequest)WebRequest.Create(sKey);
             oReq.Method = "HEAD";
+            if (program.sCurrentPageUrl != "") {
+                try { oReq.Referer = program.sCurrentPageUrl; } catch { }
+            }
             oReq.UserAgent = Web.userAgent();
             oReq.Accept = "*/*";
             oReq.AllowAutoRedirect = true;
@@ -1087,13 +1117,46 @@ static class edgeLauncher {
         return false;
     }
 
-    public static void shutdown() {
+    // Terminate a whole process tree. Edge is not one process: the one we
+    // start spawns renderer, GPU, and utility children, and killing only the
+    // parent can leave windows on screen. Worse, the process we start often
+    // exits almost at once after handing work to another, so HasExited says
+    // "gone" while a window is still sitting there -- which is exactly the
+    // state that leaves a user unsure whether urlFido has finished.
+    static void killTree(int iPid) {
         try {
-            if (oEdgeProcess != null && !oEdgeProcess.HasExited) {
-                oEdgeProcess.Kill();
-                oEdgeProcess.WaitForExit(5000);
+            var oInfo = new ProcessStartInfo("taskkill", "/PID " + iPid + " /T /F");
+            oInfo.CreateNoWindow = true;
+            oInfo.UseShellExecute = false;
+            var oKill = Process.Start(oInfo);
+            if (oKill != null) oKill.WaitForExit(5000);
+            logger.info("Terminated Edge process tree " + iPid + ".");
+        } catch (Exception ex) {
+            logger.warn("Could not terminate process tree " + iPid + ": " + ex.Message);
+        }
+    }
+
+    public static void shutdown() {
+        // Under --main-profile the browser is the user's own. Closing it
+        // would take away their tabs and their session, so it is left alone
+        // and the summary says so rather than leaving them to wonder.
+        if (program.bMainProfile) {
+            logger.info("Main profile in use: Edge left running deliberately.");
+            oEdgeProcess = null;
+            return;
+        }
+        try {
+            if (oEdgeProcess != null) {
+                int iPid = -1;
+                try { iPid = oEdgeProcess.Id; } catch { }
+                // Browser.close was already sent, so give it a moment to go
+                // quietly before anything is forced.
+                if (!oEdgeProcess.HasExited) oEdgeProcess.WaitForExit(3000);
+                if (iPid > 0) killTree(iPid);
             }
-        } catch { }
+        } catch (Exception ex) {
+            logger.warn("Edge shutdown: " + ex.Message);
+        }
         oEdgeProcess = null;
         // Best-effort temp profile cleanup (never the main profile).
         try {
@@ -1378,12 +1441,51 @@ static class pageDriver {
 
     // Harvest absolute urls of links and embedded resources on the page.
     public static List<string> harvestLinks(cdpClient oPage) {
+        // A person typing "jpg" or "js" means "the pictures and scripts on
+        // this page". They neither know nor should have to know that a
+        // picture arrives through img src, or srcset, or a lazy-loading
+        // data-src, or a CSS background rule, while a script arrives through
+        // script src. So every way a page can name a file is harvested, not
+        // just the anchors a link checker would care about.
         const string sScript =
-            "(function(){var l=[];" +
-            "document.querySelectorAll('a[href],area[href]').forEach(function(e){l.push(e.href);});" +
-            "document.querySelectorAll('iframe[src],embed[src],object[data]').forEach(function(e){" +
-            "l.push(e.src||e.data);});" +
-            "return JSON.stringify(l);})()";
+            "(function(){" +
+            "var s=new Set();" +
+            "function add(u){try{if(!u)return;u=String(u).trim();" +
+            "if(!u||u.charAt(0)==='#')return;" +
+            "if(/^(javascript|mailto|tel|data|blob|about):/i.test(u))return;" +
+            "s.add(new URL(u,document.baseURI).href);}catch(e){}}" +
+            // srcset and imagesrcset are comma-separated candidate lists,
+            // each entry a url followed by an optional descriptor.
+            "function addSet(v){if(!v)return;String(v).split(',').forEach(function(p){" +
+            "add(p.trim().split(/\\s+/)[0]);});}" +
+            // Anything a url can hang off, including the data-* attributes
+            // that lazy-loading libraries use in place of the real ones.
+            "var aAttr=['href','src','data','poster','data-src','data-href'," +
+            "'data-original','data-lazy','data-lazy-src','data-url','data-file','content'];" +
+            "Array.prototype.forEach.call(document.querySelectorAll('*'),function(e){" +
+            "aAttr.forEach(function(k){if(e.hasAttribute&&e.hasAttribute(k)){" +
+            "var v=e.getAttribute(k);" +
+            // meta content is only a url when the tag is one that carries one.
+            "if(k==='content'){var n=(e.getAttribute('property')||e.getAttribute('name')||'');" +
+            "if(!/image|url|audio|video/i.test(n))return;}" +
+            "add(v);}});" +
+            "addSet(e.getAttribute&&e.getAttribute('srcset'));" +
+            "addSet(e.getAttribute&&e.getAttribute('data-srcset'));" +
+            "addSet(e.getAttribute&&e.getAttribute('imagesrcset'));" +
+            // currentSrc resolves what the browser actually chose.
+            "if(e.currentSrc)add(e.currentSrc);" +
+            // Background images set inline or by a class.
+            "try{var bg=window.getComputedStyle(e).backgroundImage;" +
+            "if(bg&&bg!=='none'){var m=bg.match(/url\\((.*?)\\)/g);" +
+            "if(m)m.forEach(function(u){add(u.slice(4,-1).replace(/[\"']/g,''));});}}catch(e2){}" +
+            "});" +
+            // Rules inside same-origin stylesheets: fonts, sprites, icons.
+            "try{Array.prototype.forEach.call(document.styleSheets,function(ss){" +
+            "try{Array.prototype.forEach.call(ss.cssRules,function(r){" +
+            "var t=r.cssText||'';var m=t.match(/url\\((.*?)\\)/g);" +
+            "if(m)m.forEach(function(u){add(u.slice(4,-1).replace(/[\"']/g,''));});" +
+            "});}catch(e3){}});}catch(e4){}" +
+            "return JSON.stringify(Array.from(s));})()";
         var l = new List<string>();
         try {
             var d = oPage.send("Runtime.evaluate", new Dictionary<string, object> {
@@ -1411,6 +1513,7 @@ static class pageDriver {
 // ===========================================================================
 static class downloadEngine {
     static cdpClient oBrowser = null;
+    static bool bDownloadedAny = false;
 
     // Point browser-managed downloads at a directory. Re-issued for every
     // source, because each source writes into its own folder.
@@ -1450,10 +1553,32 @@ static class downloadEngine {
             logger.error(ex.ToString());
             return 1;
         } finally {
+            // Order matters: Browser.close travels over the CDP socket, so it
+            // has to go before disconnect(). A graceful close lets Edge write
+            // out its profile and shut its windows properly; the forced
+            // termination in shutdown() is only the backstop.
+            closeBrowser();
             disconnect();
             guiProgress.status("Closing Edge...");
             edgeLauncher.shutdown();
             guiProgress.close();
+            if (program.bMainProfile) {
+                program.notify("Edge was left open because your main profile was used.");
+            }
+        }
+    }
+
+    // Ask Edge to close every window of its own accord.
+    static void closeBrowser() {
+        if (program.bMainProfile) return;   // not ours to close
+        try {
+            if (oBrowser != null) {
+                oBrowser.send("Browser.close", new Dictionary<string, object>());
+                logger.info("Sent Browser.close.");
+                Thread.Sleep(300);          // let the windows actually go
+            }
+        } catch (Exception ex) {
+            logger.debug("Browser.close did not succeed: " + ex.Message);
         }
     }
 
@@ -1503,6 +1628,7 @@ static class downloadEngine {
         pauseForAuthenticationIfNeeded(sUrl);
 
         string sTitle = pageDriver.getTitle(oPage);
+        program.sCurrentPageUrl = sUrl;
         if (sTitle != "") program.notify("Page title: " + sTitle);
 
         // Each source gets its own folder under the output directory, named
@@ -1597,6 +1723,11 @@ static class downloadEngine {
                     i => {
                         aFound[i] = urlHelper.probeName(lAsk[i]);
                         Interlocked.Increment(ref iDone);
+                        // Pace the workers. With four of them pausing a
+                        // quarter second each, a server sees roughly sixteen
+                        // requests a second at most, which no ordinary site
+                        // treats as abuse.
+                        try { Thread.Sleep(program.iRequestGapMs); } catch { }
                     }));
 
             while (!oWork.Wait(150)) {
@@ -1623,17 +1754,15 @@ static class downloadEngine {
 
         if (guiProgress.bCancelled) return;
 
-        string sAccount = Util.stringPlural("link", lLinks.Count) + " examined";
-        if (iAskedCount > 0) {
-            sAccount += ", of which " + iAskedCount + " needed asking about (" +
-                Util.stringPlural("file", iFileCount) + ")";
-        }
-        if (lMatches.Count == 0) {
-            program.notify(sAccount + "; none matched " + program.sExtensions + ".");
-            return;
-        }
-        program.notify(sAccount + "; " +
-            Util.stringPlural("matching file", lMatches.Count) + " found.");
+        // The reader wants the shape of the result, not a description of how
+        // it was reached: how many links, how many matched. The mechanics of
+        // which links had to be asked about belong in the log.
+        logger.info("Examined " + lLinks.Count + " link(s); asked about " +
+            iAskedCount + "; " + iFileCount + " turned out to be files.");
+        string sAccount = Util.stringPlural("link", lLinks.Count) + ", " +
+            Util.stringPlural("match", lMatches.Count) + ".";
+        program.notify(sAccount);
+        if (lMatches.Count == 0) return;
         program.notify("Folder: " + Path.GetFileName(program.sTargetDir));
 
         int iN = 0;
@@ -1705,7 +1834,15 @@ static class downloadEngine {
     }
 
     static void downloadOne(string sFileUrl) {
+        if (program.bSimulate) {
+            // Deliberately before ensureDir: a simulation must leave no trace.
+            results.addWould(urlHelper.fileNameForUrl(sFileUrl), sFileUrl);
+            return;
+        }
         if (!urlHelper.ensureDir(program.sTargetDir)) return;
+        // A short pause between files, for the same reason as between probes.
+        if (bDownloadedAny) { try { Thread.Sleep(program.iDownloadGapMs); } catch { } }
+        bDownloadedAny = true;
         string sName = urlHelper.fileNameForUrl(sFileUrl);
         var oWatch = Stopwatch.StartNew();
 
@@ -1847,6 +1984,33 @@ static class httpFallback {
             oReq.UserAgent = getBrowserUserAgent(oPage);
             string sCookies = getBrowserCookies(oPage, sFileUrl);
             if (sCookies != "") oReq.Headers[HttpRequestHeader.Cookie] = sCookies;
+
+            // Present the request the way the browser would have presented it
+            // had the user clicked the link. Sites commonly gate downloads on
+            // the Referer, and some inspect the Sec-Fetch-* set that every
+            // modern browser sends; a request missing them looks like a
+            // scraper and gets a 403 or a login page instead of the file.
+            if (program.sCurrentPageUrl != "") {
+                try {
+                    oReq.Referer = program.sCurrentPageUrl;
+                    var oPageUri = new Uri(program.sCurrentPageUrl);
+                    var oFileUri = new Uri(sFileUrl);
+                    string sOrigin = oPageUri.Scheme + "://" + oPageUri.Authority;
+                    bool bSameSite = string.Equals(oPageUri.Host, oFileUri.Host,
+                        StringComparison.OrdinalIgnoreCase);
+                    oReq.Headers["Sec-Fetch-Site"] = bSameSite ? "same-origin" : "cross-site";
+                    if (!bSameSite) oReq.Headers["Origin"] = sOrigin;
+                } catch { }
+            }
+            oReq.Headers["Sec-Fetch-Dest"] = "document";
+            oReq.Headers["Sec-Fetch-Mode"] = "navigate";
+            oReq.Headers["Sec-Fetch-User"] = "?1";
+            oReq.Headers["Upgrade-Insecure-Requests"] = "1";
+            oReq.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9," +
+                "image/avif,image/webp,*/*;q=0.8";
+            oReq.Headers[HttpRequestHeader.AcceptLanguage] = "en-US,en;q=0.9";
+            try { oReq.AutomaticDecompression =
+                DecompressionMethods.GZip | DecompressionMethods.Deflate; } catch { }
 
             using (var oResp = (HttpWebResponse)oReq.GetResponse()) {
                 logger.info("HTTP " + (int)oResp.StatusCode + " " + oResp.StatusCode +
@@ -2047,6 +2211,16 @@ static class results {
     public static readonly List<string> lsDownloaded = new List<string>();
     public static readonly List<failure> lsFailed = new List<failure>();
     public static readonly List<string> lsSkipped = new List<string>();
+
+    // Test Fetch collects these instead of downloading. lsMatchedUrls is
+    // listed last and in full, so Control+C on the message box yields a block
+    // of addresses that can be pasted straight into a url list file.
+    public static readonly List<string> lsWould = new List<string>();
+    public static readonly List<string> lsMatchedUrls = new List<string>();
+    public static void addWould(string sName, string sUrl) {
+        lsWould.Add(sName);
+        if (!lsMatchedUrls.Contains(sUrl)) lsMatchedUrls.Add(sUrl);
+    }
     public static int iSourceFailures = 0;
     public static long iTotalBytes = 0;
     static readonly StringBuilder oCapture = new StringBuilder();
@@ -2067,11 +2241,49 @@ static class results {
     public static void addSourceFailure(string sUrl) { iSourceFailures++; }
 
     public static void capture(string sMsg) { oCapture.AppendLine(sMsg); }
+
+    // Clear everything between runs. Test fetch can be pressed repeatedly,
+    // and the results of one attempt must not bleed into the next.
+    public static void reset() {
+        oCapture.Length = 0;
+        lsDownloaded.Clear();
+        lsFailed.Clear();
+        lsSkipped.Clear();
+        lsWould.Clear();
+        lsMatchedUrls.Clear();
+        iTotalBytes = 0;
+        iSourceFailures = 0;
+    }
     public static string capturedText() { return oCapture.ToString(); }
 
     // Write the structured summary to the console (and therefore into the
     // GUI capture buffer and the log, via program.notify).
+    // What a real run would do, and nothing more. Ends with the addresses
+    // themselves so the whole box can be copied and the tail pasted into a
+    // list file.
+    public static void writeSimulation() {
+        program.notify("");
+        program.notify("SIMULATION -- nothing was downloaded and no folder was created.");
+        program.notify("");
+        if (lsWould.Count == 0) {
+            program.notify("Nothing would be downloaded.");
+        } else {
+            program.notify("Would download " + Util.stringPlural("file", lsWould.Count) + ":");
+            foreach (string sName in lsWould) program.notify("  " + sName);
+        }
+        if (iSourceFailures > 0) {
+            program.notify("");
+            program.notify("Could not load " + Util.stringPlural("source page", iSourceFailures) + ".");
+        }
+        if (lsMatchedUrls.Count > 0) {
+            program.notify("");
+            program.notify("Addresses (" + lsMatchedUrls.Count + "):");
+            foreach (string sUrl in lsMatchedUrls) program.notify(sUrl);
+        }
+    }
+
     public static void writeSummary(string sOutputDir) {
+        if (program.bSimulate) { writeSimulation(); return; }
         bool bGui = program.bGuiMode;
         int iDown = lsDownloaded.Count;
         int iFail = lsFailed.Count;
@@ -2217,6 +2429,9 @@ public static class guiDialog {
                     "What to download, separated by spaces or commas. Bare extensions and " +
                     "cmd.exe wildcard patterns both work, for example pdf, *.pdf, or *newsletter*.pdf.");
 
+                Button btnTest = dlg.addButton("&Test fetch...",
+                    "Report what would be downloaded, without downloading anything.");
+
                 dlg.addBand();
                 TextBox tbOut = dlg.addInputBox("&Output directory:", sOutputDir,
                     "The parent directory. Each source gets its own folder inside it, " +
@@ -2234,6 +2449,47 @@ public static class guiDialog {
                         tbSource.Focus();
                     }
                 };
+                btnTest.Click += (o, e) => {
+                    // Run the real pipeline against the values on screen, but
+                    // with bSimulate set so nothing is written. The dialog
+                    // stays open afterwards, so the user can adjust and try
+                    // again without starting over.
+                    string sSaveExt = program.sExtensions;
+                    string sSaveOut = program.sOutputDir;
+                    bool bSaveInv = program.bInvisible;
+                    try {
+                        program.sExtensions = tbExt.Text.Trim();
+                        program.sOutputDir = tbOut.Text.Trim();
+                        program.bSimulate = true;
+                        results.reset();
+                        var lTest = urlHelper.expandSources(
+                                program.splitSourceField(tbSource.Text).ToList());
+                        if (lTest.Count == 0) {
+                            MessageBox.Show(dlg.form, "No sources to test.",
+                                program.sProgramName + " - Test fetch",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        } else {
+                            downloadEngine.runAll(lTest,
+                                patternParser.parse(program.sExtensions));
+                            results.writeSummary(program.sOutputDir);
+                            MessageBox.Show(dlg.form, results.capturedText(),
+                                program.sProgramName + " - Test fetch",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    } catch (Exception ex) {
+                        MessageBox.Show(dlg.form, "Test fetch failed: " + ex.Message,
+                            program.sProgramName + " - Test fetch",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    } finally {
+                        program.bSimulate = false;
+                        program.sExtensions = sSaveExt;
+                        program.sOutputDir = sSaveOut;
+                        program.bInvisible = bSaveInv;
+                        results.reset();
+                        try { tbExt.Focus(); } catch { }
+                    }
+                };
+
                 btnChoose.Click += (o, e) => {
                     using (var dlgFolder = new FolderBrowserDialog()) {
                         dlgFolder.Description = "Choose the output directory";
@@ -2600,6 +2856,46 @@ public static class configManager {
 // DllNotFoundException on first use, Say.cs catches it, and speech falls
 // back to JAWS, Narrator, or SAPI exactly as before.
 // ===========================================================================
+// ===========================================================================
+// consoleWindow -- hide the console when urlFido was started from Explorer,
+// a shortcut, or the Alt+Control+U hotkey.
+//
+// The test is GetConsoleProcessList, following extCheck and 2htm: if exactly
+// ONE process is attached to the console, Windows created that console for
+// urlFido alone, so hiding it removes a window nobody asked for. If two or
+// more are attached, urlFido was run from an existing cmd.exe and that
+// console belongs to the user -- hiding it would take away their shell.
+// ===========================================================================
+static class consoleWindow {
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern uint GetConsoleProcessList([Out] uint[] aiProcessIds, uint iCount);
+
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr GetConsoleWindow();
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    const int iSwHide = 0;
+
+    public static bool launchedFromGui() {
+        try {
+            var aiList = new uint[16];
+            uint iCount = GetConsoleProcessList(aiList, (uint) aiList.Length);
+            return iCount == 1;
+        } catch {
+            return false;
+        }
+    }
+
+    public static void hide() {
+        try {
+            IntPtr hwnd = GetConsoleWindow();
+            if (hwnd != IntPtr.Zero) ShowWindow(hwnd, iSwHide);
+        } catch { }
+    }
+}
+
 static class nvdaLoader {
     // Must match the resource identifier passed to csc in buildUrlFido.cmd.
     const string sNvdaResourceName = "nvdaControllerClient.dll";

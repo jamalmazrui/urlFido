@@ -27,6 +27,11 @@ MIT License — <a href="https://github.com/JamalMazrui/urlFido">https://github.
 <li><a href="#dialog-editing-keys">Dialog Editing Keys</a></li>
 <li><a href="#source-lists">Source Lists</a></li>
 <li><a href="#command-line-options">Command-Line Options</a></li>
+<li><a href="#when-urlfido-has-finished">When urlFido Has Finished</a></li>
+<li><a href="#what-counts-as-a-file-on-the-page">What Counts as a File on the Page</a></li>
+<li><a href="#downloading-like-a-browser">Downloading Like a Browser</a></li>
+<li><a href="#being-a-good-citizen">Being a Good Citizen</a></li>
+<li><a href="#test-fetch">Test Fetch</a></li>
 <li><a href="#output-folders">Output Folders</a></li>
 <li><a href="#extensions-and-wildcards">Extensions and Wildcards</a></li>
 <li><a href="#how-downloading-works">How Downloading Works</a></li>
@@ -90,7 +95,7 @@ MIT License — <a href="https://github.com/JamalMazrui/urlFido">https://github.
 <h2 id="the-parameter-dialog">The Parameter Dialog</h2>
 <p>The dialog is arranged in bands — a band being a horizontal run of related controls. Each of the first three bands holds a label, its edit box, and, where one applies, the button that fills it in:</p>
 <pre><code>Source urls:       [__________________]  [ Browse source... ]
-File extensions:   [__________________]
+File extensions:   [__________________]  [ Test fetch...    ]
 Output directory:  [__________________]  [ Choose output... ]
 </code></pre>
 <p>Tab therefore moves from a field straight to the way of changing it, rather than past everything else to a button row at the bottom.</p>
@@ -187,7 +192,7 @@ Output directory:  [__________________]  [ Choose output... ]
 </tbody>
 </table>
 <h2 id="command-line-options">Command-Line Options</h2>
-<p>Sources are <strong>positional and repeating</strong>: list as many as you like, with no switch in front of them. Each may be a url, a local web page, or a text file of urls, and the forms can be mixed freely:</p>
+<p>Sources are <strong>positional and repeating</strong>: list as many as you like, with no switch in front of them. Each may be a url, a local web page, or a <strong>text file listing one url per line</strong>, and the forms can be mixed freely. In a list file, blank lines are ignored and a line starting with <code>#</code> or <code>;</code> is a comment, so entries can be annotated or commented out rather than deleted. Any existing file that is not itself a web page is read as a list, so <code>.txt</code>, <code>.lst</code>, <code>.urls</code>, or no extension at all all behave the same:</p>
 <pre><code>urlFido -e pdf -o &quot;C:\Downloads&quot; afb.org nfb.org &quot;C:\lists\more.txt&quot;
 </code></pre>
 <p>Everything else is a named option. Each one's short form is the same letter as its access key in the dialog, so <code>-e</code> and Alt+E reach the same setting, <code>-o</code> and Alt+O the same, and so on.</p>
@@ -225,6 +230,37 @@ example.org/reports
 </code></pre>
 <p>Blank lines are ignored. A line starting with <code>#</code> or <code>;</code> is a comment, so a list can be annotated and entries can be commented out rather than deleted. Each line is interpreted exactly as if you had typed it, so bare domains work, and a line naming a local <code>.htm</code> file is accepted too.</p>
 <p>Any existing file that is not a web page is read as a list, so <code>.txt</code>, <code>.lst</code>, <code>.urls</code>, or no extension at all all behave the same — there is no required extension to remember. urlFido reports how many urls it read, and names any line it could not use.</p>
+<h2 id="when-urlfido-has-finished">When urlFido Has Finished</h2>
+<p>urlFido closes the browser it opened. Edge is asked to close gracefully first, so it writes out its profile and shuts its windows properly; if anything survives, the whole process tree is terminated, since Edge spawns renderer and helper processes that outlive the one urlFido started. The temporary profile directory is then deleted. Nothing should be left on screen once the results appear.</p>
+<p>The exception is <strong>Main profile</strong> (<code>-m</code>): that browser is yours, with your tabs and your session, so urlFido leaves it running and says so in the summary rather than leaving you to wonder.</p>
+<h2 id="downloading-like-a-browser">Downloading Like a Browser</h2>
+<p>A file is often served only to a request that looks like it came from the page linking it. urlFido therefore presents each download the way Edge would have, had you clicked the link yourself:</p>
+<ul>
+<li>the <strong>cookies</strong> the browser holds for that site, read live from the running session, so anything behind a login works once you have signed in</li>
+<li>the browser's own <strong>User-Agent</strong></li>
+<li>a <strong>Referer</strong> naming the page the file was found on</li>
+<li><strong>Origin</strong> and <strong>Sec-Fetch-Site</strong> when the file lives on a different host, as a browser sends for a cross-site request</li>
+<li>the <strong>Sec-Fetch-Dest</strong>, <strong>Sec-Fetch-Mode</strong>, <strong>Sec-Fetch-User</strong> and <strong>Accept</strong> headers every modern browser sends, since a request missing them looks like a scraper and is answered with a 403 or a login page rather than the file</li>
+</ul>
+<p>The same Referer is sent when urlFido asks a server about an address, so a gated site answers the question and the download consistently.</p>
+<h2 id="being-a-good-citizen">Being a Good Citizen</h2>
+<p>urlFido paces itself. At most four requests are in flight at once, each worker pauses a quarter second between requests, and there is a short gap between downloads. A site therefore sees a steady trickle rather than a burst, which keeps urlFido from being throttled or blocked. The intent is that pointing it at a site should never look like an attack.</p>
+<h2 id="test-fetch">Test Fetch</h2>
+<p><strong>Test fetch</strong> (Alt+T) does everything a real run does — loads each page, examines it, works out what matches — but writes nothing. No file is downloaded and no folder is created. The report says what <em>would</em> happen:</p>
+<pre><code>SIMULATION -- nothing was downloaded and no folder was created.
+
+Would download 3 files:
+  VPAT2.5Rev-508.docx
+  VPAT2.5Rev-WCAG.docx
+  VPAT2.5Rev-INT.docx
+
+Addresses (3):
+https://www.itic.org/.../VPAT2.5Rev-508.docx
+https://www.itic.org/.../VPAT2.5Rev-WCAG.docx
+https://www.itic.org/.../VPAT2.5Rev-INT.docx
+</code></pre>
+<p>The addresses come last, and deliberately so: press Control+C on the message box and the whole report is on the clipboard, with a clean block of addresses at the end that can be pasted straight into a url list file.</p>
+<p>The dialog stays open afterwards, so you can adjust the extensions and try again without starting over.</p>
 <h2 id="output-folders">Output Folders</h2>
 <p>The output directory is a <strong>parent</strong>. Within it, each source gets its own folder named after the page title, so a run covering several sources produces output you can tell apart without opening anything:</p>
 <pre><code>Documents\
@@ -237,6 +273,20 @@ example.org/reports
 <p>The folder name keeps the title's own capitalization and spacing, because it is meant to be read in File Explorer. Only the characters Windows forbids are removed, and reserved device names are defanged. The title is not shortened to some arbitrary length: it is trimmed only when the file system would otherwise refuse the name, and the log says so when that happens.</p>
 <p><strong>A folder is created only when there is something to put in it.</strong> A page that yields no matching files leaves nothing behind, so browsing the output shows only the pages that actually produced downloads.</p>
 <p>If a folder for a page already exists, urlFido <strong>skips that source</strong> and leaves the earlier download untouched. <strong>Force overwrite</strong> (<code>-f</code>) removes the old folder and downloads afresh. The skip happens as soon as the title is known, so nothing is examined or fetched needlessly.</p>
+<h2 id="what-counts-as-a-file-on-the-page">What Counts as a File on the Page</h2>
+<p>Ask for <code>pdf</code> and you mean the documents. Ask for <code>jpg png</code> and you mean the pictures. Ask for <code>js css</code> and you mean the code and styling. urlFido treats all of these the same way, because the distinction between them is a matter of how the page happens to be written, not something anyone should have to think about.</p>
+<p>So it does not just read the links. It collects every url the page names, in every way a page can name one:</p>
+<ul>
+<li>links and image maps</li>
+<li>images, including <code>srcset</code> candidate lists and the <code>data-src</code> attributes that lazy-loading libraries use in place of the real ones</li>
+<li>scripts, stylesheets, icons, and preloaded resources</li>
+<li>video, audio, posters, captions, and their <code>source</code> elements</li>
+<li>frames, embeds, and objects</li>
+<li>background images, whether set inline or applied by a class</li>
+<li>urls inside same-origin stylesheet rules, which is where fonts and sprite sheets live</li>
+<li>social-media metadata tags that carry an image or video address</li>
+</ul>
+<p>Everything is resolved to an absolute address, duplicates are dropped, and anything that cannot be a file — <code>javascript:</code>, <code>mailto:</code>, <code>data:</code>, page anchors — is discarded before matching.</p>
 <h2 id="extensions-and-wildcards">Extensions and Wildcards</h2>
 <p>The File extensions field accepts a list separated by commas or spaces. Each entry is a <strong>cmd.exe-style wildcard pattern</strong>, and the short forms you are used to are simply shorthand that escalates to a full pattern:</p>
 <pre><code>pdf     is short for   .pdf     which is short for   *.pdf

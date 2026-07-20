@@ -14,6 +14,11 @@ MIT License — <https://github.com/JamalMazrui/urlFido>
 - [Dialog Editing Keys](#dialog-editing-keys)
 - [Source Lists](#source-lists)
 - [Command-Line Options](#command-line-options)
+- [When urlFido Has Finished](#when-urlfido-has-finished)
+- [What Counts as a File on the Page](#what-counts-as-a-file-on-the-page)
+- [Downloading Like a Browser](#downloading-like-a-browser)
+- [Being a Good Citizen](#being-a-good-citizen)
+- [Test Fetch](#test-fetch)
 - [Output Folders](#output-folders)
 - [Extensions and Wildcards](#extensions-and-wildcards)
 - [How Downloading Works](#how-downloading-works)
@@ -114,7 +119,7 @@ The dialog is arranged in bands — a band being a horizontal run of related con
 
 ```
 Source urls:       [__________________]  [ Browse source... ]
-File extensions:   [__________________]
+File extensions:   [__________________]  [ Test fetch...    ]
 Output directory:  [__________________]  [ Choose output... ]
 ```
 
@@ -178,7 +183,7 @@ Because the dialog is built from Lbc primitives, every text field offers the sha
 
 ## Command-Line Options
 
-Sources are **positional and repeating**: list as many as you like, with no switch in front of them. Each may be a url, a local web page, or a text file of urls, and the forms can be mixed freely:
+Sources are **positional and repeating**: list as many as you like, with no switch in front of them. Each may be a url, a local web page, or a **text file listing one url per line**, and the forms can be mixed freely. In a list file, blank lines are ignored and a line starting with `#` or `;` is a comment, so entries can be annotated or commented out rather than deleted. Any existing file that is not itself a web page is read as a list, so `.txt`, `.lst`, `.urls`, or no extension at all all behave the same:
 
 ```
 urlFido -e pdf -o "C:\Downloads" afb.org nfb.org "C:\lists\more.txt"
@@ -228,6 +233,50 @@ Blank lines are ignored. A line starting with `#` or `;` is a comment, so a list
 
 Any existing file that is not a web page is read as a list, so `.txt`, `.lst`, `.urls`, or no extension at all all behave the same — there is no required extension to remember. urlFido reports how many urls it read, and names any line it could not use.
 
+## When urlFido Has Finished
+
+urlFido closes the browser it opened. Edge is asked to close gracefully first, so it writes out its profile and shuts its windows properly; if anything survives, the whole process tree is terminated, since Edge spawns renderer and helper processes that outlive the one urlFido started. The temporary profile directory is then deleted. Nothing should be left on screen once the results appear.
+
+The exception is **Main profile** (`-m`): that browser is yours, with your tabs and your session, so urlFido leaves it running and says so in the summary rather than leaving you to wonder.
+
+## Downloading Like a Browser
+
+A file is often served only to a request that looks like it came from the page linking it. urlFido therefore presents each download the way Edge would have, had you clicked the link yourself:
+
+- the **cookies** the browser holds for that site, read live from the running session, so anything behind a login works once you have signed in
+- the browser's own **User-Agent**
+- a **Referer** naming the page the file was found on
+- **Origin** and **Sec-Fetch-Site** when the file lives on a different host, as a browser sends for a cross-site request
+- the **Sec-Fetch-Dest**, **Sec-Fetch-Mode**, **Sec-Fetch-User** and **Accept** headers every modern browser sends, since a request missing them looks like a scraper and is answered with a 403 or a login page rather than the file
+
+The same Referer is sent when urlFido asks a server about an address, so a gated site answers the question and the download consistently.
+
+## Being a Good Citizen
+
+urlFido paces itself. At most four requests are in flight at once, each worker pauses a quarter second between requests, and there is a short gap between downloads. A site therefore sees a steady trickle rather than a burst, which keeps urlFido from being throttled or blocked. The intent is that pointing it at a site should never look like an attack.
+
+## Test Fetch
+
+**Test fetch** (Alt+T) does everything a real run does — loads each page, examines it, works out what matches — but writes nothing. No file is downloaded and no folder is created. The report says what *would* happen:
+
+```
+SIMULATION -- nothing was downloaded and no folder was created.
+
+Would download 3 files:
+  VPAT2.5Rev-508.docx
+  VPAT2.5Rev-WCAG.docx
+  VPAT2.5Rev-INT.docx
+
+Addresses (3):
+https://www.itic.org/.../VPAT2.5Rev-508.docx
+https://www.itic.org/.../VPAT2.5Rev-WCAG.docx
+https://www.itic.org/.../VPAT2.5Rev-INT.docx
+```
+
+The addresses come last, and deliberately so: press Control+C on the message box and the whole report is on the clipboard, with a clean block of addresses at the end that can be pasted straight into a url list file.
+
+The dialog stays open afterwards, so you can adjust the extensions and try again without starting over.
+
 ## Output Folders
 
 The output directory is a **parent**. Within it, each source gets its own folder named after the page title, so a run covering several sources produces output you can tell apart without opening anything:
@@ -246,6 +295,23 @@ The folder name keeps the title's own capitalization and spacing, because it is 
 **A folder is created only when there is something to put in it.** A page that yields no matching files leaves nothing behind, so browsing the output shows only the pages that actually produced downloads.
 
 If a folder for a page already exists, urlFido **skips that source** and leaves the earlier download untouched. **Force overwrite** (`-f`) removes the old folder and downloads afresh. The skip happens as soon as the title is known, so nothing is examined or fetched needlessly.
+
+## What Counts as a File on the Page
+
+Ask for `pdf` and you mean the documents. Ask for `jpg png` and you mean the pictures. Ask for `js css` and you mean the code and styling. urlFido treats all of these the same way, because the distinction between them is a matter of how the page happens to be written, not something anyone should have to think about.
+
+So it does not just read the links. It collects every url the page names, in every way a page can name one:
+
+- links and image maps
+- images, including `srcset` candidate lists and the `data-src` attributes that lazy-loading libraries use in place of the real ones
+- scripts, stylesheets, icons, and preloaded resources
+- video, audio, posters, captions, and their `source` elements
+- frames, embeds, and objects
+- background images, whether set inline or applied by a class
+- urls inside same-origin stylesheet rules, which is where fonts and sprite sheets live
+- social-media metadata tags that carry an image or video address
+
+Everything is resolved to an absolute address, duplicates are dropped, and anything that cannot be a file — `javascript:`, `mailto:`, `data:`, page anchors — is discarded before matching.
 
 ## Extensions and Wildcards
 

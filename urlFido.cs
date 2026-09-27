@@ -1,6 +1,9 @@
 ﻿// urlFido.cs — Download files from web pages by extension, driving real Microsoft Edge
 // Copyright (c) 2026 Jamal Mazrui — MIT License — https://github.com/JamalMazrui/urlFido
-// Compile: buildUrlFido.cmd (Roslyn csc, /platform:x64, .NET Framework 4.8)
+// Compile: buildUrlFido.cmd (Roslyn csc, /platform:x64, .NET Framework 4.8),
+//          with Version.cs and the Homer classes from C:\HomerDev\CSharp
+//          (Elevate, Inix, Lbc, Log, Paths, Say, Util, Web); the program
+//          lands in exec\urlFido.exe
 // Usage:   urlFido [options] <url, local html file, or url-list text file> [...]
 //          urlFido -g          (GUI parameter dialog)
 //
@@ -130,14 +133,19 @@ static class program {
         "acb.org afb.org nfb.org wbu.ngo";
     public const string sLogFileName = "urlFido.log";
     public const string sProgramName = "urlFido";
-    // Keep in step with sAppVersion in urlFido_setup.iss. tagRelease tags
-    // the version stamped into urlFido_setup.exe, so a mismatch here would
-    // make -v report something the release does not.
-    public const string sProgramVersion = "1.1.0";
+    // From version.txt, through the Version.cs the build writes on every
+    // build, so -v, the log, F11 and the installer report one number.
+    public const string sProgramVersion = BuildVersion.Version;
+    // Elevate asks this GitHub owner's urlFido releases whether a newer
+    // version exists (F11, and the version section of the Help box).
+    public const string c_sGitHubOwner = "JamalMazrui";
+    // Settings from before the move to the kit, directly under
+    // %LOCALAPPDATA%\urlFido rather than in its configs folder.
+    public const string c_sLegacyConfigFolder = "urlFido";
     public const string sReadmeUrl = "https://github.com/JamalMazrui/urlFido#readme";
     public const string sUsage =
         "Usage: urlFido [options] <url, local html file, or url-list text file> [...]";
-    public const string sUserAgentSuffix = " urlFido/1.1.0";
+    public const string sUserAgentSuffix = " urlFido/" + BuildVersion.Version;
     public const string sWebdriverOverrideScript =
         "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });";
 
@@ -451,8 +459,11 @@ static class program {
         Console.WriteLine("                             Overrides --invisible.");
         Console.WriteLine("  -m, --main-profile         Use your real Edge profile so saved logins and");
         Console.WriteLine("                             cookies apply. Requires Edge to be fully closed.");
-        Console.WriteLine("  -u, --use-configuration    Load saved settings from " + sConfigFileName + ".");
-        Console.WriteLine("  -l, --log                  Write " + sLogFileName + " to the output directory.");
+        Console.WriteLine("  -u, --use-configuration    Load saved settings from");
+        Console.WriteLine("                             %LOCALAPPDATA%\\urlFido\\configs\\" + sConfigFileName + ".");
+        Console.WriteLine("  -l, --log                  Also write " + sLogFileName + " to the output directory.");
+        Console.WriteLine("                             A session log is always kept in");
+        Console.WriteLine("                             %LOCALAPPDATA%\\urlFido\\logs.");
         Console.WriteLine("  --view-output              Open the output directory when done.");
         Console.WriteLine("  -h, --help                 Show this help. -v, --version shows the version.");
         Console.WriteLine();
@@ -2141,7 +2152,6 @@ static class guiProgress {
             // label or its accessible role.
             var btnCancel = new Button();
             btnCancel.Text = "&Cancel";
-            btnCancel.AccessibleName = "Cancel";
             btnCancel.Location = new System.Drawing.Point(356, 76);
             btnCancel.Size = new System.Drawing.Size(110, 28);
             btnCancel.TabIndex = 0;
@@ -2440,6 +2450,20 @@ public static class guiDialog {
                     "Choose the directory to download into.");
                 dlg.endBand();
 
+                // F11: is there a newer urlFido on the web? (Elevate sounds
+                // like eleven.) Claimed before any control sees the key. When
+                // the setup program starts, this copy steps aside.
+                dlg.commandKey = k => {
+                    if (k != Keys.F11) return false;
+                    logger.info("F11: checking the web for a newer version");
+                    if (Elevate.offer(dlg.form)) {
+                        logger.info("F11: the setup program was started; closing the dialog");
+                        dlg.form.DialogResult = DialogResult.Cancel;
+                        dlg.form.Close();
+                    }
+                    return true;
+                };
+
                 bark.ready();
 
                 btnBrowse.Click += (o, e) => {
@@ -2516,7 +2540,7 @@ public static class guiDialog {
                 CheckBox cbView = dlg.addCheckBox("&View output", bView,
                     "Open the output directory in File Explorer when the run finishes.");
                 CheckBox cbLog = dlg.addCheckBox("&Log session", bLog,
-                    "Write a fresh " + program.sLogFileName + " to the output directory.");
+                    "Also write " + program.sLogFileName + " to the output directory. A session log is always kept in %LOCALAPPDATA%\\urlFido\\logs.");
                 CheckBox cbUseCfg = dlg.addCheckBox("&Use configuration", bUseCfg,
                     "Load settings at startup and save them on OK, in " + program.sConfigFileName + ".");
 
@@ -2654,13 +2678,19 @@ public static class logger {
         writer = null;
     }
 
-    public static void info(string sMsg) { write("INFO", sMsg); }
-    public static void debug(string sMsg) { write("DEBUG", sMsg); }
-    public static void warn(string sMsg) { write("WARN", sMsg); }
-    public static void error(string sMsg) { write("ERROR", sMsg); }
+    // EVERY LINE ALSO GOES TO THE SESSION LOG that Homer's Log keeps in
+    // %LOCALAPPDATA%\urlFido\logs, one file per run, whatever the options, so
+    // a failure always leaves a record. urlFido.log in the output directory
+    // (-l) stays what it was: an extra copy that travels with the downloads.
+    public static void info(string sMsg) { Log.info(sMsg); write("INFO", sMsg); }
+    public static void debug(string sMsg) { Log.line("DEBUG  " + sMsg); write("DEBUG", sMsg); }
+    public static void warn(string sMsg) { Log.warn(sMsg); write("WARN", sMsg); }
+    public static void error(string sMsg) { Log.error(sMsg); write("ERROR", sMsg); }
 
     public static void header(string sName, string sVersion,
             List<KeyValuePair<string, string>> lParams) {
+        Log.section("Settings");
+        if (lParams != null) foreach (var o in lParams) Log.keyValue(o.Key, o.Value);
         if (writer == null) return;
         try {
             writer.WriteLine("=== " + sName + " " + sVersion + " ===");
@@ -2702,7 +2732,10 @@ public static class logger {
 
 // ===========================================================================
 // configManager — settings persistence at
-// %LOCALAPPDATA%\urlFido\urlFido.inix, opt-in via -u / Use configuration.
+// %LOCALAPPDATA%\urlFido\configs\urlFido.inix (Homer's Paths.configs()),
+// opt-in via -u / Use configuration. A urlFido.inix left directly under
+// %LOCALAPPDATA%\urlFido by a version before 1.2.0 is read when the new one
+// does not exist yet, and removed the first time the new one is saved.
 //
 // .inix is the Homer superset of classic .ini (order-preserving round-trip,
 // implicit [Global], verbatim multi-line values). urlFido uses the plain
@@ -2714,37 +2747,56 @@ public static class configManager {
     const string sSettingsSection = "Settings";
 
     public static string getConfigDir() {
-        string sAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(sAppData, program.sConfigDirName);
+        return Paths.configs();
     }
 
     public static string getConfigPath() {
         return Path.Combine(getConfigDir(), program.sConfigFileName);
     }
 
-    public static bool configExists() {
-        try { return File.Exists(getConfigPath()); } catch { return false; }
+    public static string getLegacyPath() {
+        string sAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        return Path.Combine(Path.Combine(sAppData, program.c_sLegacyConfigFolder), program.sConfigFileName);
     }
 
-    public static void eraseAll() {
-        string sDir = getConfigDir();
+    // The file to read: the new one, else the old one, else the new name.
+    public static string getReadPath() {
         string sPath = getConfigPath();
-        try { if (File.Exists(sPath)) { File.Delete(sPath); logger.info("Deleted configuration file: " + sPath); } }
-        catch (Exception ex) { logger.info("Could not delete configuration file " + sPath + ": " + ex.Message); }
+        try { if (!File.Exists(sPath) && File.Exists(getLegacyPath())) return getLegacyPath(); } catch { }
+        return sPath;
+    }
+
+    public static bool configExists() {
+        try { return File.Exists(getConfigPath()) || File.Exists(getLegacyPath()); } catch { return false; }
+    }
+
+    // Once the new file is written, the old one has nothing left to say.
+    static void retireLegacy() {
+        string sOld = getLegacyPath();
         try {
-            if (Directory.Exists(sDir)) {
-                bool bEmpty = !Directory.EnumerateFileSystemEntries(sDir).GetEnumerator().MoveNext();
-                if (bEmpty) { Directory.Delete(sDir); logger.info("Removed empty configuration directory: " + sDir); }
+            if (File.Exists(sOld) && File.Exists(getConfigPath())) {
+                File.Delete(sOld);
+                logger.info("Removed the old " + sOld + "; the settings are now in " + getConfigPath());
             }
-        } catch (Exception ex) { logger.info("Could not remove configuration directory " + sDir + ": " + ex.Message); }
+        } catch (Exception ex) { logger.warn("Could not remove the old " + sOld + ": " + ex.Message); }
+    }
+
+    // Both the settings file and one left by a version before 1.2.0. The
+    // folders stay: %LOCALAPPDATA%\urlFido also holds the session logs.
+    public static void eraseAll() {
+        foreach (string sPath in new string[] { getConfigPath(), getLegacyPath() }) {
+            try { if (File.Exists(sPath)) { File.Delete(sPath); logger.info("Deleted configuration file: " + sPath); } }
+            catch (Exception ex) { logger.info("Could not delete configuration file " + sPath + ": " + ex.Message); }
+        }
     }
 
     // Read the [Settings] section into a plain dictionary. Returns an empty
     // dictionary when the file is absent or unreadable.
     static Dictionary<string, string> readSettings() {
         var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string sPath = getConfigPath();
+        string sPath = getReadPath();
         if (!File.Exists(sPath)) return d;
+        logger.info("Reading configuration from " + sPath);
         try {
             foreach (InixCodec.Section oSec in InixCodec.read(sPath)) {
                 if (!string.Equals(oSec.Name, sSettingsSection, StringComparison.OrdinalIgnoreCase) &&
@@ -2790,6 +2842,9 @@ public static class configManager {
         string sPath = getConfigPath();
         try {
             if (!Directory.Exists(sDir)) Directory.CreateDirectory(sDir);
+            // The first save after the move to the kit starts from the old
+            // file, so a comment or key a person added by hand comes along.
+            if (!File.Exists(sPath) && File.Exists(getLegacyPath())) File.Copy(getLegacyPath(), sPath);
             // InixCodec.writeValue preserves any other sections, keys, and
             // comments the user may have added by hand.
             InixCodec.writeValue(sPath, sSettingsSection, "SourceUrls",      sSource ?? "");
@@ -2802,6 +2857,7 @@ public static class configManager {
             InixCodec.writeValue(sPath, sSettingsSection, "ViewOutput",      yn(bView));
             InixCodec.writeValue(sPath, sSettingsSection, "LogSession",      yn(bLog));
             logger.info("Saved configuration to " + sPath);
+            retireLegacy();
         } catch (Exception ex) {
             string sMsg = "Could not save configuration to:\r\n" + sPath + "\r\n\r\n" + ex.Message;
             Console.Error.WriteLine(sMsg);
@@ -2961,8 +3017,29 @@ class urlFido {
     [STAThread]
     static int Main(string[] aArgs) {
         // Must run before the first Say call, so the module is already in
-        // the process when Say.cs's DllImport resolves by base name.
+        // the process when Say.cs's DllImport resolves by base name. The
+        // session log's header asks Say which reader is running, so the log
+        // starts after this, not before.
         nvdaLoader.preload();
-        return program.run(aArgs);
+        // ONE SESSION LOG, ALWAYS: %LOCALAPPDATA%\urlFido\logs\
+        // urlFido-yyyyMMdd-HHmmss.log, with the environment already in it.
+        Log.start(program.sProgramName);
+        Log.keyValue("NVDA client loaded", nvdaLoader.bLoaded ? "yes" : "no");
+        // F11 and the Help box's version section ask GitHub through this.
+        Elevate.configure(program.c_sGitHubOwner, program.sProgramName, program.sProgramVersion);
+        int iExit = 1;
+        try {
+            iExit = program.run(aArgs);
+        } catch (Exception ex) {
+            // Whatever run() did not catch is recorded with its stack, and
+            // the console names the log rather than showing a trace.
+            Log.exception(ex);
+            Console.Error.WriteLine("urlFido stopped: " + ex.Message);
+            Console.Error.WriteLine("The session log has the details: " + Log.path);
+            iExit = 1;
+        }
+        Log.info("Exit code " + iExit);
+        Log.close();
+        return iExit;
     }
 }

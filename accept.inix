@@ -1,0 +1,34 @@
+﻿; accept.inix -- what "done" means for urlFido, checked by scripts\check.
+; Each [check] runs a command in the project folder; Expect is its exit code
+; and Wants, when given, a string its output must contain.
+
+[check]
+Name   = the help names the configuration switch
+Run    = exec\urlFido.exe --help
+Expect = 0
+Wants  = --use-configuration
+
+[check]
+Name   = the help names the log folder
+Run    = exec\urlFido.exe --help
+Expect = 0
+Wants  = urlFido\logs
+
+[check]
+Name   = the program reports the version the build wrote
+Run    = exec\urlFido.exe --version
+Expect = 0
+Wants  = urlFido
+
+[check]
+Name   = the command-line wrapper finds the program in exec
+Run    = urlFido.cmd --version
+Expect = 0
+Wants  = urlFido
+
+[check]
+Name   = the installer ships the full guide
+; findstr reads a backslash as an escape even in /c: text, so it is doubled;
+; written singly, the backslash was dropped from the search and it failed.
+Run    = findstr /l /c:"help\\*.htm" urlFido_setup.iss
+Expect = 0

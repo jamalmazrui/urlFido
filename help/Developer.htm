@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jamal Mazrui" />
+  <title>Developer</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Developer</h1>
+<p class="author">Jamal Mazrui</p>
+</header>
+<h1 id="urlfido-developer-notes">urlFido Developer Notes</h1>
+<p>How urlFido is built, released and laid out. Since 1.2.0 it is built
+on the Homer Development Kit (HomerDev), kit 1.43.2 or later, in
+<code>C:\HomerDev</code>.</p>
+<h2 id="the-project-folder">The project folder</h2>
+<p><code>C:\urlFido</code> mirrors the installed tree:</p>
+<ul>
+<li>At the top: <code>urlFido.cs</code> (the program),
+<code>buildUrlFido.cmd</code>, <code>urlFido_setup.iss</code>,
+<code>urlFido.cmd</code>, <code>urlFido.ico</code>,
+<code>urlFido.png</code> (the 1024-pixel master of the icon),
+<code>urlFido.wav</code> (the bark), <code>accept.inix</code>,
+<code>RepoFiles.txt</code>, <code>LocalFiles.txt</code>,
+<code>ReadMe</code> and <code>License</code>.</li>
+<li><code>exec</code> — the built <code>urlFido.exe</code>. Never in
+git.</li>
+<li><code>help</code> — this document and the others:
+<code>urlFido</code> (the guide), <code>Announce</code>,
+<code>Developer</code>, <code>History</code>, <code>Hotkeys</code>, each
+as <code>.md</code> and <code>.htm</code>.</li>
+<li><code>logs</code> — one log per run of the build or any tool.</li>
+<li><code>scripts</code> — the kit’s tools, refreshed from
+<code>C:\HomerDev\scripts</code> by every build.</li>
+<li><code>work</code> — fetched build inputs:
+<code>work\nvda\nvdaControllerClient.dll</code>. Never in git.</li>
+</ul>
+<p><code>version.txt</code> holds the version and lives only on this
+machine. The build writes <code>Version.cs</code> from it, and the
+installer reads it directly.</p>
+<h2 id="the-four-steps">The four steps</h2>
+<ol type="1">
+<li><code>buildUrlFido</code> — steps the version
+(<code>buildUrlFido nobump</code> keeps it), compiles
+<code>exec\urlFido.exe</code>, writes each <code>.htm</code> from its
+<code>.md</code>, puts the project’s files in the Homer encoding, checks
+that the installer ships every file in <code>help</code>, and builds
+<code>urlFido_setup.exe</code>. Its log is
+<code>logs\urlFido-build-yyyyMMdd-HHmmss.log</code>.</li>
+<li><code>scripts\push "message"</code> — rewrites the whitelist
+<code>.gitignore</code> from <code>RepoFiles.txt</code>, commits and
+pushes.</li>
+<li><code>scripts\tidy</code> and <code>scripts\tidy --do-it</code> —
+the periodic clean.</li>
+<li><code>scripts\release</code> — runs <code>scripts\check</code>, then
+tags the pushed commit with the version stamped in
+<code>urlFido_setup.exe</code> and publishes the installer. The
+published installer is always at the releases page’s
+<code>latest/download/urlFido_setup.exe</code>.</li>
+</ol>
+<p>Try the fresh build with <code>urlFido -g</code> (the
+<code>urlFido.cmd</code> at the top runs
+<code>exec\urlFido.exe</code>).</p>
+<h2 id="what-the-build-fetches">What the build fetches</h2>
+<p>Nothing is fetched by hand. The build finds the Roslyn C# compiler
+with <code>vswhere</code>, or installs the free Visual Studio Build
+Tools with winget. The Framework’s own <code>csc.exe</code> stops at C#
+5 and cannot compile the kit. It fetches NVDA’s controller client,
+64-bit, from NV Access’s published <code>controllerClient.zip</code>
+into <code>work\nvda</code> and embeds it; <code>nvdaLoader</code>
+writes it to <code>%LOCALAPPDATA%\urlFido</code> and loads it only when
+NVDA is running. It installs pandoc and Inno Setup with winget when they
+are missing.</p>
+<h2 id="the-kits-classes">The kit’s classes</h2>
+<p>urlFido compiles eight of them straight from
+<code>C:\HomerDev\CSharp</code>: Elevate, Inix, Lbc, Log, Paths, Say,
+Util and Web. The copies of Inix, Lbc, Say, Util and Web that urlFido
+used to carry are deleted by the build once the kit’s are there; they
+had drifted from the kit’s. Lbc needs Elevate (its Help box offers the
+update), Log and Paths, which is why those three are compiled in
+too.</p>
+<ul>
+<li><code>Log</code> keeps the session log in
+<code>%LOCALAPPDATA%\urlFido\logs</code>. urlFido’s own
+<code>logger</code> class writes every line to it as well as to the
+optional <code>urlFido.log</code>, and <code>Main</code> records
+anything <code>program.run</code> did not catch.</li>
+<li><code>Paths.configs()</code> is where <code>urlFido.inix</code>
+lives.</li>
+<li><code>Elevate</code> answers F11, claimed through the dialog’s
+<code>commandKey</code>.</li>
+</ul>
+<p>It drives Edge over the Chrome DevTools Protocol using only .NET
+Framework classes (<code>System.Net.WebSockets.ClientWebSocket</code>
+for the connection and
+<code>System.Web.Script.Serialization.JavaScriptSerializer</code> for
+JSON), the wire protocol Playwright uses, so urlFido reproduces
+urlCheck’s browser-driving behavior without a Node.js driver or a
+bundled browser.</p>
+<h2 id="conventions">Conventions</h2>
+<ul>
+<li>Camel Type for C#, as
+<code>C:\HomerDev\help\CamelType_CSharp.md</code> describes. Constants
+added since the move to the kit carry the <code>c_</code> prefix.</li>
+<li>urlFido shares identifier names with urlCheck, extCheck and 2htm:
+<code>sProgramName</code>, <code>sProgramVersion</code>,
+<code>sConfigFileName</code>, <code>sLogFileName</code>,
+<code>sOutputDir</code>, and the <code>logger</code> surface
+<code>open</code>, <code>close</code>, <code>info</code>,
+<code>warn</code>, <code>error</code>.</li>
+<li>The icon is original artwork generated by script;
+<code>urlFido.ico</code> carries the 16 to 256 pixel sizes and is
+embedded at build time.</li>
+<li>“url” is written in lower case throughout, as the guide
+explains.</li>
+</ul>
+</body>
+</html>

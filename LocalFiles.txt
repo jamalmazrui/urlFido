@@ -1,0 +1,30 @@
+﻿# LocalFiles.txt -- what belongs to urlFido on this disk, but never in the repository.
+#
+# tidy keeps these where they are, and writes each line into .gitignore
+# as never pushed. One path or pattern a line; a trailing slash means a folder.
+
+# The built program, the installer, and what the build fetches: all made by
+# buildUrlFido, none of them authored. work\nvda holds NVDA's controller
+# client, which is LGPL-licensed and embedded, not redistributed as source.
+exec/
+urlFido_setup.exe
+work/
+
+# One log per run of anything.
+logs/
+
+# Private notes, and what tidy moves aside.
+notes/
+
+# Written by every build from version.txt, which lives only on this machine.
+Version.cs
+version.txt
+
+# The release scripts belong to the separate tagRelease project and stay out
+# of every repository; so do the one-time repository bootstrap and the bark's
+# generator.
+createUrlFido.cmd
+createUrlFido.ps1
+downloadBark.py
+scripts/release.cmd
+scripts/release.ps1

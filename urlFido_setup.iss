@@ -162,7 +162,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\exec\{#AppExeName}"; Paramete
 ; outer pair correctly.
 FileName: "{cmd}"; \
   Parameters: "/c echo launch > ""{localappdata}\{#AppName}\logs\{#AppName}_launch.flag"""; \
-  Description: "Launch {#AppName} now (desktop hotkey: {#HotKeyDisplay})"; \
+  Description: "Launch {#AppName} (desktop hotkey {#HotKeyDisplay})"; \
   Flags: postinstall skipifsilent runhidden runasoriginaluser
 
 FileName: "{app}\help\{#AppName}.htm"; \
@@ -316,7 +316,7 @@ begin
   if sActions <> '' then sBody := sBody + #13#10 + #13#10 + sActions;
   sBody := sBody + #13#10 + #13#10
          + 'Logs are kept in ' + ExpandConstant('{localappdata}\{#AppName}\logs') + '.';
-  MsgBox(sBody, mbInformation, MB_OK);
+  homerResultsBox(sBody);
   startIfAsked();
 end;
 

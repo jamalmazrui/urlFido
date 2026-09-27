@@ -7,6 +7,7 @@ author: "Jamal Mazrui"
 
 ## Version 1.2.0 (September 2026)
 
+- **Setup.** The Results box at the end of setup is titled "urlFido Setup Results", and the finish page uses the Homer wording: the verb first, no "recommended", and "Launch urlFido (desktop hotkey ...)".
 - **Built with HomerDev 1.43.19.** The build refreshes the kit's tools under their current names, and the ones that call each other now find each other; `scripts\tidy`, `scripts\check` and `scripts\release` carry the day's fixes, among them a release that publishes a draft and confirms it is GitHub's latest.
 - The acceptance check that the installer ships the documents searched with a single backslash, which findstr reads as an escape, so it never matched; it is doubled now.
 ### What's new

@@ -59,7 +59,7 @@ set "progFiles=%ProgramFiles%"
 
 rem ---- SETTINGS: the part an app edits -------------------------------
 rem The oldest kit with everything this build uses.
-set "kitNeeded=1.43.19"
+set "kitNeeded=1.43.20"
 rem The number to start from when version.txt is missing. A newer release
 rem tag, if the repository has one, wins; so does nothing lower than this.
 rem urlFido's last hand-numbered release was 1.1.0; the first built from

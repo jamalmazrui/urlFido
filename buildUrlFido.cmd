@@ -19,7 +19,7 @@ rem     one past its newest release tag, never from 1.0.0 over a released
 rem     app, and written into Version.cs as BuildVersion.Version;
 rem   - the program goes to exec\, as in the installed tree;
 rem   - the kit's classes are NOT copied: each module named in homerModules
-rem     is compiled straight from C:\HomerDev\CSharp, and a stale copy of a
+rem     is compiled straight from C:\HomerDev\exec\CSharp, and a stale copy of a
 rem     kit class at the top of the project is deleted once the kit's is here;
 rem   - the compiler is Roslyn, found with vswhere or installed with winget
 rem     as the free Build Tools. The Framework's own csc stops at C# 5 and
@@ -59,7 +59,7 @@ set "progFiles=%ProgramFiles%"
 
 rem ---- SETTINGS: the part an app edits -------------------------------
 rem The oldest kit with everything this build uses.
-set "kitNeeded=1.43.22"
+set "kitNeeded=1.43.29"
 rem The number to start from when version.txt is missing. A newer release
 rem tag, if the repository has one, wins; so does nothing lower than this.
 rem urlFido's last hand-numbered release was 1.1.0; the first built from
@@ -71,7 +71,7 @@ rem launched from Explorer or its desktop hotkey it hides its own console.
 set "cscTarget=exe"
 rem The kit classes the program uses, alphabetical. Lbc needs Elevate (its
 rem Help box offers the update), Log, Paths, Say and Util; Log needs Paths and
-rem Say; Mdi needs KeyMap. Each is compiled from C:\HomerDev\CSharp.
+rem Say; Mdi needs KeyMap. Each is compiled from C:\HomerDev\exec\CSharp.
 set "homerModules=Elevate Inix Lbc Log Paths Say Util Web"
 rem The app's own sources beside urlFido.cs, if any, space separated.
 set "appSources="
@@ -133,9 +133,9 @@ echo Building %app%. The log is %log%
 
 rem ---- the Homer Development Kit -------------------------------------
 set "homerDev="
-if defined HomerDev if exist "%HomerDev%\CSharp\Lbc.cs" set "homerDev=%HomerDev%"
-if not defined homerDev if exist "C:\HomerDev\CSharp\Lbc.cs" set "homerDev=C:\HomerDev"
-if not defined homerDev if exist "%CD%\CSharp\Lbc.cs" set "homerDev=%CD%"
+if defined HomerDev if exist "%HomerDev%\exec\CSharp\Lbc.cs" set "homerDev=%HomerDev%"
+if not defined homerDev if exist "C:\HomerDev\exec\CSharp\Lbc.cs" set "homerDev=C:\HomerDev"
+if not defined homerDev if exist "%CD%\exec\CSharp\Lbc.cs" set "homerDev=%CD%"
 if not defined homerDev (
   echo %app% needs the Homer Development Kit and cannot find it.
   echo Unzip HomerDev.zip into C:\HomerDev, or set the HomerDev environment variable.
@@ -250,8 +250,8 @@ goto :failed
 rem ---- the kit's classes, and the stale copies they replace ---------------
 set "homerSources="
 for %%M in (!homerModules!) do (
-  if exist "!homerDev!\CSharp\%%M.cs" (
-    set "homerSources=!homerSources! "!homerDev!\CSharp\%%M.cs""
+  if exist "!homerDev!\exec\CSharp\%%M.cs" (
+    set "homerSources=!homerSources! "!homerDev!\exec\CSharp\%%M.cs""
   ) else (
     echo The kit has no CSharp\%%M.cs. Update HomerDev to !kitNeeded! or later.
     >> "%log%" echo ERROR: NOT IN THE KIT: CSharp\%%M.cs
@@ -260,7 +260,7 @@ for %%M in (!homerModules!) do (
 )
 >> "%log%" echo Kit sources: !homerSources!
 for %%F in (!kitClasses!) do (
-  if exist "%%F" if exist "!homerDev!\CSharp\%%F" (
+  if exist "%%F" if exist "!homerDev!\exec\CSharp\%%F" (
     del /q "%%F" && >> "%log%" echo Removed the app's own copy of %%F; the kit's is compiled instead
   )
 )
@@ -493,6 +493,15 @@ endlocal
 exit /b 0
 
 :failed
+rem A FAILED BUILD TAKES NO NUMBER (HomerDev 1.43.29). version.txt is stepped
+rem when a build begins; when it fails, the number goes back, so the next build
+rem takes it again and the release never finds an installer one version behind
+rem version.txt (HomerScribe, 28 September 2026: 1.0.260 stepped, the kit not
+rem found, the release refused).
+if defined verOld if not "!ver!"=="!verOld!" (
+  > version.txt echo !verOld!
+  >> "%log%" echo Version: restored to !verOld!; a failed build takes no number
+)
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ss.fffzzz'"`) do set "sIso=%%i"
 >> "%log%" echo %sIso% ERROR build end result=failed
 echo Build failed. The log is %log%

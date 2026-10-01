@@ -1,6 +1,6 @@
 ﻿// urlFido.cs — Download files from web pages by extension, driving real Microsoft Edge
 // Copyright (c) 2026 Jamal Mazrui — MIT License — https://github.com/JamalMazrui/urlFido
-// Compile: buildUrlFido.cmd (Roslyn csc, /platform:x64, .NET Framework 4.8),
+// Compile: build.cmd (Roslyn csc, /platform:x64, .NET Framework 4.8),
 //          with Version.cs and the Homer classes from C:\HomerDev\CSharp
 //          (Elevate, Inix, Lbc, Log, Paths, Say, Util, Web); the program
 //          lands in exec\urlFido.exe
@@ -2953,7 +2953,7 @@ static class consoleWindow {
 }
 
 static class nvdaLoader {
-    // Must match the resource identifier passed to csc in buildUrlFido.cmd.
+    // Must match the resource identifier passed to csc in build.cmd.
     const string sNvdaResourceName = "nvdaControllerClient.dll";
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

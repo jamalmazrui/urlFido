@@ -11,7 +11,7 @@ How urlFido is built, released and laid out. Since 1.2.0 it is built on the Home
 
 `C:\urlFido` mirrors the installed tree:
 
-- At the top: `urlFido.cs` (the program), `buildUrlFido.cmd`, `urlFido_setup.iss`, `urlFido.cmd`, `urlFido.ico`, `urlFido.png` (the 1024-pixel master of the icon), `urlFido.wav` (the bark), `accept.inix`, `RepoFiles.txt`, `LocalFiles.txt`, `ReadMe` and `License`.
+- At the top: `urlFido.cs` (the program), `build.cmd`, `urlFido_setup.iss`, `urlFido.cmd`, `urlFido.ico`, `urlFido.png` (the 1024-pixel master of the icon), `urlFido.wav` (the bark), `accept.inix`, `RepoFiles.txt`, `LocalFiles.txt`, `ReadMe` and `License`.
 - `exec` — the built `urlFido.exe`. Never in git.
 - `help` — this document and the others: `urlFido` (the guide), `Announce`, `Developer`, `History`, `Hotkeys`, each as `.md` and `.htm`.
 - `logs` — one log per run of the build or any tool.
@@ -22,7 +22,7 @@ How urlFido is built, released and laid out. Since 1.2.0 it is built on the Home
 
 ## The four steps
 
-1. `buildUrlFido` — steps the version (`buildUrlFido nobump` keeps it), compiles `exec\urlFido.exe`, writes each `.htm` from its `.md`, puts the project's files in the Homer encoding, checks that the installer ships every file in `help`, and builds `urlFido_setup.exe`. Its log is `logs\urlFido-build-yyyyMMdd-HHmmss.log`.
+1. `build` — steps the version (`build nobump` keeps it), compiles `exec\urlFido.exe`, writes each `.htm` from its `.md`, puts the project's files in the Homer encoding, checks that the installer ships every file in `help`, and builds `urlFido_setup.exe`. Its log is `logs\urlFido-build-yyyyMMdd-HHmmss.log`.
 2. `scripts\push "message"` — rewrites the whitelist `.gitignore` from `RepoFiles.txt`, commits and pushes.
 3. `scripts\tidy` and `scripts\tidy --do-it` — the periodic clean.
 4. `scripts\release` — runs `scripts\check`, then tags the pushed commit with the version stamped in `urlFido_setup.exe` and publishes the installer. The published installer is always at the releases page's `latest/download/urlFido_setup.exe`.

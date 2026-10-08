@@ -5,6 +5,20 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 8 October 2026 -- an audit by another AI
+
+ChatGPT audited urlFido and reported 38 findings. Checked against the code, these held and are fixed:
+
+- **Test fetch never touches your downloads.** It ran in simulate mode but kept the saved Force setting, so a test could delete a real collection; it also wrote its summary over the last real run's. A simulated run now deletes nothing and writes no summary file.
+- **Force never loses a collection.** The old folder was deleted before the new run had fetched anything. It is now moved aside, and at the end of the run removed only when the new folder holds files, or else put back.
+- **A sign-in page is not saved as a document.** A server answering with a web page where a file was asked for -- a sign-in or error page -- is refused, unless a web page was what was wanted.
+- **No half-written files.** A download is written to a .part file and given its name only when complete.
+- **Cookies stay with their site.** Redirects are followed by urlFido itself, and each hop carries only the cookies Edge holds for that hop's own address, as Edge would; one site's cookies no longer travel to another.
+- **The output folder defaults to Documents again.** A fresh start showed an empty folder, since the dialog's field was filled before the default was set.
+- **Kit tools** updated from HomerDev 1.63.3: push stops on a stale whitelist and reports a failed commit as one.
+
+Left for later, as larger changes: an identity for each source beyond its page title, so two pages with one title never share a folder; a record that a download completed; a shared session for the probes of addresses without extensions; and cancel that answers during the longest waits.
+
 ## Version 1.2.0 (September 2026)
 
 - **Setup.** The Results box at the end of setup is titled "urlFido Setup Results", and the finish page uses the Homer wording: the verb first, no "recommended", and "Launch urlFido (desktop hotkey ...)".

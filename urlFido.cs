@@ -241,7 +241,11 @@ static class program {
             // on the command line, the working directory stays the default, so
             // a scripted run behaves the way every other command-line tool does.
             if (sSource.Trim().Length == 0) sSource = sDefaultSources;
-            if (sOutputDir.Trim().Length == 0) sOutputDir = defaultOutputDirForGui();
+            // The dialog's own field, sOut, takes the default: sOut was copied
+            // from sOutputDir above, before this line seeded it, so a fresh
+            // start showed an empty folder (8 October 2026, from an audit by
+            // another AI).
+            if (sOut.Trim().Length == 0) sOut = defaultOutputDirForGui();
 
             bool bU = bUseConfig, bI = bInvisible, bA = bAuthenticate, bM = bMainProfile;
             if (!guiDialog.show(ref sSource, ref sExt, ref sOut,
@@ -869,17 +873,54 @@ static class urlHelper {
     // mean "skip this source": the folder is already there from an earlier
     // run and --force was not given, so previous downloads are preserved.
     // With --force the folder is emptied and reused.
+    // Folders moved aside by --force this run, as { new folder, folder aside }.
+    static List<string[]> lAside = new List<string[]>();
+
+    // At the end of a run: each folder moved aside is deleted when its new
+    // folder holds files, and otherwise moved back, so --force never loses a
+    // collection to a run that fetched nothing.
+    public static void settleAside() {
+        foreach (string[] aPair in lAside) {
+            try {
+                bool bNew = Directory.Exists(aPair[0]) &&
+                    Directory.GetFiles(aPair[0], "*", SearchOption.AllDirectories).Length > 0;
+                if (bNew) {
+                    Directory.Delete(aPair[1], true);
+                    logger.info("The new download has files, so the earlier folder was removed: " + aPair[1]);
+                } else {
+                    if (Directory.Exists(aPair[0])) Directory.Delete(aPair[0], true);
+                    Directory.Move(aPair[1], aPair[0]);
+                    logger.info("This run fetched nothing, so the earlier folder was put back: " + aPair[0]);
+                }
+            } catch (Exception ex) {
+                logger.warn("Could not settle '" + aPair[1] + "': " + ex.Message + "; it is left where it is");
+            }
+        }
+        lAside.Clear();
+    }
+
     public static string chooseTargetDir(string sParent, string sTitle, bool bForce) {
         string sDir = Path.Combine(sParent, folderNameFromTitle(sTitle, sParent));
         if (Directory.Exists(sDir)) {
             if (!bForce) return "";
-            // Remove it outright rather than emptying it. If this run then
-            // finds nothing to download, no hollow folder is left behind.
+            // A TEST NEVER DELETES (8 October 2026, from an audit by another AI):
+            // Test fetch set simulate mode but kept the saved Force, so a test
+            // could remove a real collection. A simulated run writes nothing.
+            if (program.bSimulate) return sDir;
+            // MOVED ASIDE, NOT DELETED (8 October 2026, from an audit by another
+            // AI): the old collection was removed before the new run had fetched
+            // anything, so a failed run lost both. It is moved aside, and
+            // settleAside, at the end of the run, deletes it only when the new
+            // folder holds files, and otherwise moves it back.
+            string sAside = sDir + " (previous)";
             try {
-                Directory.Delete(sDir, true);
-                logger.info("Removed existing folder (--force): " + sDir);
+                if (Directory.Exists(sAside)) Directory.Delete(sAside, true);
+                Directory.Move(sDir, sAside);
+                lAside.Add(new string[] { sDir, sAside });
+                logger.info("Moved the existing folder aside (--force), until this run has files: " + sAside);
             } catch (Exception ex) {
-                logger.warn("Could not remove '" + sDir + "': " + ex.Message);
+                logger.warn("Could not move '" + sDir + "' aside: " + ex.Message + "; nothing is fetched into it this run");
+                return "";
             }
         }
         // Deliberately NOT created here. A page with nothing to download
@@ -1556,7 +1597,7 @@ static class downloadEngine {
                 processSource(sUrl, lRegexes);
             }
 
-            results.writeSummary(program.sOutputDir);
+            if (!program.bSimulate) results.writeSummary(program.sOutputDir);
             try { Say.say(results.spokenSummary()); } catch { }
             return results.iFailed > 0 && results.iDownloaded == 0 ? 1 : 0;
         } catch (Exception ex) {
@@ -1564,6 +1605,7 @@ static class downloadEngine {
             logger.error(ex.ToString());
             return 1;
         } finally {
+            urlHelper.settleAside();
             // Order matters: Browser.close travels over the CDP socket, so it
             // has to go before disconnect(). A graceful close lets Edge write
             // out its profile and shut its windows properly; the forced
@@ -1988,12 +2030,18 @@ static class httpFallback {
         } catch {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
-        try {
-            var oReq = (HttpWebRequest)WebRequest.Create(sFileUrl);
+        // ONE REQUEST, BUILT FOR ONE ADDRESS. Each redirect is followed here, not
+        // by .NET, so that each hop carries only the cookies the browser holds
+        // for that hop's own address, as Edge would when following it (8 October
+        // 2026, from an audit by another AI: one site's cookies, flattened into a
+        // header, went with every automatic redirect to whatever host it named).
+        string sUserAgent = getBrowserUserAgent(oPage);
+        HttpWebRequest makeRequest(string sUrlFor) {
+            var oReq = (HttpWebRequest)WebRequest.Create(sUrlFor);
             oReq.Timeout = program.iDownloadTimeoutMs;
-            oReq.AllowAutoRedirect = true;
-            oReq.UserAgent = getBrowserUserAgent(oPage);
-            string sCookies = getBrowserCookies(oPage, sFileUrl);
+            oReq.AllowAutoRedirect = false;
+            oReq.UserAgent = sUserAgent;
+            string sCookies = getBrowserCookies(oPage, sUrlFor);
             if (sCookies != "") oReq.Headers[HttpRequestHeader.Cookie] = sCookies;
 
             // Present the request the way the browser would have presented it
@@ -2005,7 +2053,7 @@ static class httpFallback {
                 try {
                     oReq.Referer = program.sCurrentPageUrl;
                     var oPageUri = new Uri(program.sCurrentPageUrl);
-                    var oFileUri = new Uri(sFileUrl);
+                    var oFileUri = new Uri(sUrlFor);
                     string sOrigin = oPageUri.Scheme + "://" + oPageUri.Authority;
                     bool bSameSite = string.Equals(oPageUri.Host, oFileUri.Host,
                         StringComparison.OrdinalIgnoreCase);
@@ -2022,11 +2070,43 @@ static class httpFallback {
             oReq.Headers[HttpRequestHeader.AcceptLanguage] = "en-US,en;q=0.9";
             try { oReq.AutomaticDecompression =
                 DecompressionMethods.GZip | DecompressionMethods.Deflate; } catch { }
+            return oReq;
+        }
 
-            using (var oResp = (HttpWebResponse)oReq.GetResponse()) {
+        string sPartPath = "";
+        try {
+            string sUrlNow = sFileUrl;
+            HttpWebResponse oResp = null;
+            for (int iHop = 0; ; iHop++) {
+                oResp = (HttpWebResponse)makeRequest(sUrlNow).GetResponse();
+                int iStatus = (int)oResp.StatusCode;
+                string sLocation = oResp.Headers["Location"];
+                if (iStatus < 300 || iStatus > 399 || string.IsNullOrEmpty(sLocation)) break;
+                oResp.Close();
+                if (iHop >= 10) {
+                    logger.info("HTTP fallback gave up after ten redirects for " + sFileUrl);
+                    return -1;
+                }
+                string sNext = new Uri(new Uri(sUrlNow), sLocation).AbsoluteUri;
+                logger.info("HTTP " + iStatus + " redirect to " + sNext);
+                sUrlNow = sNext;
+            }
+            using (oResp) {
                 logger.info("HTTP " + (int)oResp.StatusCode + " " + oResp.StatusCode +
                     ", type " + (oResp.ContentType ?? "(none)") +
-                    ", length " + oResp.ContentLength + " for " + sFileUrl);
+                    ", length " + oResp.ContentLength + " for " + sUrlNow);
+                // A WEB PAGE WHERE A DOCUMENT WAS ASKED FOR (8 October 2026, from an
+                // audit by another AI): a sign-in or error page answers with success
+                // too, and was saved under the document's name. Unless a page is what
+                // was asked for, it is refused.
+                string sType = (oResp.ContentType ?? "").ToLowerInvariant();
+                string sWanted = Path.GetExtension(sName).ToLowerInvariant();
+                if ((sType.StartsWith("text/html") || sType.StartsWith("application/xhtml"))
+                        && sWanted != ".htm" && sWanted != ".html") {
+                    logger.info("HTTP fallback refused " + sUrlNow + ": the server sent a web page, " +
+                        "likely a sign-in or error page, rather than the " + sWanted + " file");
+                    return -1;
+                }
                 string sDisp = oResp.Headers["Content-Disposition"] ?? "";
                 var m = Regex.Match(sDisp, "filename\\*?=\"?([^\";]+)\"?",
                     RegexOptions.IgnoreCase);
@@ -2041,16 +2121,24 @@ static class httpFallback {
                 }
                 string sFinalPath = urlHelper.uniquePath(
                     program.sTargetDir, sName, program.bForce);
+                // WRITTEN WHOLE OR NOT AT ALL (8 October 2026, from an audit by another
+                // AI): a broken transfer left part of a document under its final name.
+                sPartPath = sFinalPath + ".part";
                 using (var oIn = oResp.GetResponseStream())
-                using (var oOut = File.Create(sFinalPath)) {
+                using (var oOut = File.Create(sPartPath)) {
                     oIn.CopyTo(oOut, 81920);
                 }
+                if (File.Exists(sFinalPath)) File.Replace(sPartPath, sFinalPath, null);
+                else File.Move(sPartPath, sFinalPath);
+                sPartPath = "";
                 sName = Path.GetFileName(sFinalPath);
                 return new FileInfo(sFinalPath).Length;
             }
         } catch (Exception ex) {
             logger.info("HTTP fallback failed for " + sFileUrl + ": " + ex.Message);
             return -1;
+        } finally {
+            if (sPartPath != "") { try { File.Delete(sPartPath); } catch { } }
         }
     }
 
@@ -2495,7 +2583,6 @@ public static class guiDialog {
                         } else {
                             downloadEngine.runAll(lTest,
                                 patternParser.parse(program.sExtensions));
-                            results.writeSummary(program.sOutputDir);
                             MessageBox.Show(dlg.form, results.capturedText(),
                                 program.sProgramName + " - Test fetch",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);

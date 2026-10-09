@@ -1,0 +1,129 @@
+﻿; Tutorial_4_Choose_What_to_Fetch.inix -- choose what to fetch
+
+[about]
+Title=4 - Choose What to Fetch
+Intro=The File extensions field: short forms, full patterns with wildcards, and matching on a part of the name.
+Setup=urlFido installed, and a page with several kinds of file.
+Homework=Fetch only the Word editions from the VPAT page, then only the edition for WCAG.
+
+[step]
+
+Say=One want: just the files I need from a page that links to dozens, such as only the Word templates, or only one edition.
+Key=
+
+[step]
+
+Say=File extensions takes a list, separated by commas or spaces. Each entry is a pattern, in the style of the Windows command prompt.
+Key=Alt+E
+Hear=File extensions edit, docx pdf zip
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The short forms are shorthand: pdf means dot pdf, which means star dot pdf, any name ending in dot pdf.
+Key=
+
+[step]
+
+Say=So the familiar pdf, docx still works exactly as it always has.
+Key=
+
+[step]
+
+Say=To take only the Word templates, I replace the list with docx alone.
+Key=
+Hear=docx
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Enter, and only the Word files come.
+Key=Enter
+Hear=3 files downloaded
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=A pattern can be more specific: star WCAG star dot docx takes only Word files whose names mention WCAG.
+Key=
+Hear=star WCAG star dot docx
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Enter, and only that edition comes.
+Key=Enter
+Hear=1 file downloaded
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The match is on the file's own name, the one the site supplies, so it works even when the link's text says something else.
+Key=
+
+[step]
+
+Say=A question mark stands for any one character, as at the command prompt, for names that differ by a single letter or digit.
+Key=
+
+[step]
+
+Say=Several patterns can share the list: star dot pdf and star dot epub together take both kinds.
+Key=
+
+[step]
+
+Say=Matching ignores case, so star newsletter star dot PDF and star newsletter star dot pdf behave the same.
+Key=
+
+[step]
+
+Say=What counts as a file is a link whose target has an extension, or one the server announces as a download; ordinary links to pages are left alone.
+Key=
+
+[step]
+
+Say=Use configuration remembers the list, so a pattern worked out once is ready the next time.
+Key=Alt+U
+Hear=Use configuration check box, checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=A precise pattern saves time and space, and keeps a folder to just the documents that matter.
+Key=
+
+[step]
+
+Say=A pattern like star newsletter star takes every file whose name contains newsletter, whatever its kind.
+Key=
+
+[step]
+
+Say=A Test fetch, walk five, is the quickest way to check a new pattern against a real page.
+Key=
+
+[step]
+
+Say=Short forms and patterns can be mixed in one list: pdf, star report star dot xlsx.
+Key=
+
+[step]
+
+Say=Several patterns can name the same kind of file in different ways; a file that matches any one of them is fetched once.
+Key=
+
+[step]
+
+Say=A wide pattern is cheap to try with Test fetch, and a narrow one saves a folder of unwanted files.
+Key=
+
+[step]
+
+Say=The patterns you settle on for a site are worth keeping in a note beside its source list, for the next time.
+Key=
+
+[step]
+
+Say=Short forms for the usual, patterns for the precise. The next walk tries a run before making it.
+Key=

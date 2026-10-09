@@ -1,0 +1,137 @@
+﻿; Tutorial_6_Fetch_from_Several_Pages.inix -- fetch from several pages
+
+[about]
+Title=6 - Fetch from Several Pages
+Intro=Fetching from many pages in one run, typed together or listed in a source list file, each page into its own folder.
+Setup=A text file listing several pages, one address to a line.
+Homework=Fetch from three pages with one list, and find each page's folder by its title.
+
+[step]
+
+Say=One want: the documents from every page of a collection, such as each standard's page on an accessibility site, in one run.
+Key=
+
+[step]
+
+Say=Several addresses can go into Source urls, separated by spaces.
+Key=
+Hear=example.org slash page one example.org slash page two
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=For more, a text file is easier, one address to a line; the guide calls these source lists.
+Key=
+
+[step]
+
+Say=Browse source, B, picks the list.
+Key=Alt+B
+Hear=Open dialog
+Hear=File name edit
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I choose my list and press Enter.
+Key=Enter
+Hear=Source urls edit
+Hear=C colon backslash Lists backslash Standards dot t x t
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I choose a parent folder, Standards.
+Key=Alt+O
+Hear=Output directory edit
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Log session keeps a record of the whole run.
+Key=Alt+L
+Hear=Log session check box, checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Enter, and urlFido works through the list one page at a time.
+Key=Enter
+Hear=Fetching from 2 of 6
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Each page gets a folder named after its title, so the parent folder reads as a list of the pages fetched from.
+Key=
+Hear=Home, American Foundation for the Blind
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=A page that would not load is named in the log, with the reason, and the others are still fetched.
+Key=
+
+[step]
+
+Say=The result box gives the totals for the whole run.
+Key=
+Hear=23 files from 6 pages
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Running the list again saves files already there as numbered copies; Force overwrite replaces them, for a clean refresh.
+Key=
+
+[step]
+
+Say=Use configuration remembers the list, the patterns and the folder, so the next run is one key.
+Key=Alt+U
+Hear=Use configuration check box, checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=A source list can be kept and shared, so a colleague can fetch the same collection on their own computer.
+Key=
+
+[step]
+
+Say=A list may hold local web pages as well as addresses, by their paths, for fetching files a saved page links to.
+Key=
+
+[step]
+
+Say=Several sources can also be given on the command line together, addresses and lists mixed.
+Key=
+
+[step]
+
+Say=Each page is examined fully before the next begins, so the log reads page by page.
+Key=
+
+[step]
+
+Say=The parent folder reads as a list of page titles, so the first letter of a title finds its folder.
+Key=
+
+[step]
+
+Say=A list that grows over time can be fetched again with Force overwrite, for a fresh copy of everything.
+Key=
+
+[step]
+
+Say=A source list file may have any extension; urlFido recognizes it by what it holds.
+Key=
+
+[step]
+
+Say=When a run ends, the results box gives the total for every page together, and the log has the detail page by page.
+Key=
+
+[step]
+
+Say=A whole collection of pages, one folder each, in one run. The next walk fetches from pages behind a sign in.
+Key=

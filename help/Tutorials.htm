@@ -1,0 +1,1240 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Tutorials</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Tutorials</h1>
+</header>
+<h1 id="tutorials">Tutorials</h1>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#0-overview">0 - Overview</a></li>
+<li><a href="#1-user-interface">1 - User Interface</a></li>
+<li><a href="#2-install-and-launch">2 - Install and Launch</a></li>
+<li><a href="#3-fetch-a-pages-documents">3 - Fetch a Page’s
+Documents</a></li>
+<li><a href="#4-choose-what-to-fetch">4 - Choose What to Fetch</a></li>
+<li><a href="#5-try-first-with-test-fetch">5 - Try First with Test
+Fetch</a></li>
+<li><a href="#6-fetch-from-several-pages">6 - Fetch from Several
+Pages</a></li>
+<li><a href="#7-fetch-from-pages-behind-a-sign-in">7 - Fetch from Pages
+Behind a Sign In</a></li>
+<li><a href="#8-fetch-from-the-command-line">8 - Fetch from the Command
+Line</a></li>
+<li><a href="#9-conclusion">9 - Conclusion</a></li>
+<li><a href="#1-where-to-go-next">1. Where to Go Next</a></li>
+</ul>
+<!-- walkthrough: written by makeTutorials.py, do not edit between the markers -->
+<h2 id="overview">0 - Overview</h2>
+<p>What urlFido is, how it fetches, and the ten walks that teach it.</p>
+<p><strong>Before you start:</strong> Nothing to set up; this walk only
+listens.</p>
+<h3 id="step-1">Step 1</h3>
+<p>Welcome. This is the first of ten short walks through urlFido. I am
+the host; the other voice is the screen reader, speaking as it would on
+your own computer.</p>
+<h3 id="step-2-insertup-arrow">Step 2: Insert+Up Arrow</h3>
+<p>Two reader keys help in every walk. If a line goes by too fast,
+Insert plus Up Arrow says it again.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Source urls edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3-inserttab">Step 3: Insert+Tab</h3>
+<p>And whenever you are unsure where you are, Insert plus Tab says what
+has the focus.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Source urls edit, blank</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-4">Step 4</h3>
+<p>urlFido downloads the files a web page links to, of the kinds you
+choose: PDF documents, Word documents, zip archives, or any other
+extension you name.</p>
+<h3 id="step-5">Step 5</h3>
+<p>Unlike a plain downloader, it opens each page in Microsoft Edge, so
+the page behaves as it would for you: scripts run, cookies apply, and
+links that appear only after loading are found.</p>
+<h3 id="step-6">Step 6</h3>
+<p>It saves each page’s files into a folder named after the page’s
+title, so a run over several pages stays easy to tell apart.</p>
+<h3 id="step-7">Step 7</h3>
+<p>It can try first, with Test fetch, saying what it would download
+without downloading anything.</p>
+<h3 id="step-8">Step 8</h3>
+<p>It runs from a dialog opened from the desktop, or from the command
+line, where one line can fetch from a whole list of pages.</p>
+<h3 id="step-9">Step 9</h3>
+<p>Here are the walks. One, the dialog. Two, installing. Three, a page’s
+documents. Four, choosing what to fetch. Five, trying first with Test
+fetch.</p>
+<h3 id="step-10">Step 10</h3>
+<p>Six, several pages at once. Seven, pages behind a sign in. Eight, the
+command line. Nine, the conclusion, a glossary, and where to get
+help.</p>
+<h3 id="step-11">Step 11</h3>
+<p>Each walk is a few minutes long and builds on the last. Walk one
+comes next.</p>
+<p><strong>Something to try:</strong> Think of a web page with documents
+you want to keep. Walk three fetches them.</p>
+<h2 id="user-interface">1 - User Interface</h2>
+<p>The urlFido dialog: its fields and boxes, their underlined letters,
+and the keys that work anywhere in it, each shown as the reader speaks
+it.</p>
+<p><strong>Before you start:</strong> urlFido installed; the dialog open
+with Alt+Control+U.</p>
+<h3 id="step-1-1">Step 1</h3>
+<p>One want: to move around the urlFido dialog quickly, knowing what
+every field and box does before the first download.</p>
+<h3 id="step-2-altcontrolu">Step 2: Alt+Control+U</h3>
+<p>I press the desktop key. The dialog opens on its first field.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dialog</li>
+<li>Source urls edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3">Step 3</h3>
+<p>Source urls names the pages to fetch from: one address, several
+separated by spaces, or the path of a text file listing them. Its letter
+is S.</p>
+<h3 id="step-4-tab">Step 4: Tab</h3>
+<p>Tab moves to the next control, a button that picks such a file.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Browse source button</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-5-alte">Step 5: Alt+E</h3>
+<p>Alt with an underlined letter jumps to a control. File extensions is
+E.</p>
+<p>Screen reader:</p>
+<ul>
+<li>File extensions edit, docx pdf zip</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-1">Step 6</h3>
+<p>It holds the kinds of file to fetch, separated by spaces or commas.
+Walk four explains its patterns.</p>
+<h3 id="step-7-alto">Step 7: Alt+O</h3>
+<p>Output directory, O, is the parent folder; each page gets a folder of
+its own inside it. Choose output, C, picks it instead of typing.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Output directory edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-8-altt">Step 8: Alt+T</h3>
+<p>Then the boxes. Test fetch, T, does everything but download, and
+reports what it would have done.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Test fetch check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-9-altf">Step 9: Alt+F</h3>
+<p>Force overwrite, F, replaces files already there; without it, a
+second copy of a file is saved with a number added to its name.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Force overwrite check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-10-alta">Step 10: Alt+A</h3>
+<p>Authenticate credentials, A, pauses at each new site so you can sign
+in; Main profile, M, uses your everyday Edge and its saved sign ins.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Authenticate credentials check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-11-alti">Step 11: Alt+I</h3>
+<p>Invisible browser, I, runs Edge with no window.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Invisible browser check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-12-altv">Step 12: Alt+V</h3>
+<p>View output, V, opens the folder at the end; Log session, L, keeps a
+log; Use configuration, U, remembers your choices.</p>
+<p>Screen reader:</p>
+<ul>
+<li>View output check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-13-space">Step 13: Space</h3>
+<p>Space checks a box, and Space again clears it.</p>
+<p>Screen reader:</p>
+<ul>
+<li>checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-14-space">Step 14: Space</h3>
+<p>Space.</p>
+<p>Screen reader:</p>
+<ul>
+<li>not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-15-shiftf1">Step 15: Shift+F1</h3>
+<p>Shift plus F1 says the tip for the control you are on.</p>
+<p>Screen reader:</p>
+<ul>
+<li>View output: open the output folder when the run is done</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-16-f1">Step 16: F1</h3>
+<p>F1 shows Help, every control and every key.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido Help dialog</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-17-escape">Step 17: Escape</h3>
+<p>Escape closes Help and returns to the same place.</p>
+<p>Screen reader:</p>
+<ul>
+<li>View output check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-18-tab">Step 18: Tab</h3>
+<p>Enter starts the run from any field, and Control plus Enter from any
+control. Escape closes the dialog without fetching.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Use configuration check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-19-altd">Step 19: Alt+D</h3>
+<p>Default settings, D, clears every field and box and deletes the saved
+configuration, for starting fresh.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Default settings button</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-20-up-arrow">Step 20: Up Arrow</h3>
+<p>The text fields remember earlier answers: Up Arrow in Source urls
+brings back the pages fetched before.</p>
+<p>Screen reader:</p>
+<ul>
+<li>https colon slash slash www dot itic dot org slash policy slash
+accessibility slash vpat</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-21">Step 21</h3>
+<p>Text fields also take the editing keys used across Homer programs,
+which the guide lists in full.</p>
+<h3 id="step-22-alte">Step 22: Alt+E</h3>
+<p>Command-line values and the dialog share letters: each short option
+is the same letter as its control’s access key, so learning one teaches
+the other.</p>
+<p>Screen reader:</p>
+<ul>
+<li>File extensions edit, docx pdf zip</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-23">Step 23</h3>
+<p>That is the dialog: pages, kinds of file, a folder, seven boxes, and
+a key for each. The next walk installs urlFido.</p>
+<p><strong>Something to try:</strong> Open the dialog, move to File
+extensions with its letter, and press Shift+F1 to hear its tip.</p>
+<h2 id="install-and-launch">2 - Install and Launch</h2>
+<p>Installing urlFido for everyone on the computer, opening it from
+anywhere, and keeping it current.</p>
+<p><strong>Before you start:</strong> urlFido_setup.exe downloaded from
+the urlFido releases page on GitHub.</p>
+<h3 id="step-1-2">Step 1</h3>
+<p>One want: urlFido on this computer, opened with one key, ready to
+fetch.</p>
+<h3 id="step-2-enter">Step 2: Enter</h3>
+<p>I open the downloaded setup program. It installs for everyone, so
+Windows asks for administrator rights; I say yes.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Setup - urlFido dialog</li>
+<li>Welcome to the urlFido Setup Wizard</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3-enter">Step 3: Enter</h3>
+<p>The welcome page summarizes the license: urlFido is free and open
+source, under the MIT license. Enter takes Next.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Select Destination Location</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-4-enter">Step 4: Enter</h3>
+<p>The default folder in Program Files is right; an update goes there
+without asking.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Ready to Install</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-5-enter">Step 5: Enter</h3>
+<p>Enter installs it.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Installing</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-2">Step 6</h3>
+<p>The last page offers to launch urlFido now.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Launch urlFido now check box, checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-7-enter">Step 7: Enter</h3>
+<p>I press Finish. A short box says what was installed and where the
+logs are.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido setup complete</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-8-enter">Step 8: Enter</h3>
+<p>When I close it, urlFido opens on its dialog.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dialog</li>
+<li>Source urls edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-9-1">Step 9</h3>
+<p>From now on, Alt plus Control plus U opens it from anywhere in
+Windows, and the Start menu has it as well.</p>
+<h3 id="step-10-1">Step 10</h3>
+<p>urlFido drives Microsoft Edge, which Windows 10 and 11 already have,
+so there is nothing else to install.</p>
+<h3 id="step-11-1">Step 11</h3>
+<p>It keeps a browser profile of its own, separate from your everyday
+Edge, unless you choose Main profile.</p>
+<h3 id="step-12">Step 12</h3>
+<p>Your settings and logs live in your own application data, so an
+update never touches them.</p>
+<h3 id="step-13-f11">Step 13: F11</h3>
+<p>F11 in the dialog asks GitHub for a newer version; when there is one,
+Enter installs it.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Checking for a newer version</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-14-enter">Step 14: Enter</h3>
+<p>If this copy is the newest, No is the default, and Enter returns to
+the dialog.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dialog</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-15">Step 15</h3>
+<p>Uninstalling, from Installed apps in Windows Settings, leaves every
+file you fetched where it was saved.</p>
+<h3 id="step-16">Step 16</h3>
+<p>If setup ever stops partway, its log says why, and running it again
+finishes the job.</p>
+<h3 id="step-17">Step 17</h3>
+<p>The full guide is in the help folder of the installation, readable
+before the first run, with worked examples of real pages to try.</p>
+<h3 id="step-18">Step 18</h3>
+<p>Each run writes a session log in your application data, whatever the
+dialog says, so a run can always be traced afterwards.</p>
+<h3 id="step-19">Step 19</h3>
+<p>The guide’s quick start uses real pages, such as the VPAT page of the
+Information Technology Industry Council, so a first run can be tried at
+once.</p>
+<h3 id="step-20">Step 20</h3>
+<p>Nothing is downloaded at install time beyond the program; pages are
+reached only when a run begins.</p>
+<h3 id="step-21-1">Step 21</h3>
+<p>Main profile, when chosen, needs your everyday Edge closed first,
+which the guide explains in its section on authenticated pages.</p>
+<h3 id="step-22">Step 22</h3>
+<p>If Edge itself is missing or broken, urlFido says so in plain words
+rather than failing silently.</p>
+<h3 id="step-23-1">Step 23</h3>
+<p>Installed, opened with one key, and kept current. The next walk
+fetches a page’s documents.</p>
+<p><strong>Something to try:</strong> After installing, open the dialog
+with its desktop key and press F11.</p>
+<h2 id="fetch-a-pages-documents">3 - Fetch a Page’s Documents</h2>
+<p>Downloading every document a page links to, using the guide’s own
+example: the VPAT page of the Information Technology Industry
+Council.</p>
+<p><strong>Before you start:</strong> urlFido installed.</p>
+<h3 id="step-1-3">Step 1</h3>
+<p>One want: every edition of the VPAT, the template behind an
+Accessibility Conformance Report, without opening each link by hand.</p>
+<h3 id="step-2">Step 2</h3>
+<p>The Information Technology Industry Council publishes the VPAT in
+several editions on one page. The guide uses it as a first example.</p>
+<h3 id="step-3-altcontrolu">Step 3: Alt+Control+U</h3>
+<p>I open the dialog and type the page’s address in Source urls.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dialog</li>
+<li>Source urls edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-4-1">Step 4</h3>
+<p>The address is itic dot org slash policy slash accessibility slash
+vpat.</p>
+<p>Screen reader:</p>
+<ul>
+<li>https colon slash slash www dot itic dot org slash policy slash
+accessibility slash vpat</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-5-alte-1">Step 5: Alt+E</h3>
+<p>I leave File extensions as it is, which takes Word documents, PDF
+files and zip archives.</p>
+<p>Screen reader:</p>
+<ul>
+<li>File extensions edit, docx pdf zip</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-alto">Step 6: Alt+O</h3>
+<p>I choose a parent folder for the results, Downloads backslash
+VPAT.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Output directory edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-7-altv">Step 7: Alt+V</h3>
+<p>And tick View output, to land in the folder at the end.</p>
+<p>Screen reader:</p>
+<ul>
+<li>View output check box, checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-8-enter-1">Step 8: Enter</h3>
+<p>Enter starts. Edge opens the page, waits for it to finish loading,
+and looks at every link.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Fetching from VPAT, Information Technology Industry Council</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-9-2">Step 9</h3>
+<p>Each matching file is downloaded the way a browser would, with the
+page’s cookies, so a site that guards its files still allows it.</p>
+<h3 id="step-10-2">Step 10</h3>
+<p>Files arrive one at a time, politely, a moment apart, so the site is
+never strained.</p>
+<h3 id="step-11-2">Step 11</h3>
+<p>A short box reports the totals.</p>
+<p>Screen reader:</p>
+<ul>
+<li>5 files downloaded</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-12-enter">Step 12: Enter</h3>
+<p>File Explorer opens on the parent folder, where the page has a folder
+named after its title.</p>
+<p>Screen reader:</p>
+<ul>
+<li>VPAT, Information Technology Industry Council</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-13-enter">Step 13: Enter</h3>
+<p>Inside are the editions, each with the name the site gave it.</p>
+<p>Screen reader:</p>
+<ul>
+<li>VPAT 2.5 WCAG dot d o c x</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-14-enter-1">Step 14: Enter</h3>
+<p>Enter on one opens it in Word, ready to fill in.</p>
+<p>Screen reader:</p>
+<ul>
+<li>VPAT 2.5 WCAG - Word</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-15-1">Step 15</h3>
+<p>When the run finishes, a box gives the results summary, and a short
+spoken line gives the outcome without your having to read it all.</p>
+<h3 id="step-16-1">Step 16</h3>
+<p>Running the same page again saves any file already there as a
+numbered copy; Force overwrite replaces it instead.</p>
+<h3 id="step-17-1">Step 17</h3>
+<p>And if a fresh fetch fails partway, the earlier folder is put back as
+it was, so a bad run never loses good files.</p>
+<h3 id="step-18-1">Step 18</h3>
+<p>Edge waits for the page to finish loading before urlFido looks at it,
+so links added by a page’s scripts are found too.</p>
+<h3 id="step-19-1">Step 19</h3>
+<p>Each file keeps the name the site supplies, so it reads sensibly in
+File Explorer.</p>
+<h3 id="step-20-1">Step 20</h3>
+<p>A link that leads to a web page instead of a file, such as a sign in
+page, is not saved as if it were the document.</p>
+<h3 id="step-21-2">Step 21</h3>
+<p>The page’s folder name comes from its title, adjusted for what
+Windows allows in a folder name.</p>
+<h3 id="step-22-1">Step 22</h3>
+<p>One page, every document, one folder. The next walk chooses exactly
+which files to take.</p>
+<p><strong>Something to try:</strong> Fetch the VPAT templates, then
+open one in Word.</p>
+<h2 id="choose-what-to-fetch">4 - Choose What to Fetch</h2>
+<p>The File extensions field: short forms, full patterns with wildcards,
+and matching on a part of the name.</p>
+<p><strong>Before you start:</strong> urlFido installed, and a page with
+several kinds of file.</p>
+<h3 id="step-1-4">Step 1</h3>
+<p>One want: just the files I need from a page that links to dozens,
+such as only the Word templates, or only one edition.</p>
+<h3 id="step-2-alte">Step 2: Alt+E</h3>
+<p>File extensions takes a list, separated by commas or spaces. Each
+entry is a pattern, in the style of the Windows command prompt.</p>
+<p>Screen reader:</p>
+<ul>
+<li>File extensions edit, docx pdf zip</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3-1">Step 3</h3>
+<p>The short forms are shorthand: pdf means dot pdf, which means star
+dot pdf, any name ending in dot pdf.</p>
+<h3 id="step-4-2">Step 4</h3>
+<p>So the familiar pdf, docx still works exactly as it always has.</p>
+<h3 id="step-5-1">Step 5</h3>
+<p>To take only the Word templates, I replace the list with docx
+alone.</p>
+<p>Screen reader:</p>
+<ul>
+<li>docx</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-enter">Step 6: Enter</h3>
+<p>Enter, and only the Word files come.</p>
+<p>Screen reader:</p>
+<ul>
+<li>3 files downloaded</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-7-1">Step 7</h3>
+<p>A pattern can be more specific: star WCAG star dot docx takes only
+Word files whose names mention WCAG.</p>
+<p>Screen reader:</p>
+<ul>
+<li>star WCAG star dot docx</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-8-enter-2">Step 8: Enter</h3>
+<p>Enter, and only that edition comes.</p>
+<p>Screen reader:</p>
+<ul>
+<li>1 file downloaded</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-9-3">Step 9</h3>
+<p>The match is on the file’s own name, the one the site supplies, so it
+works even when the link’s text says something else.</p>
+<h3 id="step-10-3">Step 10</h3>
+<p>A question mark stands for any one character, as at the command
+prompt, for names that differ by a single letter or digit.</p>
+<h3 id="step-11-3">Step 11</h3>
+<p>Several patterns can share the list: star dot pdf and star dot epub
+together take both kinds.</p>
+<h3 id="step-12-1">Step 12</h3>
+<p>Matching ignores case, so star newsletter star dot PDF and star
+newsletter star dot pdf behave the same.</p>
+<h3 id="step-13">Step 13</h3>
+<p>What counts as a file is a link whose target has an extension, or one
+the server announces as a download; ordinary links to pages are left
+alone.</p>
+<h3 id="step-14-altu">Step 14: Alt+U</h3>
+<p>Use configuration remembers the list, so a pattern worked out once is
+ready the next time.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Use configuration check box, checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-15-2">Step 15</h3>
+<p>A precise pattern saves time and space, and keeps a folder to just
+the documents that matter.</p>
+<h3 id="step-16-2">Step 16</h3>
+<p>A pattern like star newsletter star takes every file whose name
+contains newsletter, whatever its kind.</p>
+<h3 id="step-17-2">Step 17</h3>
+<p>A Test fetch, walk five, is the quickest way to check a new pattern
+against a real page.</p>
+<h3 id="step-18-2">Step 18</h3>
+<p>Short forms and patterns can be mixed in one list: pdf, star report
+star dot xlsx.</p>
+<h3 id="step-19-2">Step 19</h3>
+<p>Several patterns can name the same kind of file in different ways; a
+file that matches any one of them is fetched once.</p>
+<h3 id="step-20-2">Step 20</h3>
+<p>A wide pattern is cheap to try with Test fetch, and a narrow one
+saves a folder of unwanted files.</p>
+<h3 id="step-21-3">Step 21</h3>
+<p>The patterns you settle on for a site are worth keeping in a note
+beside its source list, for the next time.</p>
+<h3 id="step-22-2">Step 22</h3>
+<p>Short forms for the usual, patterns for the precise. The next walk
+tries a run before making it.</p>
+<p><strong>Something to try:</strong> Fetch only the Word editions from
+the VPAT page, then only the edition for WCAG.</p>
+<h2 id="try-first-with-test-fetch">5 - Try First with Test Fetch</h2>
+<p>Test fetch: a full run that downloads nothing and creates no folder,
+reporting what it would have done.</p>
+<p><strong>Before you start:</strong> urlFido installed, and a page you
+have not fetched from before.</p>
+<h3 id="step-1-5">Step 1</h3>
+<p>One want: to know what a run will fetch before it fills my Downloads
+folder with things I did not mean to keep.</p>
+<h3 id="step-2-altt">Step 2: Alt+T</h3>
+<p>Test fetch, T, does everything a real run does: it loads each page,
+examines every link, and works out what matches.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Test fetch check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3-space">Step 3: Space</h3>
+<p>But it writes nothing. No file is downloaded and no folder is
+made.</p>
+<p>Screen reader:</p>
+<ul>
+<li>checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-4-enter-1">Step 4: Enter</h3>
+<p>I put a new page’s address in Source urls and press Enter.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Testing VPAT, Information Technology Industry Council</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-5-2">Step 5</h3>
+<p>The report begins by saying plainly that it was a simulation.</p>
+<p>Screen reader:</p>
+<ul>
+<li>SIMULATION – nothing was downloaded and no folder was created.</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-down-arrow">Step 6: Down Arrow</h3>
+<p>Then what would have happened: how many files, and each one’s name
+and size where the site gives it.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Would download 3 files:</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-7-down-arrow">Step 7: Down Arrow</h3>
+<p>Down Arrow reads them one by one.</p>
+<p>Screen reader:</p>
+<ul>
+<li>VPAT 2.5 WCAG dot d o c x</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-8-1">Step 8</h3>
+<p>Skipped links are listed too, with the reason, such as a pattern that
+did not match.</p>
+<h3 id="step-9-4">Step 9</h3>
+<p>If the list is wrong, I adjust File extensions and test again, until
+it is exactly what I want.</p>
+<h3 id="step-10-space">Step 10: Space</h3>
+<p>Then I clear Test fetch with Space, and the same run downloads for
+real.</p>
+<p>Screen reader:</p>
+<ul>
+<li>not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-11-4">Step 11</h3>
+<p>Test fetch is also the safest way to check a long list of pages,
+since a mistake in the list costs nothing.</p>
+<h3 id="step-12-2">Step 12</h3>
+<p>And it is how to find out whether a page offers any files at all
+before setting up a scheduled run for it.</p>
+<h3 id="step-13-1">Step 13</h3>
+<p>If a test finds nothing, the guide’s section on a page that yields
+nothing lists the usual reasons, such as files offered only after a sign
+in.</p>
+<h3 id="step-14">Step 14</h3>
+<p>A test run is quick, since nothing is downloaded, so testing first
+costs little.</p>
+<h3 id="step-15-3">Step 15</h3>
+<p>Once the test looks right, the same settings, saved with Use
+configuration, serve a real run from the dialog or the command line.</p>
+<h3 id="step-16-3">Step 16</h3>
+<p>The report also names each page it examined, so a mistyped address in
+a list shows up at once.</p>
+<h3 id="step-17-3">Step 17</h3>
+<p>A link that needs a sign in shows in the test, and walk seven
+explains how to fetch it.</p>
+<h3 id="step-18-3">Step 18</h3>
+<p>For a page with many links, the report’s count of matches says at a
+glance whether a pattern is too wide.</p>
+<h3 id="step-19-3">Step 19</h3>
+<p>Test fetch writes nothing at all, not even an empty folder, so it
+leaves no trace to clean up.</p>
+<h3 id="step-20-3">Step 20</h3>
+<p>Test fetch works with a source list as well as one page, which is the
+best way to check a long list before a long run.</p>
+<h3 id="step-21-up-arrow">Step 21: Up Arrow</h3>
+<p>After a test, Up Arrow in Source urls brings the same pages back,
+ready for the real run.</p>
+<p>Screen reader:</p>
+<ul>
+<li>https colon slash slash www dot itic dot org slash policy slash
+accessibility slash vpat</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-22-3">Step 22</h3>
+<p>Look first, then fetch. The next walk fetches from several pages at
+once.</p>
+<p><strong>Something to try:</strong> Run Test fetch on a page, then run
+it for real once the report looks right.</p>
+<h2 id="fetch-from-several-pages">6 - Fetch from Several Pages</h2>
+<p>Fetching from many pages in one run, typed together or listed in a
+source list file, each page into its own folder.</p>
+<p><strong>Before you start:</strong> A text file listing several pages,
+one address to a line.</p>
+<h3 id="step-1-6">Step 1</h3>
+<p>One want: the documents from every page of a collection, such as each
+standard’s page on an accessibility site, in one run.</p>
+<h3 id="step-2-1">Step 2</h3>
+<p>Several addresses can go into Source urls, separated by spaces.</p>
+<p>Screen reader:</p>
+<ul>
+<li>example.org slash page one example.org slash page two</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3-2">Step 3</h3>
+<p>For more, a text file is easier, one address to a line; the guide
+calls these source lists.</p>
+<h3 id="step-4-altb">Step 4: Alt+B</h3>
+<p>Browse source, B, picks the list.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Open dialog</li>
+<li>File name edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-5-enter-1">Step 5: Enter</h3>
+<p>I choose my list and press Enter.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Source urls edit</li>
+<li>C colon backslash Lists backslash Standards dot t x t</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-alto-1">Step 6: Alt+O</h3>
+<p>I choose a parent folder, Standards.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Output directory edit</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-7-altl">Step 7: Alt+L</h3>
+<p>Log session keeps a record of the whole run.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Log session check box, checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-8-enter-3">Step 8: Enter</h3>
+<p>Enter, and urlFido works through the list one page at a time.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Fetching from 2 of 6</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-9-5">Step 9</h3>
+<p>Each page gets a folder named after its title, so the parent folder
+reads as a list of the pages fetched from.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Home, American Foundation for the Blind</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-10-4">Step 10</h3>
+<p>A page that would not load is named in the log, with the reason, and
+the others are still fetched.</p>
+<h3 id="step-11-5">Step 11</h3>
+<p>The result box gives the totals for the whole run.</p>
+<p>Screen reader:</p>
+<ul>
+<li>23 files from 6 pages</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-12-3">Step 12</h3>
+<p>Running the list again saves files already there as numbered copies;
+Force overwrite replaces them, for a clean refresh.</p>
+<h3 id="step-13-altu">Step 13: Alt+U</h3>
+<p>Use configuration remembers the list, the patterns and the folder, so
+the next run is one key.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Use configuration check box, checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-14-1">Step 14</h3>
+<p>A source list can be kept and shared, so a colleague can fetch the
+same collection on their own computer.</p>
+<h3 id="step-15-4">Step 15</h3>
+<p>A list may hold local web pages as well as addresses, by their paths,
+for fetching files a saved page links to.</p>
+<h3 id="step-16-4">Step 16</h3>
+<p>Several sources can also be given on the command line together,
+addresses and lists mixed.</p>
+<h3 id="step-17-4">Step 17</h3>
+<p>Each page is examined fully before the next begins, so the log reads
+page by page.</p>
+<h3 id="step-18-4">Step 18</h3>
+<p>The parent folder reads as a list of page titles, so the first letter
+of a title finds its folder.</p>
+<h3 id="step-19-4">Step 19</h3>
+<p>A list that grows over time can be fetched again with Force
+overwrite, for a fresh copy of everything.</p>
+<h3 id="step-20-4">Step 20</h3>
+<p>A source list file may have any extension; urlFido recognizes it by
+what it holds.</p>
+<h3 id="step-21-4">Step 21</h3>
+<p>When a run ends, the results box gives the total for every page
+together, and the log has the detail page by page.</p>
+<h3 id="step-22-4">Step 22</h3>
+<p>A whole collection of pages, one folder each, in one run. The next
+walk fetches from pages behind a sign in.</p>
+<p><strong>Something to try:</strong> Fetch from three pages with one
+list, and find each page’s folder by its title.</p>
+<h2 id="fetch-from-pages-behind-a-sign-in">7 - Fetch from Pages Behind a
+Sign In</h2>
+<p>Fetching files that a site offers only to signed-in users: pausing to
+sign in, or using your everyday Edge profile.</p>
+<p><strong>Before you start:</strong> An account on a site whose files
+need a sign in.</p>
+<h3 id="step-1-7">Step 1</h3>
+<p>One want: the documents a site keeps for its members, such as a
+course’s handouts, which only appear once I am signed in.</p>
+<h3 id="step-2-2">Step 2</h3>
+<p>Without a sign in, such a page shows a sign in form, and urlFido
+finds nothing to fetch.</p>
+<h3 id="step-3-alta">Step 3: Alt+A</h3>
+<p>Authenticate credentials, A, pauses at each new site, so you can sign
+in yourself in the Edge window.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Authenticate credentials check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-4-space">Step 4: Space</h3>
+<p>Space checks it.</p>
+<p>Screen reader:</p>
+<ul>
+<li>checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-5-enter-2">Step 5: Enter</h3>
+<p>I put the course page’s address in Source urls and press Enter. Edge
+opens, and urlFido waits.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Sign in, then press OK to continue</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-6-enter-1">Step 6: Enter</h3>
+<p>I sign in in Edge as usual, then press Enter in urlFido’s box.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Fetching from Course handouts</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-7-2">Step 7</h3>
+<p>The files then download with the session I just made, as they would
+for me in the browser.</p>
+<h3 id="step-8-altm">Step 8: Alt+M</h3>
+<p>The other way is Main profile, M, which uses your everyday Edge
+profile with the sign ins it already holds.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Main profile check box, not checked</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-9-6">Step 9</h3>
+<p>That needs no pause, but your everyday Edge must be closed first,
+since one profile cannot be open twice.</p>
+<h3 id="step-10-5">Step 10</h3>
+<p>Your password never passes through urlFido; you type it into Edge
+yourself.</p>
+<h3 id="step-11-6">Step 11</h3>
+<p>Leave Invisible browser off for a run that asks you to sign in, since
+the sign in needs a window to type into.</p>
+<h3 id="step-12-4">Step 12</h3>
+<p>A file that turns out to be a sign in page in disguise, a web page
+instead of the document, is refused rather than saved under the
+document’s name.</p>
+<h3 id="step-13-2">Step 13</h3>
+<p>When finished, signing out in Edge closes the session, if the account
+matters.</p>
+<h3 id="step-14-2">Step 14</h3>
+<p>Authenticate pauses only at the first page of each site, so a list of
+many pages on one site asks just once.</p>
+<h3 id="step-15-5">Step 15</h3>
+<p>A site that ends sessions after a few minutes may need a shorter
+list, so the run finishes while you are signed in.</p>
+<h3 id="step-16-5">Step 16</h3>
+<p>Two factor codes work as usual, since you sign in yourself, at your
+own pace, before pressing OK.</p>
+<h3 id="step-17-5">Step 17</h3>
+<p>Main profile suits a site you already use every day; Authenticate
+suits a clean, separate session.</p>
+<h3 id="step-18-5">Step 18</h3>
+<p>Files fetched this way are saved like any others, in the page’s
+folder under the site’s own names.</p>
+<h3 id="step-19-5">Step 19</h3>
+<p>Some sites show a cookie banner before anything else; the
+Authenticate pause is the moment to dismiss it as well.</p>
+<h3 id="step-20-5">Step 20</h3>
+<p>If the files still do not appear after signing in, Test fetch on the
+signed in page shows what urlFido can see.</p>
+<h3 id="step-21-5">Step 21</h3>
+<p>Members-only files, fetched like any others. The last task walk
+fetches from the command line.</p>
+<p><strong>Something to try:</strong> Fetch one file from a page behind
+a sign in, using Authenticate credentials.</p>
+<h2 id="fetch-from-the-command-line">8 - Fetch from the Command
+Line</h2>
+<p>Fetching from a command prompt or a batch file, with the same options
+as the dialog, for regular and scheduled runs.</p>
+<p><strong>Before you start:</strong> A command prompt.</p>
+<h3 id="step-1-8">Step 1</h3>
+<p>One want: to fetch from the same pages every month without opening
+the dialog, and to know when something new appears.</p>
+<h3 id="step-2-3">Step 2</h3>
+<p>At a command prompt, urlFido followed by a page’s address fetches
+from it, with the extensions saved in the dialog or the defaults.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido https colon slash slash www dot itic dot org slash policy
+slash accessibility slash vpat</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-3-3">Step 3</h3>
+<p>Dash o names the parent folder, and dash e the extensions or
+patterns.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dash e docx dash o quote C colon backslash Downloads
+backslash VPAT quote</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-4-3">Step 4</h3>
+<p>Quotation marks keep a path with spaces in one piece.</p>
+<h3 id="step-5-3">Step 5</h3>
+<p>Dash f is Force overwrite, dash a pauses to authenticate, and dash m
+uses your main profile, which needs Edge closed. Each short option is
+the letter of its control in the dialog.</p>
+<h3 id="step-6-3">Step 6</h3>
+<p>Dash i runs the browser invisibly, which suits a scheduled run; dash
+a overrides it, since signing in needs a window.</p>
+<h3 id="step-7-3">Step 7</h3>
+<p>A source list’s path works in place of an address, so one line
+fetches from a whole collection.</p>
+<h3 id="step-8-2">Step 8</h3>
+<p>Saved in a batch file, that line runs on a schedule with Windows Task
+Scheduler.</p>
+<h3 id="step-9-7">Step 9</h3>
+<p>Dash u reads the settings saved by the dialog’s Use configuration
+box, so a run tried in the dialog repeats exactly.</p>
+<h3 id="step-10-6">Step 10</h3>
+<p>Dash dash view output opens the folder at the end, as the dialog’s
+box does.</p>
+<h3 id="step-11-7">Step 11</h3>
+<p>urlFido returns an exit code a batch file can test, so a scheduled
+run that failed can be noticed.</p>
+<p>Screen reader:</p>
+<ul>
+<li>if errorlevel 1 echo Check the urlFido log</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-12-5">Step 12</h3>
+<p>Dash h shows every option, and dash v the version.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dash h</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-13-3">Step 13</h3>
+<p>Dash g opens the dialog, for anyone who starts at the prompt but
+prefers the fields.</p>
+<h3 id="step-14-3">Step 14</h3>
+<p>The guide’s section on being a good citizen applies here too: a
+schedule of once a day or less is kind to the sites you fetch from.</p>
+<h3 id="step-15-6">Step 15</h3>
+<p>Everything learned in the dialog carries over to the prompt, option
+for option.</p>
+<h3 id="step-16-6">Step 16</h3>
+<p>Several sources can follow one another on the command line:
+addresses, local pages and list files together.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido dash e pdf dash o quote C colon backslash Downloads quote
+afb.org nfb.org</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-17-6">Step 17</h3>
+<p>Command-line values win over saved configuration for any option you
+give, so a batch file can change one setting and keep the rest.</p>
+<h3 id="step-18-6">Step 18</h3>
+<p>Dash l writes urlFido dot log to the output folder, adding to it
+across runs; with dash f it starts the log afresh.</p>
+<h3 id="step-19-6">Step 19</h3>
+<p>A schedule that runs once a month suits most pages; documents rarely
+change faster than that.</p>
+<h3 id="step-20-6">Step 20</h3>
+<p>From the dialog, from a prompt, or on a schedule: the same fetching
+wherever the work is. The last walk gathers it all.</p>
+<p><strong>Something to try:</strong> Write a one-line batch file that
+fetches the Word templates from a page into a folder, and run it.</p>
+<h2 id="conclusion">9 - Conclusion</h2>
+<p>What the walks covered, a glossary in two voices, and every way to
+get help with urlFido.</p>
+<p><strong>Before you start:</strong> Nothing to set up; this walk only
+listens.</p>
+<h3 id="step-1-9">Step 1</h3>
+<p>That is urlFido. Here is what each walk gave you.</p>
+<h3 id="step-2-4">Step 2</h3>
+<p>Walk one, the dialog. Walk two, installing. Walk three, a page’s
+documents. Walk four, choosing what to fetch. Walk five, testing
+first.</p>
+<h3 id="step-3-4">Step 3</h3>
+<p>Walk six, several pages at once. Walk seven, pages behind a sign in.
+Walk eight, the command line.</p>
+<h3 id="step-4-4">Step 4</h3>
+<p>Now a short glossary. I say the term; the other voice says what it
+means.</p>
+<h3 id="step-5-4">Step 5</h3>
+<p>Extension.</p>
+<p>Screen reader:</p>
+<ul>
+<li>The ending of a file’s name, such as pdf or docx, that says what
+kind of file it is.</li>
+</ul>
+<h3 id="step-6-4">Step 6</h3>
+<p>Pattern.</p>
+<p>Screen reader:</p>
+<ul>
+<li>A name with wildcards, a star for any characters and a question mark
+for one, matching several files at once.</li>
+</ul>
+<h3 id="step-7-4">Step 7</h3>
+<p>Source list.</p>
+<p>Screen reader:</p>
+<ul>
+<li>A text file of page addresses, one to a line, fetched from in one
+run.</li>
+</ul>
+<h3 id="step-8-3">Step 8</h3>
+<p>Test fetch.</p>
+<p>Screen reader:</p>
+<ul>
+<li>A run that works out what it would download, and downloads
+nothing.</li>
+</ul>
+<h3 id="step-9-8">Step 9</h3>
+<p>Main profile.</p>
+<p>Screen reader:</p>
+<ul>
+<li>Your everyday Edge settings and sign ins, used instead of urlFido’s
+own.</li>
+</ul>
+<h3 id="step-10-f1">Step 10: F1</h3>
+<p>Help is a key away: F1 in the dialog shows Help, and Shift plus F1
+says the tip for the control you are on.</p>
+<p>Screen reader:</p>
+<ul>
+<li>urlFido Help dialog</li>
+</ul>
+<p>Confirm the wording with a live run: buildTutorials -live.</p>
+<h3 id="step-11-8">Step 11</h3>
+<p>The full guide, in the help folder, has worked examples, the editing
+keys, and what to do when a page yields nothing. F11 checks for a newer
+version.</p>
+<h3 id="step-12-6">Step 12</h3>
+<p>The urlFido page on GitHub has the latest release and a place to
+report a problem; each run’s log says exactly what happened.</p>
+<h3 id="step-13-4">Step 13</h3>
+<p>Thank you for listening. Happy fetching.</p>
+<p><strong>Something to try:</strong> Fetch the documents from one page
+you visit often, and keep its folder.</p>
+<!-- walkthrough ends -->
+<h2 id="where-to-go-next">1. Where to Go Next</h2>
+<p>Press F1 for the guide, Alt+Shift+H for the hotkey list, and Alt+F10
+for every command in one window.</p>
+</body>
+</html>

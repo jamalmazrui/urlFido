@@ -1,0 +1,138 @@
+﻿; Tutorial_3_Fetch_a_Pages_Documents.inix -- fetch a page's documents
+
+[about]
+Title=3 - Fetch a Page's Documents
+Intro=Downloading every document a page links to, using the guide's own example: the VPAT page of the Information Technology Industry Council.
+Setup=urlFido installed.
+Homework=Fetch the VPAT templates, then open one in Word.
+
+[step]
+
+Say=One want: every edition of the VPAT, the template behind an Accessibility Conformance Report, without opening each link by hand.
+Key=
+
+[step]
+
+Say=The Information Technology Industry Council publishes the VPAT in several editions on one page. The guide uses it as a first example.
+Key=
+
+[step]
+
+Say=I open the dialog and type the page's address in Source urls.
+Key=Alt+Control+U
+Hear=urlFido dialog
+Hear=Source urls edit
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The address is itic dot org slash policy slash accessibility slash vpat.
+Key=
+Hear=https colon slash slash www dot itic dot org slash policy slash accessibility slash vpat
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I leave File extensions as it is, which takes Word documents, PDF files and zip archives.
+Key=Alt+E
+Hear=File extensions edit, docx pdf zip
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I choose a parent folder for the results, Downloads backslash VPAT.
+Key=Alt+O
+Hear=Output directory edit
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=And tick View output, to land in the folder at the end.
+Key=Alt+V
+Hear=View output check box, checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Enter starts. Edge opens the page, waits for it to finish loading, and looks at every link.
+Key=Enter
+Hear=Fetching from VPAT, Information Technology Industry Council
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Each matching file is downloaded the way a browser would, with the page's cookies, so a site that guards its files still allows it.
+Key=
+
+[step]
+
+Say=Files arrive one at a time, politely, a moment apart, so the site is never strained.
+Key=
+
+[step]
+
+Say=A short box reports the totals.
+Key=
+Hear=5 files downloaded
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=File Explorer opens on the parent folder, where the page has a folder named after its title.
+Key=Enter
+Hear=VPAT, Information Technology Industry Council
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Inside are the editions, each with the name the site gave it.
+Key=Enter
+Hear=VPAT 2.5 WCAG dot d o c x
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Enter on one opens it in Word, ready to fill in.
+Key=Enter
+Hear=VPAT 2.5 WCAG - Word
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=When the run finishes, a box gives the results summary, and a short spoken line gives the outcome without your having to read it all.
+Key=
+
+[step]
+
+Say=Running the same page again saves any file already there as a numbered copy; Force overwrite replaces it instead.
+Key=
+
+[step]
+
+Say=And if a fresh fetch fails partway, the earlier folder is put back as it was, so a bad run never loses good files.
+Key=
+
+[step]
+
+Say=Edge waits for the page to finish loading before urlFido looks at it, so links added by a page's scripts are found too.
+Key=
+
+[step]
+
+Say=Each file keeps the name the site supplies, so it reads sensibly in File Explorer.
+Key=
+
+[step]
+
+Say=A link that leads to a web page instead of a file, such as a sign in page, is not saved as if it were the document.
+Key=
+
+[step]
+
+Say=The page's folder name comes from its title, adjusted for what Windows allows in a folder name.
+Key=
+
+[step]
+
+Say=One page, every document, one folder. The next walk chooses exactly which files to take.
+Key=

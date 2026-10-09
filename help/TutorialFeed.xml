@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Homer Tools Walkthroughs</title>
+    <link>Tutorials.htm</link>
+    <description></description>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 09 Oct 2026 02:50:34 +0000</lastBuildDate>
+    <itunes:author></itunes:author>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:category text="Technology"/>
+    <item>
+      <title>0 - Overview</title>
+      <description>Nothing to set up; this walk only listens. Full transcript: Tutorials.htm#0-0-overview</description>
+      <link>Tutorials.htm#0-0-overview</link>
+      <guid isPermaLink="false">homer-tutorial_0_overview</guid>
+      <enclosure url="tutorials/0_Overview.mp3" length="662702" type="audio/mpeg"/>
+      <itunes:duration>00:01:34</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>1 - User Interface</title>
+      <description>urlFido installed; the dialog open with Alt+Control+U. Full transcript: Tutorials.htm#0a-1-user-interface</description>
+      <link>Tutorials.htm#0a-1-user-interface</link>
+      <guid isPermaLink="false">homer-tutorial_1_user_interface</guid>
+      <enclosure url="tutorials/1_User_Interface.mp3" length="1416933" type="audio/mpeg"/>
+      <itunes:duration>00:03:25</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>2 - Install and Launch</title>
+      <description>urlFido_setup.exe downloaded from the urlFido releases page on GitHub. Full transcript: Tutorials.htm#0b-2-install-and-launch</description>
+      <link>Tutorials.htm#0b-2-install-and-launch</link>
+      <guid isPermaLink="false">homer-tutorial_2_install_and_launch</guid>
+      <enclosure url="tutorials/2_Install_and_Launch.mp3" length="1135316" type="audio/mpeg"/>
+      <itunes:duration>00:02:41</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>3 - Fetch a Page's Documents</title>
+      <description>urlFido installed. Full transcript: Tutorials.htm#0c-3-fetch-a-pages-documents</description>
+      <link>Tutorials.htm#0c-3-fetch-a-pages-documents</link>
+      <guid isPermaLink="false">homer-tutorial_3_fetch_a_pages_documents</guid>
+      <enclosure url="tutorials/3_Fetch_a_Pages_Documents.mp3" length="1127503" type="audio/mpeg"/>
+      <itunes:duration>00:02:39</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>4 - Choose What to Fetch</title>
+      <description>urlFido installed, and a page with several kinds of file. Full transcript: Tutorials.htm#0d-4-choose-what-to-fetch</description>
+      <link>Tutorials.htm#0d-4-choose-what-to-fetch</link>
+      <guid isPermaLink="false">homer-tutorial_4_choose_what_to_fetch</guid>
+      <enclosure url="tutorials/4_Choose_What_to_Fetch.mp3" length="1037172" type="audio/mpeg"/>
+      <itunes:duration>00:02:24</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>5 - Try First with Test Fetch</title>
+      <description>urlFido installed, and a page you have not fetched from before. Full transcript: Tutorials.htm#0e-5-try-first-with-test-fetch</description>
+      <link>Tutorials.htm#0e-5-try-first-with-test-fetch</link>
+      <guid isPermaLink="false">homer-tutorial_5_try_first_with_test_fetch</guid>
+      <enclosure url="tutorials/5_Try_First_with_Test_Fetch.mp3" length="1052125" type="audio/mpeg"/>
+      <itunes:duration>00:02:27</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>6 - Fetch from Several Pages</title>
+      <description>A text file listing several pages, one address to a line. Full transcript: Tutorials.htm#0f-6-fetch-from-several-pages</description>
+      <link>Tutorials.htm#0f-6-fetch-from-several-pages</link>
+      <guid isPermaLink="false">homer-tutorial_6_fetch_from_several_pages</guid>
+      <enclosure url="tutorials/6_Fetch_from_Several_Pages.mp3" length="1014517" type="audio/mpeg"/>
+      <itunes:duration>00:02:23</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>7 - Fetch from Pages Behind a Sign In</title>
+      <description>An account on a site whose files need a sign in. Full transcript: Tutorials.htm#0g-7-fetch-from-pages-behind-a-sign-in</description>
+      <link>Tutorials.htm#0g-7-fetch-from-pages-behind-a-sign-in</link>
+      <guid isPermaLink="false">homer-tutorial_7_fetch_from_pages_behind_a_sign_in</guid>
+      <enclosure url="tutorials/7_Fetch_from_Pages_Behind_a_Sign_In.mp3" length="983390" type="audio/mpeg"/>
+      <itunes:duration>00:02:16</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>8 - Fetch from the Command Line</title>
+      <description>A command prompt. Full transcript: Tutorials.htm#0h-8-fetch-from-the-command-line</description>
+      <link>Tutorials.htm#0h-8-fetch-from-the-command-line</link>
+      <guid isPermaLink="false">homer-tutorial_8_fetch_from_the_command_line</guid>
+      <enclosure url="tutorials/8_Fetch_from_the_Command_Line.mp3" length="1050438" type="audio/mpeg"/>
+      <itunes:duration>00:02:23</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+    <item>
+      <title>9 - Conclusion</title>
+      <description>Nothing to set up; this walk only listens. Full transcript: Tutorials.htm#0i-9-conclusion</description>
+      <link>Tutorials.htm#0i-9-conclusion</link>
+      <guid isPermaLink="false">homer-tutorial_9_conclusion</guid>
+      <enclosure url="tutorials/9_Conclusion.mp3" length="583124" type="audio/mpeg"/>
+      <itunes:duration>00:01:27</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
+  </channel>
+</rss>

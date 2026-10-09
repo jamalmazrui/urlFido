@@ -1,0 +1,142 @@
+﻿; Tutorial_2_Install_and_Launch.inix -- install and launch
+
+[about]
+Title=2 - Install and Launch
+Intro=Installing urlFido for everyone on the computer, opening it from anywhere, and keeping it current.
+Setup=urlFido_setup.exe downloaded from the urlFido releases page on GitHub.
+Homework=After installing, open the dialog with its desktop key and press F11.
+
+[step]
+
+Say=One want: urlFido on this computer, opened with one key, ready to fetch.
+Key=
+
+[step]
+
+Say=I open the downloaded setup program. It installs for everyone, so Windows asks for administrator rights; I say yes.
+Key=Enter
+Hear=Setup - urlFido dialog
+Hear=Welcome to the urlFido Setup Wizard
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The welcome page summarizes the license: urlFido is free and open source, under the MIT license. Enter takes Next.
+Key=Enter
+Hear=Select Destination Location
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The default folder in Program Files is right; an update goes there without asking.
+Key=Enter
+Hear=Ready to Install
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Enter installs it.
+Key=Enter
+Hear=Installing
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The last page offers to launch urlFido now.
+Key=
+Hear=Launch urlFido now check box, checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I press Finish. A short box says what was installed and where the logs are.
+Key=Enter
+Hear=urlFido setup complete
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=When I close it, urlFido opens on its dialog.
+Key=Enter
+Hear=urlFido dialog
+Hear=Source urls edit
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=From now on, Alt plus Control plus U opens it from anywhere in Windows, and the Start menu has it as well.
+Key=
+
+[step]
+
+Say=urlFido drives Microsoft Edge, which Windows 10 and 11 already have, so there is nothing else to install.
+Key=
+
+[step]
+
+Say=It keeps a browser profile of its own, separate from your everyday Edge, unless you choose Main profile.
+Key=
+
+[step]
+
+Say=Your settings and logs live in your own application data, so an update never touches them.
+Key=
+
+[step]
+
+Say=F11 in the dialog asks GitHub for a newer version; when there is one, Enter installs it.
+Key=F11
+Hear=Checking for a newer version
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=If this copy is the newest, No is the default, and Enter returns to the dialog.
+Key=Enter
+Hear=urlFido dialog
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Uninstalling, from Installed apps in Windows Settings, leaves every file you fetched where it was saved.
+Key=
+
+[step]
+
+Say=If setup ever stops partway, its log says why, and running it again finishes the job.
+Key=
+
+[step]
+
+Say=The full guide is in the help folder of the installation, readable before the first run, with worked examples of real pages to try.
+Key=
+
+[step]
+
+Say=Each run writes a session log in your application data, whatever the dialog says, so a run can always be traced afterwards.
+Key=
+
+[step]
+
+Say=The guide's quick start uses real pages, such as the VPAT page of the Information Technology Industry Council, so a first run can be tried at once.
+Key=
+
+[step]
+
+Say=Nothing is downloaded at install time beyond the program; pages are reached only when a run begins.
+Key=
+
+[step]
+
+Say=Main profile, when chosen, needs your everyday Edge closed first, which the guide explains in its section on authenticated pages.
+Key=
+
+[step]
+
+Say=If Edge itself is missing or broken, urlFido says so in plain words rather than failing silently.
+Key=
+
+[step]
+
+Say=Installed, opened with one key, and kept current. The next walk fetches a page's documents.
+Key=

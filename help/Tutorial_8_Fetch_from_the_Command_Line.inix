@@ -1,0 +1,117 @@
+﻿; Tutorial_8_Fetch_from_the_Command_Line.inix -- fetch from the command line
+
+[about]
+Title=8 - Fetch from the Command Line
+Intro=Fetching from a command prompt or a batch file, with the same options as the dialog, for regular and scheduled runs.
+Setup=A command prompt.
+Homework=Write a one-line batch file that fetches the Word templates from a page into a folder, and run it.
+
+[step]
+
+Say=One want: to fetch from the same pages every month without opening the dialog, and to know when something new appears.
+Key=
+
+[step]
+
+Say=At a command prompt, urlFido followed by a page's address fetches from it, with the extensions saved in the dialog or the defaults.
+Key=
+Hear=urlFido https colon slash slash www dot itic dot org slash policy slash accessibility slash vpat
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Dash o names the parent folder, and dash e the extensions or patterns.
+Key=
+Hear=urlFido dash e docx dash o quote C colon backslash Downloads backslash VPAT quote
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Quotation marks keep a path with spaces in one piece.
+Key=
+
+[step]
+
+Say=Dash f is Force overwrite, dash a pauses to authenticate, and dash m uses your main profile, which needs Edge closed. Each short option is the letter of its control in the dialog.
+Key=
+
+[step]
+
+Say=Dash i runs the browser invisibly, which suits a scheduled run; dash a overrides it, since signing in needs a window.
+Key=
+
+[step]
+
+Say=A source list's path works in place of an address, so one line fetches from a whole collection.
+Key=
+
+[step]
+
+Say=Saved in a batch file, that line runs on a schedule with Windows Task Scheduler.
+Key=
+
+[step]
+
+Say=Dash u reads the settings saved by the dialog's Use configuration box, so a run tried in the dialog repeats exactly.
+Key=
+
+[step]
+
+Say=Dash dash view output opens the folder at the end, as the dialog's box does.
+Key=
+
+[step]
+
+Say=urlFido returns an exit code a batch file can test, so a scheduled run that failed can be noticed.
+Key=
+Hear=if errorlevel 1 echo Check the urlFido log
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Dash h shows every option, and dash v the version.
+Key=
+Hear=urlFido dash h
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Dash g opens the dialog, for anyone who starts at the prompt but prefers the fields.
+Key=
+
+[step]
+
+Say=The guide's section on being a good citizen applies here too: a schedule of once a day or less is kind to the sites you fetch from.
+Key=
+
+[step]
+
+Say=Everything learned in the dialog carries over to the prompt, option for option.
+Key=
+
+[step]
+
+Say=Several sources can follow one another on the command line: addresses, local pages and list files together.
+Key=
+Hear=urlFido dash e pdf dash o quote C colon backslash Downloads quote afb.org nfb.org
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Command-line values win over saved configuration for any option you give, so a batch file can change one setting and keep the rest.
+Key=
+
+[step]
+
+Say=Dash l writes urlFido dot log to the output folder, adding to it across runs; with dash f it starts the log afresh.
+Key=
+
+[step]
+
+Say=A schedule that runs once a month suits most pages; documents rarely change faster than that.
+Key=
+
+[step]
+
+Say=From the dialog, from a prompt, or on a schedule: the same fetching wherever the work is. The last walk gathers it all.
+Key=

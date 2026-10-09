@@ -1,0 +1,122 @@
+﻿; Tutorial_7_Fetch_from_Pages_Behind_a_Sign_In.inix -- fetch from pages behind a sign in
+
+[about]
+Title=7 - Fetch from Pages Behind a Sign In
+Intro=Fetching files that a site offers only to signed-in users: pausing to sign in, or using your everyday Edge profile.
+Setup=An account on a site whose files need a sign in.
+Homework=Fetch one file from a page behind a sign in, using Authenticate credentials.
+
+[step]
+
+Say=One want: the documents a site keeps for its members, such as a course's handouts, which only appear once I am signed in.
+Key=
+
+[step]
+
+Say=Without a sign in, such a page shows a sign in form, and urlFido finds nothing to fetch.
+Key=
+
+[step]
+
+Say=Authenticate credentials, A, pauses at each new site, so you can sign in yourself in the Edge window.
+Key=Alt+A
+Hear=Authenticate credentials check box, not checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Space checks it.
+Key=Space
+Hear=checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I put the course page's address in Source urls and press Enter. Edge opens, and urlFido waits.
+Key=Enter
+Hear=Sign in, then press OK to continue
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I sign in in Edge as usual, then press Enter in urlFido's box.
+Key=Enter
+Hear=Fetching from Course handouts
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The files then download with the session I just made, as they would for me in the browser.
+Key=
+
+[step]
+
+Say=The other way is Main profile, M, which uses your everyday Edge profile with the sign ins it already holds.
+Key=Alt+M
+Hear=Main profile check box, not checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=That needs no pause, but your everyday Edge must be closed first, since one profile cannot be open twice.
+Key=
+
+[step]
+
+Say=Your password never passes through urlFido; you type it into Edge yourself.
+Key=
+
+[step]
+
+Say=Leave Invisible browser off for a run that asks you to sign in, since the sign in needs a window to type into.
+Key=
+
+[step]
+
+Say=A file that turns out to be a sign in page in disguise, a web page instead of the document, is refused rather than saved under the document's name.
+Key=
+
+[step]
+
+Say=When finished, signing out in Edge closes the session, if the account matters.
+Key=
+
+[step]
+
+Say=Authenticate pauses only at the first page of each site, so a list of many pages on one site asks just once.
+Key=
+
+[step]
+
+Say=A site that ends sessions after a few minutes may need a shorter list, so the run finishes while you are signed in.
+Key=
+
+[step]
+
+Say=Two factor codes work as usual, since you sign in yourself, at your own pace, before pressing OK.
+Key=
+
+[step]
+
+Say=Main profile suits a site you already use every day; Authenticate suits a clean, separate session.
+Key=
+
+[step]
+
+Say=Files fetched this way are saved like any others, in the page's folder under the site's own names.
+Key=
+
+[step]
+
+Say=Some sites show a cookie banner before anything else; the Authenticate pause is the moment to dismiss it as well.
+Key=
+
+[step]
+
+Say=If the files still do not appear after signing in, Test fetch on the signed in page shows what urlFido can see.
+Key=
+
+[step]
+
+Say=Members-only files, fetched like any others. The last task walk fetches from the command line.
+Key=

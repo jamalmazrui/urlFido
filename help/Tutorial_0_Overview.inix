@@ -1,0 +1,66 @@
+﻿; Tutorial_0_Overview.inix -- overview
+
+[about]
+Title=0 - Overview
+Intro=What urlFido is, how it fetches, and the ten walks that teach it.
+Setup=Nothing to set up; this walk only listens.
+Homework=Think of a web page with documents you want to keep. Walk three fetches them.
+
+[step]
+
+Say=Welcome. This is the first of ten short walks through urlFido. I am the host; the other voice is the screen reader, speaking as it would on your own computer.
+Key=
+
+[step]
+
+Say=Two reader keys help in every walk. If a line goes by too fast, Insert plus Up Arrow says it again.
+Key=Insert+Up Arrow
+Hear=Source urls edit
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=And whenever you are unsure where you are, Insert plus Tab says what has the focus.
+Key=Insert+Tab
+Hear=Source urls edit, blank
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=urlFido downloads the files a web page links to, of the kinds you choose: PDF documents, Word documents, zip archives, or any other extension you name.
+Key=
+
+[step]
+
+Say=Unlike a plain downloader, it opens each page in Microsoft Edge, so the page behaves as it would for you: scripts run, cookies apply, and links that appear only after loading are found.
+Key=
+
+[step]
+
+Say=It saves each page's files into a folder named after the page's title, so a run over several pages stays easy to tell apart.
+Key=
+
+[step]
+
+Say=It can try first, with Test fetch, saying what it would download without downloading anything.
+Key=
+
+[step]
+
+Say=It runs from a dialog opened from the desktop, or from the command line, where one line can fetch from a whole list of pages.
+Key=
+
+[step]
+
+Say=Here are the walks. One, the dialog. Two, installing. Three, a page's documents. Four, choosing what to fetch. Five, trying first with Test fetch.
+Key=
+
+[step]
+
+Say=Six, several pages at once. Seven, pages behind a sign in. Eight, the command line. Nine, the conclusion, a glossary, and where to get help.
+Key=
+
+[step]
+
+Say=Each walk is a few minutes long and builds on the last. Walk one comes next.
+Key=

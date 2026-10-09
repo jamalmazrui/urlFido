@@ -1,0 +1,133 @@
+﻿; Tutorial_5_Try_First_with_Test_Fetch.inix -- try first with test fetch
+
+[about]
+Title=5 - Try First with Test Fetch
+Intro=Test fetch: a full run that downloads nothing and creates no folder, reporting what it would have done.
+Setup=urlFido installed, and a page you have not fetched from before.
+Homework=Run Test fetch on a page, then run it for real once the report looks right.
+
+[step]
+
+Say=One want: to know what a run will fetch before it fills my Downloads folder with things I did not mean to keep.
+Key=
+
+[step]
+
+Say=Test fetch, T, does everything a real run does: it loads each page, examines every link, and works out what matches.
+Key=Alt+T
+Hear=Test fetch check box, not checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=But it writes nothing. No file is downloaded and no folder is made.
+Key=Space
+Hear=checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=I put a new page's address in Source urls and press Enter.
+Key=Enter
+Hear=Testing VPAT, Information Technology Industry Council
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=The report begins by saying plainly that it was a simulation.
+Key=
+Hear=SIMULATION -- nothing was downloaded and no folder was created.
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Then what would have happened: how many files, and each one's name and size where the site gives it.
+Key=Down Arrow
+Hear=Would download 3 files:
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Down Arrow reads them one by one.
+Key=Down Arrow
+Hear=VPAT 2.5 WCAG dot d o c x
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Skipped links are listed too, with the reason, such as a pattern that did not match.
+Key=
+
+[step]
+
+Say=If the list is wrong, I adjust File extensions and test again, until it is exactly what I want.
+Key=
+
+[step]
+
+Say=Then I clear Test fetch with Space, and the same run downloads for real.
+Key=Space
+Hear=not checked
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Test fetch is also the safest way to check a long list of pages, since a mistake in the list costs nothing.
+Key=
+
+[step]
+
+Say=And it is how to find out whether a page offers any files at all before setting up a scheduled run for it.
+Key=
+
+[step]
+
+Say=If a test finds nothing, the guide's section on a page that yields nothing lists the usual reasons, such as files offered only after a sign in.
+Key=
+
+[step]
+
+Say=A test run is quick, since nothing is downloaded, so testing first costs little.
+Key=
+
+[step]
+
+Say=Once the test looks right, the same settings, saved with Use configuration, serve a real run from the dialog or the command line.
+Key=
+
+[step]
+
+Say=The report also names each page it examined, so a mistyped address in a list shows up at once.
+Key=
+
+[step]
+
+Say=A link that needs a sign in shows in the test, and walk seven explains how to fetch it.
+Key=
+
+[step]
+
+Say=For a page with many links, the report's count of matches says at a glance whether a pattern is too wide.
+Key=
+
+[step]
+
+Say=Test fetch writes nothing at all, not even an empty folder, so it leaves no trace to clean up.
+Key=
+
+[step]
+
+Say=Test fetch works with a source list as well as one page, which is the best way to check a long list before a long run.
+Key=
+
+[step]
+
+Say=After a test, Up Arrow in Source urls brings the same pages back, ready for the real run.
+Key=Up Arrow
+Hear=https colon slash slash www dot itic dot org slash policy slash accessibility slash vpat
+Note=Confirm the wording with a live run: buildTutorials -live.
+
+[step]
+
+Say=Look first, then fetch. The next walk fetches from several pages at once.
+Key=

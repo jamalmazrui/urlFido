@@ -5,6 +5,10 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 9 October 2026 -- spoken tutorials
+
+**Ten spoken walks, in the Homer pattern of ten.** Walk 0 is an overview and table of contents; 1, the user interface, each control shown as the screen reader speaks it; 2, installing; 3 to 8, tasks around concrete wants -- a page's documents, choosing what to fetch with patterns, trying first with Test fetch, several pages from a list, pages behind a sign in, and the command line; and 9, the conclusion, with a glossary in two voices and every way to get help. Each task walk is predicted at three minutes or more by the kit's measured model, and every key and feature it teaches was checked against this guide. The build speaks them; the installer ships them and their audio; the repository carries both.
+
 ## 8 October 2026 -- an audit by another AI
 
 ChatGPT audited urlFido and reported 38 findings. Checked against the code, these held and are fixed:

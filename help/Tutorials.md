@@ -137,6 +137,24 @@
 - [7 - Fetch from Pages Behind a Sign In](#7-fetch-from-pages-behind-a-sign-in)
 - [8 - Fetch from the Command Line](#8-fetch-from-the-command-line)
 - [9 - Conclusion](#9-conclusion)
+- [1 - User Interface](#1-user-interface)
+- [2 - Install and Launch](#2-install-and-launch)
+- [3 - Fetch a Page's Documents](#3-fetch-a-pages-documents)
+- [4 - Choose What to Fetch](#4-choose-what-to-fetch)
+- [5 - Try First with Test Fetch](#5-try-first-with-test-fetch)
+- [6 - Fetch from Several Pages](#6-fetch-from-several-pages)
+- [7 - Fetch from Pages Behind a Sign In](#7-fetch-from-pages-behind-a-sign-in)
+- [8 - Fetch from the Command Line](#8-fetch-from-the-command-line)
+- [9 - Conclusion](#9-conclusion)
+- [1 - User Interface](#1-user-interface)
+- [2 - Install and Launch](#2-install-and-launch)
+- [3 - Fetch a Page's Documents](#3-fetch-a-pages-documents)
+- [4 - Choose What to Fetch](#4-choose-what-to-fetch)
+- [5 - Try First with Test Fetch](#5-try-first-with-test-fetch)
+- [6 - Fetch from Several Pages](#6-fetch-from-several-pages)
+- [7 - Fetch from Pages Behind a Sign In](#7-fetch-from-pages-behind-a-sign-in)
+- [8 - Fetch from the Command Line](#8-fetch-from-the-command-line)
+- [9 - Conclusion](#9-conclusion)
 - [0 - Overview](#0-overview)
 - [1 - User Interface](#1-user-interface)
 - [2 - Install and Launch](#2-install-and-launch)
@@ -163,53 +181,61 @@ Welcome. This is the first of ten short walks through urlFido. I am the host; th
 
 ### Step 2: Insert+Up Arrow
 
-Two reader keys help in every walk. If a line goes by too fast, Insert plus Up Arrow says it again.
+You know your screen reader's own keys already, and three of them are worth remembering whenever you feel lost or unsure. Insert plus Up Arrow says the line you are on again.
 
 Screen reader:
 
 - Source urls edit
 
-Confirm the wording with a live run: buildTutorials -live.
-
 ### Step 3: Insert+Tab
 
-And whenever you are unsure where you are, Insert plus Tab says what has the focus.
+Insert plus Tab says what has the focus: its name, its role, and its value or state.
 
 Screen reader:
 
 - Source urls edit, blank
 
-Confirm the wording with a live run: buildTutorials -live.
+### Step 4: Insert+T
 
-### Step 4
+Insert plus T says the title of the window.
 
-urlFido downloads the files a web page links to, of the kinds you choose: PDF documents, Word documents, zip archives, or any other extension you name.
+Screen reader:
+
+- urlFido
 
 ### Step 5
 
-Unlike a plain downloader, it opens each page in Microsoft Edge, so the page behaves as it would for you: scripts run, cookies apply, and links that appear only after loading are found.
+If you set your screen reader to use Caps Lock in place of Insert, Caps Lock works the same way for all three.
 
 ### Step 6
 
-It saves each page's files into a folder named after the page's title, so a run over several pages stays easy to tell apart.
+urlFido downloads the files a web page links to, of the kinds you choose: PDF documents, Word documents, zip archives, or any other extension you name.
 
 ### Step 7
 
-It can try first, with Test fetch, saying what it would download without downloading anything.
+Unlike a plain downloader, it opens each page in Microsoft Edge, so the page behaves as it would for you: scripts run, cookies apply, and links that appear only after loading are found.
 
 ### Step 8
 
-It runs from a dialog opened from the desktop, or from the command line, where one line can fetch from a whole list of pages.
+It saves each page's files into a folder named after the page's title, so a run over several pages stays easy to tell apart.
 
 ### Step 9
 
-Here are the walks. One, the dialog. Two, installing. Three, a page's documents. Four, choosing what to fetch. Five, trying first with Test fetch.
+It can try first, with Test fetch, saying what it would download without downloading anything.
 
 ### Step 10
 
-Six, several pages at once. Seven, pages behind a sign in. Eight, the command line. Nine, the conclusion, a glossary, and where to get help.
+It runs from a dialog opened from the desktop, or from the command line, where one line can fetch from a whole list of pages.
 
 ### Step 11
+
+Here are the walks. One, the dialog. Two, installing. Three, a page's documents. Four, choosing what to fetch. Five, trying first with Test fetch.
+
+### Step 12
+
+Six, several pages at once. Seven, pages behind a sign in. Eight, the command line. Nine, the conclusion, a glossary, and where to get help.
+
+### Step 13
 
 Each walk is a few minutes long and builds on the last. Walk one comes next.
 

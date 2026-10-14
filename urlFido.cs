@@ -909,9 +909,85 @@ static class urlHelper {
         lAside.Clear();
     }
 
-    public static string chooseTargetDir(string sParent, string sTitle, bool bForce) {
-        string sDir = Path.Combine(sParent, folderNameFromTitle(sTitle, sParent));
-        if (Directory.Exists(sDir)) {
+    // A SOURCE IS KNOWN BY ITS ADDRESS, ITS FOLDER BY ITS TITLE (14 October 2026, from an
+    // audit by another AI). The folder was named for the page's title alone, so two pages
+    // with one title skipped or replaced each other, and a page whose title changed got a
+    // second folder. Each folder now holds urlFido-source.txt, naming the address it is
+    // for. A page's folder is the one whose record names its address, whatever it is
+    // called; otherwise the first of "Title", "Title (2)" and so on that is free, or that
+    // is an earlier folder with no record, which is adopted. Names stay readable.
+    public const string sSourceRecordName = "urlFido-source.txt";
+    public static string sLastFolderName = "";
+    static string sPendingRecordDir = "", sPendingRecordUrl = "", sPendingRecordTitle = "";
+
+    public static string normalizedAddress(string sUrl) {
+        try {
+            Uri oUri = new Uri(sUrl);
+            string sPort = oUri.IsDefaultPort ? "" : ":" + oUri.Port;
+            string sPath = oUri.AbsolutePath == "/" ? "" : oUri.AbsolutePath;
+            return oUri.Scheme.ToLowerInvariant() + "://" + oUri.Host.ToLowerInvariant() + sPort + sPath + oUri.Query;
+        } catch {
+            return (sUrl ?? "").Trim();
+        }
+    }
+
+    public static string recordedUrl(string sDir) {
+        string sRecord = Path.Combine(sDir, sSourceRecordName);
+        if (!File.Exists(sRecord)) return "";
+        try {
+            foreach (string sLine in File.ReadAllLines(sRecord)) {
+                if (sLine.StartsWith("Normalized address:", StringComparison.OrdinalIgnoreCase)) return sLine.Substring(19).Trim();
+            }
+        } catch { }
+        return "";
+    }
+
+    public static void writeSourceRecord(string sDir, string sUrl, string sTitle) {
+        try {
+            File.WriteAllText(Path.Combine(sDir, sSourceRecordName),
+                "Normalized address: " + normalizedAddress(sUrl) + "\r\nAddress as given: " + sUrl + "\r\nTitle: " + sTitle +
+                "\r\nRecorded: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm") + "\r\n", new UTF8Encoding(true));
+        } catch (Exception ex) {
+            logger.warn("Could not write the address record in '" + sDir + "': " + ex.Message);
+        }
+    }
+
+    // This page's folder and whether it already exists: found by the address its record
+    // names (a recovery folder kept aside is never it), else the first free or unrecorded
+    // folder named for the title.
+    public static string findPageFolder(string sParent, string sTitle, string sUrl, out bool bExists) {
+        string sWanted = normalizedAddress(sUrl);
+        bExists = false;
+        if (Directory.Exists(sParent)) {
+            List<string> lDirs = new List<string>(Directory.GetDirectories(sParent));
+            lDirs.Sort(StringComparer.OrdinalIgnoreCase);
+            foreach (string sChild in lDirs) {
+                if (Path.GetFileName(sChild).IndexOf(".recovery-", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                if (recordedUrl(sChild) == sWanted) { bExists = true; return sChild; }
+            }
+        }
+        string sBaseName = folderNameFromTitle(sTitle, sParent);
+        for (int iNumber = 1; iNumber < 1000; iNumber++) {
+            string sCandidate = Path.Combine(sParent, iNumber == 1 ? sBaseName : sBaseName + " (" + iNumber + ")");
+            if (!Directory.Exists(sCandidate) && !File.Exists(sCandidate)) return sCandidate;
+            if (Directory.Exists(sCandidate) && recordedUrl(sCandidate) == "") {
+                logger.info("Adopted '" + sCandidate + "', which has no address record, for " + sWanted);
+                bExists = true;
+                return sCandidate;
+            }
+        }
+        throw new IOException("More than 999 folders are named for the title " + sTitle);
+    }
+
+    public static string chooseTargetDir(string sParent, string sTitle, string sUrl, bool bForce) {
+        bool bExists;
+        string sDir = findPageFolder(sParent, sTitle, sUrl, out bExists);
+        sLastFolderName = Path.GetFileName(sDir);
+        // The record is written when the folder is made (ensureDir), which is only when a
+        // file arrives; an adopted folder is recorded at once, so no other page adopts it.
+        sPendingRecordDir = sDir; sPendingRecordUrl = sUrl; sPendingRecordTitle = sTitle;
+        if (bExists && recordedUrl(sDir) == "" && !program.bSimulate) writeSourceRecord(sDir, sUrl, sTitle);
+        if (bExists) {
             if (!bForce) return "";
             // A TEST NEVER DELETES (8 October 2026, from an audit by another AI):
             // Test fetch set simulate mode but kept the saved Force, so a test
@@ -952,6 +1028,8 @@ static class urlHelper {
                 Directory.CreateDirectory(sDir);
                 logger.info("Created folder: " + sDir);
             }
+            if (string.Equals(sDir, sPendingRecordDir, StringComparison.OrdinalIgnoreCase) && recordedUrl(sDir) == "")
+                writeSourceRecord(sDir, sPendingRecordUrl, sPendingRecordTitle);
             return true;
         } catch (Exception ex) {
             logger.error("Could not create '" + sDir + "': " + ex.Message);
@@ -1703,12 +1781,12 @@ static class downloadEngine {
         // a person can tell apart at a glance. This happens BEFORE the
         // examination work, so a source that is going to be skipped costs
         // nothing beyond loading the page.
-        program.sTargetDir = urlHelper.chooseTargetDir(program.sOutputDir, sTitle, program.bForce);
+        program.sTargetDir = urlHelper.chooseTargetDir(program.sOutputDir, sTitle, sUrl, program.bForce);
         if (program.sTargetDir.Length == 0) {
             program.notify("Already downloaded to \"" +
-                urlHelper.folderNameFromTitle(sTitle) +
+                urlHelper.sLastFolderName +
                 "\"; skipping. Check \"Force overwrite\" to replace it.");
-            results.addSkipped(urlHelper.folderNameFromTitle(sTitle));
+            results.addSkipped(urlHelper.sLastFolderName);
             return;
         }
         // Browser-managed downloads land wherever the browser was last told,

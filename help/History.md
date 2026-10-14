@@ -5,6 +5,10 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- each source known by its address
+
+- **Two pages with one title no longer share a folder.** Each folder now holds urlFido-source.txt, naming the address it was fetched from: a page's folder is the one whose record names its address, whatever it is called, and otherwise the first of "Title", "Title (2)" and so on that is free. A page whose title changed keeps its folder rather than starting a second. Folders keep readable names; a folder from before this, with no record, is adopted by the first page that uses it (from an audit by another AI).
+
 ## 14 October 2026 -- a collection is replaced only by a complete one
 
 - **Only a complete run replaces a collection.** One new file was enough to delete the whole earlier folder, so a forced run that fetched one of twenty files and then failed lost the other nineteen. The earlier folder is now deleted only when the run finished with no failed download and was not cancelled; a partial run keeps it, and says where (from an audit by another AI).

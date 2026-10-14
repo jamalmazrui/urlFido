@@ -5,6 +5,10 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- the newest Pandoc for the help pages
+
+- **The help pages are made by the newest Pandoc, not the first on the PATH.** The build took the first pandoc on the PATH, which was Pandoc 2.19 in C:\bin, while Pandoc 3.12.1 was installed in Program Files. It now asks the kit's newest.ps1, as the kit's app template has done since kit 1.56.0, and the log names every copy found and its version.
+
 ## 14 October 2026 -- each source known by its address
 
 - **Two pages with one title no longer share a folder.** Each folder now holds urlFido-source.txt, naming the address it was fetched from: a page's folder is the one whose record names its address, whatever it is called, and otherwise the first of "Title", "Title (2)" and so on that is free. A page whose title changed keeps its folder rather than starting a second. Folders keep readable names; a folder from before this, with no record, is adopted by the first page that uses it (from an audit by another AI).

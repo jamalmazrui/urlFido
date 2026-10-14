@@ -35,7 +35,7 @@ Nothing is fetched by hand. The build finds the Roslyn C# compiler with `vswhere
 
 ## The kit's classes
 
-urlFido compiles eight of them straight from `C:\HomerDev\CSharp`: Elevate, Inix, Lbc, Log, Paths, Say, Util and Web. The copies of Inix, Lbc, Say, Util and Web that urlFido used to carry are deleted by the build once the kit's are there; they had drifted from the kit's. Lbc needs Elevate (its Help box offers the update), Log and Paths, which is why those three are compiled in too.
+urlFido compiles eight of them straight from `C:\HomerDev\exec\CSharp`: Elevate, Inix, Lbc, Log, Paths, Say, Util and Web. The copies of Inix, Lbc, Say, Util and Web that urlFido used to carry are deleted by the build once the kit's are there; they had drifted from the kit's. Lbc needs Elevate (its Help box offers the update), Log and Paths, which is why those three are compiled in too.
 
 - `Log` keeps the session log in `%LOCALAPPDATA%\urlFido\logs`. urlFido's own `logger` class writes every line to it as well as to the optional `urlFido.log`, and `Main` records anything `program.run` did not catch.
 - `Paths.configs()` is where `urlFido.inix` lives.

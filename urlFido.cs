@@ -2199,17 +2199,14 @@ static class httpFallback {
                         "likely a sign-in or error page, rather than the " + sWanted + " file");
                     return -1;
                 }
-                string sDisp = oResp.Headers["Content-Disposition"] ?? "";
-                var m = Regex.Match(sDisp, "filename\\*?=\"?([^\";]+)\"?",
-                    RegexOptions.IgnoreCase);
-                if (m.Success) {
-                    string sFromHeader = m.Groups[1].Value.Trim();
-                    if (sFromHeader.StartsWith("UTF-8''", StringComparison.OrdinalIgnoreCase))
-                        sFromHeader = Uri.UnescapeDataString(sFromHeader.Substring(7));
-                    if (sFromHeader.ToLowerInvariant().EndsWith(
-                            Path.GetExtension(sName).ToLowerInvariant())) {
-                        sName = Path.GetFileName(sFromHeader);
-                    }
+                // THE SERVER'S NAME, READ BY THE KIT (14 October 2026, from an audit by another AI). A
+                // pattern of its own read this header: it stopped a quoted name at a semicolon and
+                // decoded only UTF-8. The kit's parser reads it as the standard writes it, and the
+                // name is made safe for Windows the same way as on the main path above.
+                string sFromHeader = Web.fileFromDisposition(oResp.Headers["Content-Disposition"]);
+                if (sFromHeader.Length > 0 && sFromHeader.ToLowerInvariant().EndsWith(
+                        Path.GetExtension(sName).ToLowerInvariant())) {
+                    sName = Web.sanitizeName(sFromHeader);
                 }
                 string sFinalPath = urlHelper.uniquePath(
                     program.sTargetDir, sName, program.bForce);

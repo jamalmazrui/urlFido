@@ -5,6 +5,11 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- a download's own name, read by the kit
+
+- **The second way of downloading reads a file's name as the first does.** The plain HTTP way had its own pattern for the name a server gives a file, which stopped a quoted name at a semicolon and decoded only UTF-8. It now uses the kit's parser, which reads the header as the standard writes it, and makes the name safe for Windows as the browser way does, device names like CON included (from an audit by another AI).
+- **The developer guide names the kit's classes where they are,** in C:\HomerDev\exec\CSharp; it still named C:\HomerDev\CSharp, a folder the kit no longer has (from an audit by another AI).
+
 ## 14 October 2026 -- the guide describes the program as it now is
 
 - **The guide's account of Force overwrite was out of date, and is corrected.** It said Force overwrite removed the old folder; since the change of 14 October, the old folder is moved to a dated recovery folder and removed only when the new run finishes complete, and a page is known by its address, through urlFido-source.txt, not its title. The guide now says so.

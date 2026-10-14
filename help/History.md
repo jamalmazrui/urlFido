@@ -5,6 +5,12 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- a collection is replaced only by a complete one
+
+- **Only a complete run replaces a collection.** One new file was enough to delete the whole earlier folder, so a forced run that fetched one of twenty files and then failed lost the other nineteen. The earlier folder is now deleted only when the run finished with no failed download and was not cancelled; a partial run keeps it, and says where (from an audit by another AI).
+- **Each forced run keeps its own recovery folder.** It was always `<title> (previous)`, and an existing one was deleted first.
+- **Setup starts urlFido as you,** not with the installer's administrator rights.
+
 ## 11 October 2026 -- from an audit and a report
 
 - **Launch after setup works on a first install.** The installer's Launch box writes a marker file into %LOCALAPPDATA%\\<App>\\logs, but on a first install that folder did not exist yet -- it was made later, when setup kept its log -- so the marker could not be written, and the program did not start after setup. The marker line now makes the folder first. Found by an audit of bookFido by another AI, and fixed in every Homer installer.

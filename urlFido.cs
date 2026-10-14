@@ -879,14 +879,24 @@ static class urlHelper {
     // At the end of a run: each folder moved aside is deleted when its new
     // folder holds files, and otherwise moved back, so --force never loses a
     // collection to a run that fetched nothing.
+    // ONLY A COMPLETE RUN REPLACES A COLLECTION (14 October 2026, from an audit
+    // by another AI): one new file was enough to delete the whole earlier
+    // folder, so a run that fetched one of twenty files and then failed lost
+    // the other nineteen. The earlier folder is now deleted only when the run
+    // finished with no failed download and was not cancelled; a partial run
+    // keeps it in its recovery folder and says so.
     public static void settleAside() {
+        bool bComplete = results.iFailed == 0 && !guiProgress.bCancelled;
         foreach (string[] aPair in lAside) {
             try {
                 bool bNew = Directory.Exists(aPair[0]) &&
                     Directory.GetFiles(aPair[0], "*", SearchOption.AllDirectories).Length > 0;
-                if (bNew) {
+                if (bNew && bComplete) {
                     Directory.Delete(aPair[1], true);
-                    logger.info("The new download has files, so the earlier folder was removed: " + aPair[1]);
+                    logger.info("The new download is complete, so the earlier folder was removed: " + aPair[1]);
+                } else if (bNew) {
+                    logger.warn("This run was partial (" + results.iFailed + " failed" + (guiProgress.bCancelled ? ", cancelled" : "") + "), so the earlier collection is kept: " + aPair[1]);
+                    program.notify("Partial download: the earlier files are kept in " + aPair[1] + ".");
                 } else {
                     if (Directory.Exists(aPair[0])) Directory.Delete(aPair[0], true);
                     Directory.Move(aPair[1], aPair[0]);
@@ -912,9 +922,13 @@ static class urlHelper {
             // anything, so a failed run lost both. It is moved aside, and
             // settleAside, at the end of the run, deletes it only when the new
             // folder holds files, and otherwise moves it back.
-            string sAside = sDir + " (previous)";
+            // A RECOVERY FOLDER OF ITS OWN (14 October 2026, from an audit by
+            // another AI): the aside folder was always "<title> (previous)", and
+            // an existing one was deleted first, so a second forced run erased
+            // the collection an interrupted first run had kept. Each run now
+            // gets a recovery name that does not exist yet.
+            string sAside = Homer.Util.recoveryPath(sDir);
             try {
-                if (Directory.Exists(sAside)) Directory.Delete(sAside, true);
                 Directory.Move(sDir, sAside);
                 lAside.Add(new string[] { sDir, sAside });
                 logger.info("Moved the existing folder aside (--force), until this run has files: " + sAside);

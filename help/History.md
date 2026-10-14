@@ -5,6 +5,13 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- no folder claimed without evidence
+
+- **A folder named for the title with no address record is no longer claimed for a page.** Nothing in such a folder shows which page it came from, so a different page's folder could be claimed and its download skipped. It is left as it is, and the next free name used; a page last downloaded before folders carried records is downloaded once more, and recorded from then on (from a second audit by another AI).
+
+## 14 October 2026 -- Cancel stops a download in progress
+
+- **Cancel stops a file mid-transfer, and does not start it again.** The direct way of downloading copied a whole file in one call, so Cancel waited for it to finish, however long; and when that request ended, urlFido fell back to downloading the same file through the browser, so a cancelled file was fetched again. Now the file is copied a block at a time with Cancel checked between blocks, the request is aborted the moment Cancel is pressed, so even a stalled server cannot hold it, and a cancelled file is not tried another way. The part written is removed, and with Force the earlier collection stays set aside, since a cancelled run is not a complete one (from an audit by another AI).
 ## 14 October 2026 -- every download checked, with a receipt
 
 - **A download is checked before it counts.** A file that finished downloading was taken as good, so a sign-in page sent as a binary file was saved under a .pdf name, and a corrupt or cut-off document looked like a success. Now a file's first bytes must fit its kind: a web page under a document's name is removed and reported as failed, with the reason, as is a file whose contents are not of its kind, an empty file, and a PDF with no end. And when a server sends a file as it is and says how long it is, a transfer that brings fewer bytes is not kept. The check was tested on eleven files before it was written into urlFido (from an audit by another AI).

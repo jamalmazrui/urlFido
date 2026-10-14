@@ -970,11 +970,13 @@ static class urlHelper {
         for (int iNumber = 1; iNumber < 1000; iNumber++) {
             string sCandidate = Path.Combine(sParent, iNumber == 1 ? sBaseName : sBaseName + " (" + iNumber + ")");
             if (!Directory.Exists(sCandidate) && !File.Exists(sCandidate)) return sCandidate;
-            if (Directory.Exists(sCandidate) && recordedUrl(sCandidate) == "") {
-                logger.info("Adopted '" + sCandidate + "', which has no address record, for " + sWanted);
-                bExists = true;
-                return sCandidate;
-            }
+            // NO FOLDER IS CLAIMED WITHOUT EVIDENCE (14 October 2026, from a second audit by another AI): a folder
+            // named for the title with no address record was adopted for whatever page came, so a different page's
+            // folder could be claimed and its download skipped. Nothing in an unrecorded folder shows which page it
+            // came from, so it is left as it is and the next free name is used. A page last downloaded before folders
+            // carried records is downloaded once more, into its own folder, and is recorded from then on.
+            if (Directory.Exists(sCandidate) && recordedUrl(sCandidate) == "")
+                logger.info("Left '" + sCandidate + "' as it is: it has no address record, so nothing shows it belongs to " + sWanted);
         }
         throw new IOException("More than 999 folders are named for the title " + sTitle);
     }
@@ -2102,6 +2104,13 @@ static class downloadEngine {
         // cases it cannot handle.
         logger.info("Download start: " + sFileUrl + " -> " + sName);
         long iBytes = httpFallback.download(oPage, sFileUrl, ref sName);
+        // A CANCELLED TRANSFER IS NOT TRIED AGAIN (14 October 2026): the direct request failing sent the file to the
+        // browser instead, so Cancel during a download started it again the other way.
+        if (iBytes < 0 && guiProgress.bCancelled) {
+            logger.info("Cancelled during " + sFileUrl + "; nothing of it is kept");
+            program.notify("Cancelled.");
+            return;
+        }
         if (iBytes < 0) {
             logger.info("Direct request failed for " + sFileUrl +
                 "; falling back to a browser download.");
@@ -2223,6 +2232,8 @@ static class httpFallback {
     // Returns byte count, or -1 on failure. sName may be refined from the
     // Content-Disposition header.
     public static long download(cdpClient oPage, string sFileUrl, ref string sName) {
+        // The request in flight, so Cancel can abort it (urlFido-06, below).
+        HttpWebRequest oLastRequest = null;
         try {
             ServicePointManager.SecurityProtocol =
                 SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
@@ -2237,6 +2248,7 @@ static class httpFallback {
         string sUserAgent = getBrowserUserAgent(oPage);
         HttpWebRequest makeRequest(string sUrlFor) {
             var oReq = (HttpWebRequest)WebRequest.Create(sUrlFor);
+            oLastRequest = oReq;
             oReq.Timeout = program.iDownloadTimeoutMs;
             oReq.AllowAutoRedirect = false;
             oReq.UserAgent = sUserAgent;
@@ -2322,7 +2334,22 @@ static class httpFallback {
                 sPartPath = sFinalPath + ".part";
                 using (var oIn = oResp.GetResponseStream())
                 using (var oOut = File.Create(sPartPath)) {
-                    oIn.CopyTo(oOut, 81920);
+                    // CANCEL STOPS THE TRANSFER (14 October 2026, from an audit by another AI). The whole file was
+                    // copied in one call, so Cancel waited for it to finish, however long. It is now copied a block
+                    // at a time, with Cancel checked between blocks, and a timer aborts the request the moment
+                    // Cancel is pressed, so even a read the server has stalled returns at once. The part written is
+                    // removed below, as for any transfer that does not finish.
+                    using (var oWatch = new System.Threading.Timer(delegate(object oState) {
+                        if (guiProgress.bCancelled) { try { if (oLastRequest != null) oLastRequest.Abort(); } catch { } }
+                    }, null, 250, 250)) {
+                        byte[] aBlock = new byte[81920];
+                        int iRead;
+                        while ((iRead = oIn.Read(aBlock, 0, aBlock.Length)) > 0) {
+                            if (guiProgress.bCancelled) throw new OperationCanceledException("cancelled during the transfer");
+                            oOut.Write(aBlock, 0, iRead);
+                        }
+                        if (guiProgress.bCancelled) throw new OperationCanceledException("cancelled during the transfer");
+                    }
                 }
                 // CUT SHORT IS NOT COMPLETE (14 October 2026, from an audit by another AI): when the server sent the
                 // file as it is and said how long it was, fewer bytes mean the transfer broke off. A compressed

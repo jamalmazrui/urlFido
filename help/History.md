@@ -5,6 +5,10 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- every download checked, with a receipt
+
+- **A download is checked before it counts.** A file that finished downloading was taken as good, so a sign-in page sent as a binary file was saved under a .pdf name, and a corrupt or cut-off document looked like a success. Now a file's first bytes must fit its kind: a web page under a document's name is removed and reported as failed, with the reason, as is a file whose contents are not of its kind, an empty file, and a PDF with no end. And when a server sends a file as it is and says how long it is, a transfer that brings fewer bytes is not kept. The check was tested on eleven files before it was written into urlFido (from an audit by another AI).
+- **Each folder keeps a receipt of its downloads.** urlFido-downloads.txt has a line for every download, kept or removed: when, the file, its size, its SHA-256 fingerprint, the address it came from and the result.
 ## 14 October 2026 -- a download's own name, read by the kit
 
 - **The second way of downloading reads a file's name as the first does.** The plain HTTP way had its own pattern for the name a server gives a file, which stopped a quoted name at a semicolon and decoded only UTF-8. It now uses the kit's parser, which reads the header as the standard writes it, and makes the name safe for Windows as the browser way does, device names like CON included (from an audit by another AI).

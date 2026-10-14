@@ -1050,6 +1050,94 @@ static class urlHelper {
 }
 
 // ===========================================================================
+// downloadCheck -- whether a finished download is what its name says, and a receipt for it.
+//
+// A FILE IS CHECKED, AND ITS RECEIPT KEPT (14 October 2026, from an audit by another AI). A download that
+// finished was taken as good: a sign-in page sent as a binary file was saved under a .pdf name, and a
+// corrupt or cut-off document looked like a success. Now each finished file's opening bytes must fit
+// its kind -- a web page in place of a document is rejected, and a PDF without its end marker is
+// incomplete -- and a rejected file is removed and reported with the reason. Every download, kept or
+// rejected, adds a line to urlFido-downloads.txt in its folder: when, the file, its size, its SHA-256,
+// the address it came from and the result. Tested on eleven files before it was written here.
+// ===========================================================================
+static class downloadCheck {
+    public const string sRecordName = "urlFido-downloads.txt";
+
+    // Kinds that are text, so a web page or other text in them is no surprise.
+    static readonly string[] aTextKinds = { ".css", ".csv", ".htm", ".html", ".js", ".json", ".md", ".srt", ".svg", ".txt", ".vtt", ".xhtml", ".xml" };
+
+    // { kind: the byte sequences a file of that kind begins with }
+    static readonly Dictionary<string, byte[][]> dSignatures = new Dictionary<string, byte[][]> {
+        { ".doc",  new byte[][] { new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 } } },
+        { ".docx", new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".epub", new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".gif",  new byte[][] { new byte[] { 0x47, 0x49, 0x46, 0x38 } } },
+        { ".jpeg", new byte[][] { new byte[] { 0xFF, 0xD8, 0xFF } } },
+        { ".jpg",  new byte[][] { new byte[] { 0xFF, 0xD8, 0xFF } } },
+        { ".mp3",  new byte[][] { new byte[] { 0x49, 0x44, 0x33 }, new byte[] { 0xFF, 0xFB }, new byte[] { 0xFF, 0xF3 }, new byte[] { 0xFF, 0xF2 } } },
+        { ".odp",  new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".ods",  new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".odt",  new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".pdf",  new byte[][] { new byte[] { 0x25, 0x50, 0x44, 0x46, 0x2D } } },
+        { ".png",  new byte[][] { new byte[] { 0x89, 0x50, 0x4E, 0x47 } } },
+        { ".ppt",  new byte[][] { new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 } } },
+        { ".pptx", new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".xls",  new byte[][] { new byte[] { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 } } },
+        { ".xlsx", new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+        { ".zip",  new byte[][] { new byte[] { 0x50, 0x4B, 0x03, 0x04 } } },
+    };
+
+    // What is wrong with a finished file, or "" when nothing is.
+    public static string problemWith(string sPath) {
+        string sExt = Path.GetExtension(sPath).ToLowerInvariant();
+        long iSize = new FileInfo(sPath).Length;
+        if (iSize == 0) return "it is empty";
+        if (Array.IndexOf(aTextKinds, sExt) >= 0) return "";
+        byte[] aHead, aTail;
+        using (FileStream oFile = new FileStream(sPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+            aHead = new byte[(int) Math.Min(1024, iSize)];
+            oFile.Read(aHead, 0, aHead.Length);
+            int iTail = (int) Math.Min(2048, iSize);
+            aTail = new byte[iTail];
+            oFile.Seek(iSize - iTail, SeekOrigin.Begin);
+            oFile.Read(aTail, 0, iTail);
+        }
+        // A byte order mark is skipped, then any white space, to the first real character.
+        int iSkip = (aHead.Length >= 3 && aHead[0] == 0xEF && aHead[1] == 0xBB && aHead[2] == 0xBF) ? 3 : 0;
+        string sLead = Encoding.ASCII.GetString(aHead, iSkip, aHead.Length - iSkip).TrimStart(' ', '\t', '\r', '\n').ToLowerInvariant();
+        if (sLead.StartsWith("<!doctype html") || sLead.StartsWith("<html") || sLead.StartsWith("<head") || sLead.StartsWith("<body"))
+            return "it is a web page, likely a sign-in or error page, not a " + sExt + " file";
+        if (dSignatures.ContainsKey(sExt)) {
+            bool bFits = false;
+            foreach (byte[] aSignature in dSignatures[sExt]) {
+                if (aHead.Length < aSignature.Length) continue;
+                bool bSame = true;
+                for (int i = 0; i < aSignature.Length; i++) if (aHead[i] != aSignature[i]) { bSame = false; break; }
+                if (bSame) { bFits = true; break; }
+            }
+            if (!bFits) return "its contents are not those of a " + sExt + " file";
+        }
+        if (sExt == ".pdf" && Encoding.ASCII.GetString(aTail).IndexOf("%%EOF", StringComparison.Ordinal) < 0)
+            return "the PDF is incomplete: it has no end";
+        return "";
+    }
+
+    // One line of the folder's receipt: when, the file, its size, its SHA-256, its address and the result.
+    public static void record(string sDir, string sName, string sUrl, long iBytes, string sSha, string sResult) {
+        try {
+            string sPath = Path.Combine(sDir, sRecordName);
+            bool bNew = !File.Exists(sPath);
+            string sLine = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + "\t" + sName + "\t"
+                + iBytes.ToString(CultureInfo.InvariantCulture) + "\t" + sSha + "\t" + sUrl + "\t" + sResult + "\r\n";
+            if (bNew) sLine = "; urlFido-downloads.txt -- one line per download: date, file, bytes, sha256, address, result.\r\n" + sLine;
+            File.AppendAllText(sPath, sLine, new UTF8Encoding(bNew));
+        } catch (Exception oError) {
+            logger.info("The download receipt could not be written for " + sName + ": " + oError.Message);
+        }
+    }
+}
+
+// ===========================================================================
 // jsonHelper — thin, tolerant wrapper over JavaScriptSerializer
 // (System.Web.Extensions, part of .NET Framework 4.8 — no NuGet needed).
 // ===========================================================================
@@ -2025,6 +2113,25 @@ static class downloadEngine {
         logger.info("Download end: " + sName + ", " + iBytes + " bytes, " +
             (oWatch.ElapsedMilliseconds / 1000.0).ToString("0.0", CultureInfo.InvariantCulture) + " s");
 
+        // CHECKED BEFORE IT COUNTS (14 October 2026): a file whose bytes are not what its name says is removed
+        // and reported, and every download, kept or not, goes into the folder's receipt.
+        if (iBytes >= 0) {
+            string sGot = Path.Combine(program.sTargetDir, sName);
+            string sProblem = "";
+            try { sProblem = downloadCheck.problemWith(sGot); }
+            catch (Exception oError) { logger.info("Could not check " + sName + ": " + oError.Message); }
+            if (sProblem != "") {
+                logger.info("Rejected " + sName + " from " + sFileUrl + ": " + sProblem);
+                try { File.Delete(sGot); } catch { }
+                downloadCheck.record(program.sTargetDir, sName, sFileUrl, iBytes, "", "rejected: " + sProblem);
+                results.addFailure(sName, sProblem);
+                program.notify("  FAILED: " + sName + ": " + sProblem);
+                return;
+            }
+            string sSha = "";
+            try { sSha = Homer.Util.fileSha256(sGot); } catch (Exception oError) { logger.info("Could not fingerprint " + sName + ": " + oError.Message); }
+            downloadCheck.record(program.sTargetDir, sName, sFileUrl, iBytes, sSha, "complete");
+        }
         if (iBytes >= 0) {
             results.addSuccess(sName, iBytes);
             program.notify("  Downloaded " + sName + " (" + Util.formatBytes(iBytes) +
@@ -2217,6 +2324,12 @@ static class httpFallback {
                 using (var oOut = File.Create(sPartPath)) {
                     oIn.CopyTo(oOut, 81920);
                 }
+                // CUT SHORT IS NOT COMPLETE (14 October 2026, from an audit by another AI): when the server sent the
+                // file as it is and said how long it was, fewer bytes mean the transfer broke off. A compressed
+                // reply is unpacked on the way in, so its stated length is of other bytes, and is not compared.
+                long iArrived = new FileInfo(sPartPath).Length;
+                if (oResp.ContentLength > 0 && (oResp.ContentEncoding ?? "").Trim().Length == 0 && iArrived != oResp.ContentLength)
+                    throw new IOException("the server said " + oResp.ContentLength + " bytes and " + iArrived + " arrived, so the transfer was cut short");
                 if (File.Exists(sFinalPath)) File.Replace(sPartPath, sFinalPath, null);
                 else File.Move(sPartPath, sFinalPath);
                 sPartPath = "";

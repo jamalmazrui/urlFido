@@ -681,6 +681,15 @@ folder holds <code>urlFido-source.txt</code>, naming the address it was
 fetched from. A second page with the same title gets its own folder,
 “Title (2)”, and a page whose title has changed keeps the folder it
 already has.</p>
+<p><strong>Each download is checked, and has a receipt.</strong> A
+file’s first bytes must fit its kind: a web page saved under a .pdf or
+.docx name – usually a sign-in or error page – is removed and reported
+as failed, as is a PDF with no end, which was cut off. A file the server
+sent cut short is not kept either. Every download, kept or removed, adds
+a line to <code>urlFido-downloads.txt</code> in its folder: when it
+came, the file, its size, its SHA-256 fingerprint, the address it came
+from and the result. So you can see where each file came from, and tell
+later whether it has changed.</p>
 <p>If a page already has a folder, urlFido <strong>skips that
 source</strong> and leaves the earlier download untouched. The skip
 happens as soon as the page is known, so nothing is examined or fetched

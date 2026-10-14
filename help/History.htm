@@ -191,9 +191,9 @@
 <li><a href="#urlfido-history" id="toc-urlfido-history">urlFido
 History</a>
 <ul>
-<li><a href="#october-2026-a-downloads-own-name-read-by-the-kit"
-id="toc-october-2026-a-downloads-own-name-read-by-the-kit">14 October
-2026 – a download’s own name, read by the kit</a></li>
+<li><a href="#october-2026-every-download-checked-with-a-receipt"
+id="toc-october-2026-every-download-checked-with-a-receipt">14 October
+2026 – every download checked, with a receipt</a></li>
 <li><a href="#october-2026-the-guide-describes-the-program-as-it-now-is"
 id="toc-october-2026-the-guide-describes-the-program-as-it-now-is">14
 October 2026 – the guide describes the program as it now is</a></li>
@@ -231,19 +231,34 @@ id="toc-version-1.2.0-september-2026">Version 1.2.0 (September
 </nav>
 <main>
 <h1 id="urlfido-history">urlFido History</h1>
-<h2 id="october-2026-a-downloads-own-name-read-by-the-kit">14 October
-2026 – a download’s own name, read by the kit</h2>
+<h2 id="october-2026-every-download-checked-with-a-receipt">14 October
+2026 – every download checked, with a receipt</h2>
 <ul>
-<li><strong>The second way of downloading reads a file’s name as the
+<li><p><strong>A download is checked before it counts.</strong> A file
+that finished downloading was taken as good, so a sign-in page sent as a
+binary file was saved under a .pdf name, and a corrupt or cut-off
+document looked like a success. Now a file’s first bytes must fit its
+kind: a web page under a document’s name is removed and reported as
+failed, with the reason, as is a file whose contents are not of its
+kind, an empty file, and a PDF with no end. And when a server sends a
+file as it is and says how long it is, a transfer that brings fewer
+bytes is not kept. The check was tested on eleven files before it was
+written into urlFido (from an audit by another AI).</p></li>
+<li><p><strong>Each folder keeps a receipt of its downloads.</strong>
+urlFido-downloads.txt has a line for every download, kept or removed:
+when, the file, its size, its SHA-256 fingerprint, the address it came
+from and the result. ## 14 October 2026 – a download’s own name, read by
+the kit</p></li>
+<li><p><strong>The second way of downloading reads a file’s name as the
 first does.</strong> The plain HTTP way had its own pattern for the name
 a server gives a file, which stopped a quoted name at a semicolon and
 decoded only UTF-8. It now uses the kit’s parser, which reads the header
 as the standard writes it, and makes the name safe for Windows as the
 browser way does, device names like CON included (from an audit by
-another AI).</li>
-<li><strong>The developer guide names the kit’s classes where they
+another AI).</p></li>
+<li><p><strong>The developer guide names the kit’s classes where they
 are,</strong> in C:; it still named C:, a folder the kit no longer has
-(from an audit by another AI).</li>
+(from an audit by another AI).</p></li>
 </ul>
 <h2 id="october-2026-the-guide-describes-the-program-as-it-now-is">14
 October 2026 – the guide describes the program as it now is</h2>

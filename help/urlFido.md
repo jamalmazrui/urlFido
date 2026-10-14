@@ -308,6 +308,8 @@ The folder name keeps the title's own capitalization and spacing, because it is 
 
 **A page is known by its address, not its title.** Each folder holds `urlFido-source.txt`, naming the address it was fetched from. A second page with the same title gets its own folder, "Title (2)", and a page whose title has changed keeps the folder it already has.
 
+**Each download is checked, and has a receipt.** A file's first bytes must fit its kind: a web page saved under a .pdf or .docx name -- usually a sign-in or error page -- is removed and reported as failed, as is a PDF with no end, which was cut off. A file the server sent cut short is not kept either. Every download, kept or removed, adds a line to `urlFido-downloads.txt` in its folder: when it came, the file, its size, its SHA-256 fingerprint, the address it came from and the result. So you can see where each file came from, and tell later whether it has changed.
+
 If a page already has a folder, urlFido **skips that source** and leaves the earlier download untouched. The skip happens as soon as the page is known, so nothing is examined or fetched for nothing.
 
 **Force overwrite** (`-f`) downloads the page again, without losing the earlier files along the way. The old folder is moved aside to a recovery folder named for it and the date, such as `Title.recovery-20261014-090000`. It is removed only when the new run finishes with no failed download and is not cancelled. If the run is only partly done, the earlier files are kept there, and urlFido says where.

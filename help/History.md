@@ -5,6 +5,14 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 14 October 2026 -- the guide describes the program as it now is
+
+- **The guide's account of Force overwrite was out of date, and is corrected.** It said Force overwrite removed the old folder; since the change of 14 October, the old folder is moved to a dated recovery folder and removed only when the new run finishes complete, and a page is known by its address, through urlFido-source.txt, not its title. The guide now says so.
+
+## 14 October 2026 -- contents lists, and plainer guides
+
+- **Every help page has a contents list.** The build ran Pandoc without --toc, so a long guide had no list of its sections. Pages are now built with one, and a page that lacks one is built again once to gain it.
+
 ## 14 October 2026 -- the newest Pandoc for the help pages
 
 - **The help pages are made by the newest Pandoc, not the first on the PATH.** The build took the first pandoc on the PATH, which was Pandoc 2.19 in C:\bin, while Pandoc 3.12.1 was installed in Program Files. It now asks the kit's newest.ps1, as the kit's app template has done since kit 1.56.0, and the log names every copy found and its version.

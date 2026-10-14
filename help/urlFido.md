@@ -306,7 +306,11 @@ The folder name keeps the title's own capitalization and spacing, because it is 
 
 **A folder is created only when there is something to put in it.** A page that yields no matching files leaves nothing behind, so browsing the output shows only the pages that actually produced downloads.
 
-If a folder for a page already exists, urlFido **skips that source** and leaves the earlier download untouched. **Force overwrite** (`-f`) removes the old folder and downloads afresh. The skip happens as soon as the title is known, so nothing is examined or fetched needlessly.
+**A page is known by its address, not its title.** Each folder holds `urlFido-source.txt`, naming the address it was fetched from. A second page with the same title gets its own folder, "Title (2)", and a page whose title has changed keeps the folder it already has.
+
+If a page already has a folder, urlFido **skips that source** and leaves the earlier download untouched. The skip happens as soon as the page is known, so nothing is examined or fetched for nothing.
+
+**Force overwrite** (`-f`) downloads the page again, without losing the earlier files along the way. The old folder is moved aside to a recovery folder named for it and the date, such as `Title.recovery-20261014-090000`. It is removed only when the new run finishes with no failed download and is not cancelled. If the run is only partly done, the earlier files are kept there, and urlFido says where.
 
 ## What Counts as a File on the Page
 

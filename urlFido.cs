@@ -138,10 +138,10 @@ static class program {
     public const string sProgramVersion = BuildVersion.Version;
     // Elevate asks this GitHub owner's urlFido releases whether a newer
     // version exists (F11, and the version section of the Help box).
-    public const string c_sGitHubOwner = "JamalMazrui";
+    public const string sGitHubOwner = "JamalMazrui";
     // Settings from before the move to the kit, directly under
     // %LOCALAPPDATA%\urlFido rather than in its configs folder.
-    public const string c_sLegacyConfigFolder = "urlFido";
+    public const string sLegacyConfigFolder = "urlFido";
     public const string sReadmeUrl = "https://github.com/JamalMazrui/urlFido#readme";
     public const string sUsage =
         "Usage: urlFido [options] <url, local html file, or url-list text file> [...]";
@@ -2843,7 +2843,7 @@ public static class configManager {
 
     public static string getLegacyPath() {
         string sAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(Path.Combine(sAppData, program.c_sLegacyConfigFolder), program.sConfigFileName);
+        return Path.Combine(Path.Combine(sAppData, program.sLegacyConfigFolder), program.sConfigFileName);
     }
 
     // The file to read: the new one, else the old one, else the new name.
@@ -3113,7 +3113,7 @@ class urlFido {
         Log.start(program.sProgramName);
         Log.keyValue("NVDA client loaded", nvdaLoader.bLoaded ? "yes" : "no");
         // F11 and the Help box's version section ask GitHub through this.
-        Elevate.configure(program.c_sGitHubOwner, program.sProgramName, program.sProgramVersion);
+        Elevate.configure(program.sGitHubOwner, program.sProgramName, program.sProgramVersion);
         int iExit = 1;
         try {
             iExit = program.run(aArgs);

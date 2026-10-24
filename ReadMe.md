@@ -19,7 +19,7 @@ You need Windows 10 or 11, 64-bit. Edge is already part of Windows, and nothing 
 
 ## Download from a page
 
-1. Press **Alt+Control+U** from anywhere in Windows. The urlFido dialog opens with focus in **Source urls**, and Fido gives a short bark.
+1. Press **Alt+Control+U** from anywhere in Windows. The urlFido dialog opens with focus in **Source paths**, and Fido gives a short bark.
 2. Type a web address, such as `https://www.itic.org/policy/accessibility/vpat`.
 3. In **File extensions**, type what you want, such as `pdf docx`.
 4. Press Enter.
@@ -32,7 +32,7 @@ In a Command Prompt in the program folder:
 
 ```cmd
 urlFido -e pdf https://www.itic.org/policy/accessibility/vpat
-urlFido -e "pdf docx" -o "C:\Downloads" --view-output urls.txt
+urlFido -e "pdf docx" -o "C:\Downloads" --view-output-directory urls.txt
 urlFido -h
 ```
 

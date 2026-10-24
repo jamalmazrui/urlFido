@@ -357,7 +357,7 @@ Accessibility Guidelines — matching on the file name the server
 supplies:</p>
 <pre><code>urlFido -e &quot;*WCAG*.docx&quot; -o &quot;C:\Downloads\VPAT&quot; https://www.itic.org/policy/accessibility/vpat</code></pre>
 <p>To do the same through the dialog, press
-<strong>Alt+Control+U</strong>, paste the address into Source urls, set
+<strong>Alt+Control+U</strong>, paste the address into Source paths, set
 the output directory, and press Enter.</p>
 <p>A note on what you will see: the download links on that page end in
 long identifiers rather than readable names. urlFido asks the browser
@@ -376,7 +376,7 @@ page you have saved, and it will fetch the files that page links to:</p>
 <pre><code>urlFido -e pdf -o &quot;C:\Downloads&quot; &quot;C:\Saved\research page.htm&quot;</code></pre>
 <p><strong>Only what you want.</strong> Take the newsletters and nothing
 else, then open the folder when finished:</p>
-<pre><code>urlFido -e &quot;*newsletter*.pdf&quot; -o &quot;C:\Downloads&quot; --view-output https://example.com/archive</code></pre>
+<pre><code>urlFido -e &quot;*newsletter*.pdf&quot; -o &quot;C:\Downloads&quot; --view-output-directory https://example.com/archive</code></pre>
 <p><strong>Behind a sign-in.</strong> Pause so you can authenticate,
 then download:</p>
 <pre><code>urlFido -a -o &quot;C:\Downloads&quot; https://example.com/members/documents</code></pre>
@@ -396,9 +396,9 @@ until the server is asked.</p>
 <p>The dialog is arranged in bands — a band being a horizontal run of
 related controls. Each of the first three bands holds a label, its edit
 box, and, where one applies, the button that fills it in:</p>
-<pre><code>Source urls:       [__________________]  [ Browse source... ]
+<pre><code>Source paths:       [__________________]  [ Browse local source ]
 File extensions:   [__________________]  [ Test fetch...    ]
-Output directory:  [__________________]  [ Choose output... ]</code></pre>
+Output directory:  [__________________]  [ Choose output directory ]</code></pre>
 <p>Tab therefore moves from a field straight to the way of changing it,
 rather than past everything else to a button row at the bottom.</p>
 <p>When the dialog is ready for input, urlFido gives a single short woof
@@ -428,9 +428,10 @@ hotkey), or explicitly with <code>-g</code>. It is built from the shared
 Layout-by-Code (Lbc) classes, so it behaves exactly like the dialogs in
 DbDo, EdSharp, and FileDir — see <a href="#dialog-editing-keys">Dialog
 Editing Keys</a>.</p>
-<p>Fields, in tab order:</p>
+<p>It is the one dialog every Homer launch app shows, in rows called
+bands that read left to right. The controls, in tab order:</p>
 <ol type="1">
-<li><strong>Source urls</strong> (Alt+S) — one or more urls, local web
+<li><strong>Source paths</strong> (Alt+S) — one or more urls, local web
 pages, or url-list text files, separated by spaces. Put double quotes
 around any single item that contains a space. See <a
 href="#source-lists">Source Lists</a>. When empty, the field offers
@@ -438,46 +439,56 @@ href="#source-lists">Source Lists</a>. When empty, the field offers
 the Blind, the American Foundation for the Blind, the National
 Federation of the Blind, and the World Blind Union — so there is
 something real to run against straight away.</li>
+<li><strong>Browse local source</strong> (Alt+B) — opens a file picker
+for a local HTML page or url-list file, starting where Source paths
+points, or else in Documents.</li>
 <li><strong>File extensions</strong> (Alt+E) — what to download,
 separated by commas or spaces. See <a
 href="#extensions-and-wildcards">Extensions and Wildcards</a>. The
 default is <code>docx pdf zip</code>.</li>
-<li><strong>Output directory</strong> — where downloaded files are
-saved. Leave it empty for the current directory. If you type a folder
-that does not exist and press OK, urlFido offers to create it.</li>
+<li><strong>Test fetch</strong> (Alt+T) — reports what would be
+downloaded, without downloading anything, and leaves the dialog
+open.</li>
 <li><strong>Authenticate credentials</strong> (Alt+A) — pause at the
 first page of each site so you can sign in. See <a
 href="#authenticated-pages-and-the-main-profile">Authenticated
 Pages</a>.</li>
+<li><strong>Invisible browser</strong> (Alt+I) — run Edge with no
+visible window. Ignored when Authenticate credentials is on, since you
+need to see the window to sign in.</li>
 <li><strong>Main profile</strong> (Alt+M) — use your real Edge profile
 so existing logins apply. Requires Edge to be closed.</li>
-<li><strong>Invisible browser</strong> (Alt+I) — run Edge with no
-visible window. Ignored when Authenticate is on, since you need to see
-the window to sign in.</li>
-<li><strong>Force overwrite</strong> (Alt+F) — overwrite existing files
-instead of skipping ones that are already present.</li>
-<li><strong>View output</strong> (Alt+V) — open the output directory in
-File Explorer when finished.</li>
-<li><strong>Log session</strong> (Alt+L) — also write a diagnostic
-urlFido.log to the output directory. A session log is always kept in
-<code>%LOCALAPPDATA%\urlFido\logs</code>.</li>
+<li><strong>Output directory</strong> (Alt+O) — where downloaded files
+are saved. Leave it empty for the current directory. If you type a
+folder that does not exist and press OK, urlFido offers to create
+it.</li>
+<li><strong>Choose output directory</strong> (Alt+C) — opens a folder
+picker.</li>
+<li><strong>Force replacements</strong> (Alt+F) — do the work again for
+a source whose result is already there, replacing the old result once
+the new one is complete. Unchecked, that source is skipped, its result
+kept, and the Results box says how many.</li>
 <li><strong>Use configuration</strong> (Alt+U) — load settings at
 startup and save them when you press OK.</li>
+<li><strong>View output directory</strong> (Alt+V) — open the output
+directory in File Explorer after you close the Results box.</li>
+<li><strong>Default settings</strong> (Alt+D) — reset every field and
+erase the saved configuration.</li>
+<li><strong>Help</strong> (Alt+H or F1) — describes every field with its
+tip, the dialog keys and where the logs are kept, and ends with the
+version check described under <a href="#updating">Updating</a>.</li>
+<li><strong>OK</strong> and <strong>Cancel</strong>, alone at the bottom
+right — Control+Enter is OK and Escape is Cancel, from any control.
+<strong>F11</strong> runs the version check from any control, too.</li>
 </ol>
 <p>Every field carries a focus tip describing it; press
 <strong>Shift+F1</strong> to hear the tip for the field you are on.</p>
-<p>Buttons: <strong>OK</strong> runs; <strong>Browse source</strong>
-opens a file picker for a local HTML page or url-list file;
-<strong>Choose output</strong> opens a folder picker; <strong>Default
-settings</strong> resets every field and erases the saved configuration;
-<strong>Cancel</strong> closes without running; <strong>Help</strong>
-(Alt+H or F1) describes every field with its tip plus the universal
-dialog keys, and ends with the version check described under <a
-href="#updating">Updating</a>. <strong>F11</strong> runs that check
-directly. Each button is reachable by Alt plus its first letter.</p>
-<p>The two picker buttons close the dialog, run the picker, and reopen
-the dialog with the chosen value filled in and everything else you typed
-preserved.</p>
+<p>Every run ends with the urlFido Results box. Its only button is OK,
+so Enter, Space or Escape closes it; then the output directory opens if
+View output directory is checked, and urlFido closes. A long report
+shows its first 15 lines and names a file with the rest.</p>
+<p>The two picker buttons fill their box in place, with everything else
+you typed kept.</p>
 <p>While a run is in progress, urlFido shows a small status window. Its
 status line reports each step — launching Edge, opening the page,
 matching links, and then each file as it downloads, with a running count
@@ -534,29 +545,32 @@ both work: <code>pdf</code>, <code>.pdf</code>, <code>*.pdf</code>,
 <code>*newsletter*.pdf</code>. Case-insensitive. Default:
 <code>docx pdf zip</code>. (<code>--extensions</code> is still accepted,
 as version 1.0.0 used that name.)</li>
-<li><code>-o, --output-folder &lt;dir&gt;</code> — output directory.
+<li><code>-o, --output-directory &lt;dir&gt;</code> — output directory.
 Default: the current directory.</li>
 <li><code>-g, --gui-mode</code> — show the parameter dialog.</li>
-<li><code>-f, --force</code> — overwrite existing files instead of
-numbering.</li>
-<li><code>-i, --invisible</code> — run Edge headless (no visible
+<li><code>-f, --force-replacements</code> — do the work again for a
+source whose result is already there, replacing it; without it, that
+source is skipped and its result kept.</li>
+<li><code>-i, --invisible-browser</code> — run Edge headless (no visible
 window).</li>
-<li><code>-a, --authenticate</code> — pause at the first url of each
-site to sign in. Overrides <code>-i</code>.</li>
+<li><code>-a, --authenticate-credentials</code> — pause at the first url
+of each site to sign in. Overrides <code>-i</code>.</li>
 <li><code>-m, --main-profile</code> — use your real Edge profile.
 Requires Edge closed.</li>
 <li><code>-u, --use-configuration</code> — load and save settings in
 <code>configs\urlFido.inix</code>. See <a href="#saved-settings">Saved
 Settings</a>.</li>
-<li><code>-l, --log</code> — also write urlFido.log to the output
-directory. Appends across runs; combine with <code>-f</code> to replace
-the previous log instead. A session log is always kept in
-<code>%LOCALAPPDATA%\urlFido\logs</code>.</li>
-<li><code>--view-output</code> — open the output directory when
-done.</li>
-<li><code>-h, --help</code> — show help. <code>-v, --version</code>
-shows the version.</li>
+<li><code>-v, --view-output-directory</code> — open the output directory
+when done.</li>
+<li><code>-d, --default-settings</code> — forget the saved settings and
+exit.</li>
+<li><code>-h, --help</code> — show help. <code>--version</code> shows
+the version.</li>
 </ul>
+<p>Switches may be written with /, - or –, in any case; each long switch
+is a label in the dialog, and each letter is that control’s Alt letter.
+The older names, such as <code>--force</code>, <code>--invisible</code>
+and <code>--output-dir</code>, still work.</p>
 <p>Command-line values take precedence over saved configuration for any
 option you specify explicitly.</p>
 <h2 id="source-lists">Source Lists</h2>
@@ -694,13 +708,13 @@ later whether it has changed.</p>
 source</strong> and leaves the earlier download untouched. The skip
 happens as soon as the page is known, so nothing is examined or fetched
 for nothing.</p>
-<p><strong>Force overwrite</strong> (<code>-f</code>) downloads the page
-again, without losing the earlier files along the way. The old folder is
-moved aside to a recovery folder named for it and the date, such as
-<code>Title.recovery-20261014-090000</code>. It is removed only when the
-new run finishes with no failed download and is not cancelled. If the
-run is only partly done, the earlier files are kept there, and urlFido
-says where.</p>
+<p><strong>Force replacements</strong> (<code>-f</code>) downloads the
+page again, without losing the earlier files along the way. The old
+folder is moved aside to a recovery folder named for it and the date,
+such as <code>Title.recovery-20261014-090000</code>. It is removed only
+when the new run finishes with no failed download and is not cancelled.
+If the run is only partly done, the earlier files are kept there, and
+urlFido says where.</p>
 <h2 id="what-counts-as-a-file-on-the-page">What Counts as a File on the
 Page</h2>
 <p>Ask for <code>pdf</code> and you mean the documents. Ask for
@@ -842,7 +856,7 @@ from the url itself. Ordinary links that already end in a file name cost
 no extra network request.</p>
 <p>If a file of the same name is already in the output directory,
 urlFido reports it as skipped and leaves it alone. Check <strong>Force
-overwrite</strong> to replace it instead.</p>
+replacements</strong> to replace it instead.</p>
 <h2 id="configuration-and-logging">Configuration and Logging</h2>
 <p>With <strong>Use configuration</strong> (<code>-u</code>), urlFido
 reads its settings at startup from, and saves them on OK to:</p>
@@ -866,18 +880,16 @@ kept. The log starts with the version, where the program ran from, the
 Windows version, the working folder, the command line, which screen
 reader is running and every setting. It then records each step of the
 run, and any error with its full details.</p>
-<p>With <strong>Log session</strong> (<code>-l</code>), urlFido also
-writes urlFido.log to the output directory, so a log can travel with the
-downloads. That log is deliberately detailed, because the interesting
-failures happen inside a browser you may not be watching. It records the
-resolved parameters and environment; the exact Edge command line,
-profile directory, and how long the automation channel took to come up;
-every link harvested, with the file name it was matched against and
-whether it matched; each download attempt, which method served it, the
-HTTP status and content type when the fallback is used, the byte count
-and elapsed time; and every status line shown in the progress window. It
-adds to the log already there; add <strong>Force overwrite</strong>
-(<code>-f</code>) to replace it instead.</p>
+<p>Logging is automatic: there is no checkbox or switch for it, and Help
+names the folder. The log is deliberately detailed, because the
+interesting failures happen inside a browser you may not be watching. It
+records the resolved parameters and environment; the exact Edge command
+line, profile directory, and how long the automation channel took to
+come up; every link harvested, with the file name it was matched against
+and whether it matched; each download attempt, which method served it,
+the HTTP status and content type when the fallback is used, the byte
+count and elapsed time; and every status line shown in the progress
+window.</p>
 <p>If something goes wrong, zip the <code>logs</code> folder and send
 it.</p>
 <h2 id="results-summary">Results Summary</h2>
@@ -894,7 +906,7 @@ have already scrolled past during the run, so the headings appear
 without repeating the lists.</p>
 <p>A file is reported as <strong>Skipped</strong> when a file of the
 same name is already in the output directory; check <strong>Force
-overwrite</strong> to replace it instead.</p>
+replacements</strong> to replace it instead.</p>
 <h2 id="hotkey-summary">Hotkey Summary</h2>
 <ul>
 <li>Alt+Control+U — open the urlFido parameter dialog from anywhere (the
@@ -902,8 +914,8 @@ desktop shortcut)</li>
 <li>Enter — OK (run)</li>
 <li>Control+Enter — OK, from any control</li>
 <li>Escape — Cancel</li>
-<li>Alt+B — Browse source</li>
-<li>Alt+C — Choose output</li>
+<li>Alt+B — Browse local source</li>
+<li>Alt+C — Choose output directory</li>
 <li>Alt+D — Default settings</li>
 <li>Alt+H or F1 — Help, which ends with the version check</li>
 <li>F11 — check the web for a newer version of urlFido</li>

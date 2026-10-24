@@ -32,7 +32,7 @@ You know your screen reader's own keys already, and three of them are worth reme
 
 Screen reader:
 
-- Source urls edit
+- Source paths edit
 
 ### Step 3: Insert+Tab
 
@@ -40,7 +40,7 @@ Insert plus Tab says what has the focus: its name, its role, and its value or st
 
 Screen reader:
 
-- Source urls edit, blank
+- Source paths edit, blank
 
 ### Step 4: Insert+T
 
@@ -105,13 +105,13 @@ I press the desktop key. The dialog opens on its first field.
 Screen reader:
 
 - urlFido dialog
-- Source urls edit
+- Source paths edit
 
 Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 3
 
-Source urls names the pages to fetch from: one address, several separated by spaces, or the path of a text file listing them. Its letter is S.
+Source paths names the pages to fetch from: one address, several separated by spaces, or the path of a text file listing them. Its letter is S.
 
 ### Step 4: Tab
 
@@ -119,7 +119,7 @@ Tab moves to the next control, a button that picks such a file.
 
 Screen reader:
 
-- Browse source button
+- Browse local source button
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -139,7 +139,7 @@ It holds the kinds of file to fetch, separated by spaces or commas. Walk four ex
 
 ### Step 7: Alt+O
 
-Output directory, O, is the parent folder; each page gets a folder of its own inside it. Choose output, C, picks it instead of typing.
+Output directory, O, is the parent folder; each page gets a folder of its own inside it. Choose output directory, C, picks it instead of typing.
 
 Screen reader:
 
@@ -159,11 +159,11 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 9: Alt+F
 
-Force overwrite, F, replaces files already there; without it, a second copy of a file is saved with a number added to its name.
+Force replacements, F, replaces files already there; without it, a second copy of a file is saved with a number added to its name.
 
 Screen reader:
 
-- Force overwrite check box, not checked
+- Force replacements check box, not checked
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -189,11 +189,11 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 12: Alt+V
 
-View output, V, opens the folder at the end; Log session, L, keeps a log; Use configuration, U, remembers your choices.
+View output directory, V, opens the folder at the end; Use configuration, U, remembers your choices.
 
 Screen reader:
 
-- View output check box, not checked
+- View output directory check box, not checked
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -223,7 +223,7 @@ Shift plus F1 says the tip for the control you are on.
 
 Screen reader:
 
-- View output: open the output folder when the run is done
+- View output directory: open the output folder when the run is done
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -243,7 +243,7 @@ Escape closes Help and returns to the same place.
 
 Screen reader:
 
-- View output check box, not checked
+- View output directory check box, not checked
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -269,7 +269,7 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 20: Up Arrow
 
-The text fields remember earlier answers: Up Arrow in Source urls brings back the pages fetched before.
+The text fields remember earlier answers: Up Arrow in Source paths brings back the pages fetched before.
 
 Screen reader:
 
@@ -375,7 +375,7 @@ When I close it, urlFido opens on its dialog.
 Screen reader:
 
 - urlFido dialog
-- Source urls edit
+- Source paths edit
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -469,12 +469,12 @@ The Information Technology Industry Council publishes the VPAT in several editio
 
 ### Step 3: Alt+Control+U
 
-I open the dialog and type the page's address in Source urls.
+I open the dialog and type the page's address in Source paths.
 
 Screen reader:
 
 - urlFido dialog
-- Source urls edit
+- Source paths edit
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -510,11 +510,11 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 7: Alt+V
 
-And tick View output, to land in the folder at the end.
+And tick View output directory, to land in the folder at the end.
 
 Screen reader:
 
-- View output check box, checked
+- View output directory check box, checked
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -582,7 +582,7 @@ When the run finishes, a box gives the results summary, and a short spoken line 
 
 ### Step 16
 
-Running the same page again saves any file already there as a numbered copy; Force overwrite replaces it instead.
+Running the same page again saves any file already there as a numbered copy; Force replacements replaces it instead.
 
 ### Step 17
 
@@ -774,7 +774,7 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 4: Enter
 
-I put a new page's address in Source urls and press Enter.
+I put a new page's address in Source paths and press Enter.
 
 Screen reader:
 
@@ -872,7 +872,7 @@ Test fetch works with a source list as well as one page, which is the best way t
 
 ### Step 21: Up Arrow
 
-After a test, Up Arrow in Source urls brings the same pages back, ready for the real run.
+After a test, Up Arrow in Source paths brings the same pages back, ready for the real run.
 
 Screen reader:
 
@@ -898,7 +898,7 @@ One want: the documents from every page of a collection, such as each standard's
 
 ### Step 2
 
-Several addresses can go into Source urls, separated by spaces.
+Several addresses can go into Source paths, separated by spaces.
 
 Screen reader:
 
@@ -912,7 +912,7 @@ For more, a text file is easier, one address to a line; the guide calls these so
 
 ### Step 4: Alt+B
 
-Browse source, B, picks the list.
+Browse local source, B, picks the list.
 
 Screen reader:
 
@@ -927,7 +927,7 @@ I choose my list and press Enter.
 
 Screen reader:
 
-- Source urls edit
+- Source paths edit
 - C colon backslash Lists backslash Standards dot t x t
 
 Confirm the wording with a live run: buildTutorials -live.
@@ -942,13 +942,9 @@ Screen reader:
 
 Confirm the wording with a live run: buildTutorials -live.
 
-### Step 7: Alt+L
+### Step 7
 
-Log session keeps a record of the whole run.
-
-Screen reader:
-
-- Log session check box, checked
+Logging is automatic, so there is no box to tick for it. Every run's log is kept in the program's logs folder, under your local application data, and Help names that folder.
 
 Confirm the wording with a live run: buildTutorials -live.
 
@@ -988,7 +984,7 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 12
 
-Running the list again saves files already there as numbered copies; Force overwrite replaces them, for a clean refresh.
+Running the list again saves files already there as numbered copies; Force replacements replaces them, for a clean refresh.
 
 ### Step 13: Alt+U
 
@@ -1022,7 +1018,7 @@ The parent folder reads as a list of page titles, so the first letter of a title
 
 ### Step 19
 
-A list that grows over time can be fetched again with Force overwrite, for a fresh copy of everything.
+A list that grows over time can be fetched again with Force replacements, for a fresh copy of everything.
 
 ### Step 20
 
@@ -1074,7 +1070,7 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 5: Enter
 
-I put the course page's address in Source urls and press Enter. Edge opens, and urlFido waits.
+I put the course page's address in Source paths and press Enter. Edge opens, and urlFido waits.
 
 Screen reader:
 
@@ -1196,7 +1192,7 @@ Quotation marks keep a path with spaces in one piece.
 
 ### Step 5
 
-Dash f is Force overwrite, dash a pauses to authenticate, and dash m uses your main profile, which needs Edge closed. Each short option is the letter of its control in the dialog.
+Dash f is Force replacements, dash a pauses to authenticate, and dash m uses your main profile, which needs Edge closed. Each short option is the letter of its control in the dialog.
 
 ### Step 6
 
@@ -1216,7 +1212,7 @@ Dash u reads the settings saved by the dialog's Use configuration box, so a run 
 
 ### Step 10
 
-Dash dash view output opens the folder at the end, as the dialog's box does.
+Dash dash view output directory opens the folder at the end, as the dialog's box does.
 
 ### Step 11
 

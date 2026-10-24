@@ -32,7 +32,7 @@ Key=
 
 [step]
 
-Say=Dash f is Force overwrite, dash a pauses to authenticate, and dash m uses your main profile, which needs Edge closed. Each short option is the letter of its control in the dialog.
+Say=Dash f is Force replacements, dash a pauses to authenticate, and dash m uses your main profile, which needs Edge closed. Each short option is the letter of its control in the dialog.
 Key=
 
 [step]
@@ -57,7 +57,7 @@ Key=
 
 [step]
 
-Say=Dash dash view output opens the folder at the end, as the dialog's box does.
+Say=Dash dash view output directory opens the folder at the end, as the dialog's box does.
 Key=
 
 [step]

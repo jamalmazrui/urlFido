@@ -13,7 +13,7 @@ Key=
 
 [step]
 
-Say=Several addresses can go into Source urls, separated by spaces.
+Say=Several addresses can go into Source paths, separated by spaces.
 Key=
 Hear=example.org slash page one example.org slash page two
 Note=Confirm the wording with a live run: buildTutorials -live.
@@ -25,7 +25,7 @@ Key=
 
 [step]
 
-Say=Browse source, B, picks the list.
+Say=Browse local source, B, picks the list.
 Key=Alt+B
 Hear=Open dialog
 Hear=File name edit
@@ -35,7 +35,7 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 Say=I choose my list and press Enter.
 Key=Enter
-Hear=Source urls edit
+Hear=Source paths edit
 Hear=C colon backslash Lists backslash Standards dot t x t
 Note=Confirm the wording with a live run: buildTutorials -live.
 
@@ -48,9 +48,8 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
 
-Say=Log session keeps a record of the whole run.
-Key=Alt+L
-Hear=Log session check box, checked
+Say=Logging is automatic, so there is no box to tick for it. Every run's log is kept in the program's logs folder, under your local application data, and Help names that folder.
+Key=
 Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
@@ -81,7 +80,7 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
 
-Say=Running the list again saves files already there as numbered copies; Force overwrite replaces them, for a clean refresh.
+Say=Running the list again saves files already there as numbered copies; Force replacements replaces them, for a clean refresh.
 Key=
 
 [step]
@@ -118,7 +117,7 @@ Key=
 
 [step]
 
-Say=A list that grows over time can be fetched again with Force overwrite, for a fresh copy of everything.
+Say=A list that grows over time can be fetched again with Force replacements, for a fresh copy of everything.
 Key=
 
 [step]

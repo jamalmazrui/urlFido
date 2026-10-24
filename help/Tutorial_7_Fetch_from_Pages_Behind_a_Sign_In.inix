@@ -32,7 +32,7 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
 
-Say=I put the course page's address in Source urls and press Enter. Edge opens, and urlFido waits.
+Say=I put the course page's address in Source paths and press Enter. Edge opens, and urlFido waits.
 Key=Enter
 Hear=Sign in, then press OK to continue
 Note=Confirm the wording with a live run: buildTutorials -live.

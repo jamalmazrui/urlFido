@@ -10,69 +10,68 @@ The keys of the urlFido dialog, listed three ways. Each Alt key is the letter un
 ## By key
 
 - Alt+A — Authenticate credentials
-- Alt+B — Browse source
-- Alt+C — Choose output
+- Alt+B — Browse local source
+- Alt+C — Choose output directory
 - Alt+Control+U — open the urlFido dialog from anywhere (the desktop shortcut)
 - Alt+D — Default settings
 - Alt+E — File extensions
-- Alt+F — Force overwrite
+- Alt+F — Force replacements
 - Alt+H — Help
 - Alt+I — Invisible browser
-- Alt+L — Log session
 - Alt+M — Main profile
 - Alt+O — Output directory
-- Alt+S — Source urls
+- Alt+S — Source paths
 - Alt+T — Test fetch
 - Alt+U — Use configuration
-- Alt+V — View output
+- Alt+V — View output directory
 - Control+Enter — OK, from any control
 - Enter — OK: start the run
-- Escape — Cancel: close without running
+- Escape — Cancel, from any control: close without running
 - F1 — Help
-- F11 — check for a newer version
+- F11 — check for a newer version, from any control
 - Shift+F1 — say the focus tip for the current field
 
 ## By command
 
 - Authenticate credentials — Alt+A
-- Browse source — Alt+B
+- Browse local source — Alt+B
 - Cancel — Escape
 - Check for a newer version — F11
-- Choose output — Alt+C
+- Choose output directory — Alt+C
 - Default settings — Alt+D
 - File extensions — Alt+E
-- Force overwrite — Alt+F
+- Force replacements — Alt+F
 - Help — Alt+H or F1
 - Invisible browser — Alt+I
-- Log session — Alt+L
 - Main profile — Alt+M
 - OK — Enter, or Control+Enter from any control
 - Open the dialog from anywhere — Alt+Control+U
 - Output directory — Alt+O
 - Say the focus tip — Shift+F1
-- Source urls — Alt+S
+- Source paths — Alt+S
 - Test fetch — Alt+T
 - Use configuration — Alt+U
-- View output — Alt+V
+- View output directory — Alt+V
 
 ## In tab order
 
-1. Source urls — Alt+S
-2. Browse source — Alt+B
+The dialog is in bands, rows read left to right, in this order:
+
+1. Source paths — Alt+S
+2. Browse local source — Alt+B
 3. File extensions — Alt+E
 4. Test fetch — Alt+T
-5. Output directory — Alt+O
-6. Choose output — Alt+C
-7. Authenticate credentials — Alt+A
-8. Main profile — Alt+M
-9. Invisible browser — Alt+I
-10. Force overwrite — Alt+F
-11. View output — Alt+V
-12. Log session — Alt+L
-13. Use configuration — Alt+U
-14. The buttons: OK (Enter), Default settings (Alt+D), Cancel (Escape) and Help (Alt+H)
-
-The text-field editing keys every Lbc dialog offers are listed in the guide under Dialog Editing Keys.
+5. Authenticate credentials — Alt+A
+6. Invisible browser — Alt+I
+7. Main profile — Alt+M
+8. Output directory — Alt+O
+9. Choose output directory — Alt+C
+10. Force replacements — Alt+F
+11. Use configuration — Alt+U
+12. View output directory — Alt+V
+13. Default settings — Alt+D
+14. Help — Alt+H or F1
+15. OK and Cancel, alone at the bottom right: Control+Enter is OK and Escape is Cancel, from any control
 
 ## Why these keys
 

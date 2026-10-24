@@ -18,10 +18,10 @@ Key=
 
 [step]
 
-Say=I open the dialog and type the page's address in Source urls.
+Say=I open the dialog and type the page's address in Source paths.
 Key=Alt+Control+U
 Hear=urlFido dialog
-Hear=Source urls edit
+Hear=Source paths edit
 Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
@@ -47,9 +47,9 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
 
-Say=And tick View output, to land in the folder at the end.
+Say=And tick View output directory, to land in the folder at the end.
 Key=Alt+V
-Hear=View output check box, checked
+Hear=View output directory check box, checked
 Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
@@ -104,7 +104,7 @@ Key=
 
 [step]
 
-Say=Running the same page again saves any file already there as a numbered copy; Force overwrite replaces it instead.
+Say=Running the same page again saves any file already there as a numbered copy; Force replacements replaces it instead.
 Key=
 
 [step]

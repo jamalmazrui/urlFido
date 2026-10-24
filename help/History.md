@@ -5,6 +5,18 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 23 October 2026 -- the Homer launch dialog
+
+- **The dialog is the one every Homer launch app shows,** built by the Homer kit's LaunchDialog (kit 1.89.0). It is in rows called bands, read left to right: Source paths and Browse local source; File extensions and Test fetch, then Authenticate credentials, Invisible browser and Main profile; Output directory and Choose output directory; Force replacements, Use configuration and View output directory; Default settings and Help; then OK and Cancel alone at the bottom right, as Microsoft's dialog guidance places them.
+- **Insert+Tab names the Source paths box again, and the Output directory box is found again.** The kit put a band's label after the band, so the box had no name and Browse seemed to come first.
+- **Control+Enter is OK and Escape is Cancel from any control, and F11 checks for a newer version from anywhere.** Help says so, and says where the logs are kept.
+- **Logging is automatic.** The Log session checkbox and -l are gone; every line is in %LOCALAPPDATA%\urlFido\logs\urlFido-yyyyMMdd-HHmmss.log. Force overwrite is now Force replacements.
+- **Every run ends with the Results box,** whose one OK button has the focus, so Enter, Space or Escape closes it; the output directory then opens if View output directory is checked, and urlFido closes.
+- **Switches match the dialog:** a long switch is a control's label and a short one its Alt letter, written with /, - or --, in any case. New: -d, --default-settings; --output-directory, --force-replacements, --invisible-browser, --authenticate-credentials; -v is now View output directory, so the version is --version alone. The older names still work.
+- **The progress window is the kit's,** LaunchProgress: "urlFido, <status>" in its title, a Status box with the focus, the percentage done and time left ("2 of 5 done, 40%, about 3 min left"), Cancel with no letter (Escape) to stop, and speech only while urlFido is the window in front. Its own window's status label was not reliably spoken.
+- **Force replacements works as in every launch app:** unchecked, a source whose result is already there is skipped and kept, and the Results box says how many and how to replace them; checked, the work is done again and the old result kept until the new one is complete. Its tip is now the kit's standard one.
+- **The build needs HomerDev 1.89.0 or later.**
+
 ## 14 October 2026 -- no folder claimed without evidence
 
 - **A folder named for the title with no address record is no longer claimed for a page.** Nothing in such a folder shows which page it came from, so a different page's folder could be claimed and its download skipped. It is left as it is, and the next free name used; a page last downloaded before folders carried records is downloaded once more, and recorded from then on (from a second audit by another AI).

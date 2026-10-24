@@ -157,8 +157,6 @@ static class program {
     public static bool bGuiMode = false;
     public static bool bInvisible = bDefaultInvisible;
     public static bool bInvisibleFromCli = false;
-    public static bool bLog = false;
-    public static bool bLogFromCli = false;
     public static bool bMainProfile = false;
     public static bool bMainProfileFromCli = false;
     public static bool bOutputDirFromCli = false;
@@ -236,7 +234,7 @@ static class program {
             string sSource = string.Join(" ", lFileArgs.Select(quoteIfNeeded));
             string sExt = sExtensions;
             string sOut = sOutputDir;
-            bool bF = bForce, bV = bViewOutput, bL = bLog;
+            bool bF = bForce, bV = bViewOutput;
             // Seed empty fields with the defaults. Only the DIALOG gets these:
             // on the command line, the working directory stays the default, so
             // a scripted run behaves the way every other command-line tool does.
@@ -249,13 +247,13 @@ static class program {
 
             bool bU = bUseConfig, bI = bInvisible, bA = bAuthenticate, bM = bMainProfile;
             if (!guiDialog.show(ref sSource, ref sExt, ref sOut,
-                    ref bA, ref bM, ref bI, ref bF, ref bV, ref bL, ref bU)) {
+                    ref bA, ref bM, ref bI, ref bF, ref bV, ref bU)) {
                 return 0;  // Cancel
             }
             lFileArgs = splitSourceField(sSource).ToList();
             sExtensions = sExt;
             sOutputDir = sOut;
-            bForce = bF; bViewOutput = bV; bLog = bL; bUseConfig = bU;
+            bForce = bF; bViewOutput = bV; bUseConfig = bU;
             bInvisible = bI; bAuthenticate = bA; bMainProfile = bM;
             if (!bUseConfig) {
                 // Because GUI mode now auto-loads an existing config, leaving
@@ -266,7 +264,7 @@ static class program {
                 configManager.eraseAll();
             } else {
                 configManager.save(sSource, sExtensions, sOutputDir,
-                    bAuthenticate, bMainProfile, bInvisible, bForce, bViewOutput, bLog);
+                    bAuthenticate, bMainProfile, bInvisible, bForce, bViewOutput);
             }
         }
 
@@ -289,12 +287,15 @@ static class program {
             if (!Directory.Exists(sOutputDir)) Directory.CreateDirectory(sOutputDir);
         } catch (Exception ex) {
             notify("Could not create output directory '" + sOutputDir + "': " + ex.Message);
-            return finishGui(2, sProgramName + " — Output directory error");
+            return finishGui(2, "");
         }
 
-        if (bLog) {
-            logger.open(sOutputDir);
-            logger.header(sProgramName, sProgramVersion, buildParamList(lFileArgs));
+        // LOGGING IS AUTOMATIC (23 October 2026): the run's settings go to the session
+        // log, %LOCALAPPDATA%\urlFido\logs\urlFido-yyyyMMdd-HHmmss.log, every time;
+        // the extra urlFido.log beside the output went with the Log session checkbox.
+        {
+            foreach (KeyValuePair<string, string> oParam in buildParamList(lFileArgs))
+                logger.info("Setting " + oParam.Key + ": " + oParam.Value);
             logger.info("Mode: " + (bGuiMode ? "GUI" : "command line"));
             logger.info("Working directory: " + Directory.GetCurrentDirectory());
             logger.info("Executable: " + Application.ExecutablePath);
@@ -308,7 +309,7 @@ static class program {
             notify("No valid file extensions were specified. Examples: -e \"pdf, docx\" " +
                 "or -e \"*newsletter*.pdf\"");
             logger.close();
-            return finishGui(2, sProgramName + " — No extensions");
+            return finishGui(2, "");
         }
         notify("Matching: " + string.Join(" ", lPatterns));
 
@@ -317,7 +318,7 @@ static class program {
         if (lSources.Count == 0) {
             notify("No usable source urls were found.");
             logger.close();
-            return finishGui(2, sProgramName + " — No sources");
+            return finishGui(2, "");
         }
 
         // Main-profile pre-flight: Edge cannot share its real profile
@@ -328,29 +329,27 @@ static class program {
                 "your real profile across two processes. Close all Edge windows " +
                 "(check the system tray too) and run urlFido again.");
             logger.close();
-            return finishGui(2, sProgramName + " — Edge is running");
+            return finishGui(2, "");
         }
 
         int iExit = downloadEngine.runAll(lSources, lPatterns);
 
-        if (bViewOutput) {
+        // On the command line the folder opens now; from the dialog it opens after
+        // the Results box is closed, so File Explorer does not take the focus from it.
+        if (bViewOutput && !bGuiMode) {
             try { Process.Start("explorer.exe", "\"" + sOutputDir + "\""); }
             catch (Exception ex) { logger.warn("Could not open output directory: " + ex.Message); }
         }
         logger.close();
-        return finishGui(iExit, sProgramName + " — Results");
+        return finishGui(iExit, bViewOutput ? sOutputDir : "");
     }
 
-    // In GUI mode, show the captured console text in a final message box so
-    // screen reader users get the whole session summary in one reviewable
-    // dialog (urlCheck behavior).
-    static int finishGui(int iExit, string sTitle) {
+    // THE RESULTS BOX ENDS EVERY RUN FROM THE DIALOG (23 October 2026): the captured
+    // console text in the kit's Results box, then the output directory when View output
+    // directory is checked, and urlFido closes.
+    static int finishGui(int iExit, string sViewFolder) {
         if (!bGuiMode) return iExit;
-        try {
-            MessageBox.Show(results.capturedText(), sTitle,
-                MessageBoxButtons.OK,
-                iExit == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-        } catch { }
+        try { LaunchDialog.finish(sProgramName, results.capturedText(), iExit != 0, sViewFolder); } catch { }
         return iExit;
     }
 
@@ -397,37 +396,47 @@ static class program {
     static int parseArgs(string[] aArgs, List<string> lFileArgs) {
         for (int i = 0; i < aArgs.Length; i++) {
             string sArg = aArgs[i];
-            switch (sArg) {
-                case "-h": case "--help":
+            // THE LAUNCH SWITCHES (23 October 2026, help\LaunchDialog.md in the kit):
+            // /switch, -switch or --switch, in any case; a long switch is the dialog's
+            // label and a short one its Alt letter, and the older names still work. /log
+            // went with the Log session checkbox, since logging is automatic, and -v is
+            // View output directory, so the version is /version alone.
+            string sSwitch = Util.switchName(sArg);
+            string sKey = (sSwitch == "" || File.Exists(sArg) || Directory.Exists(sArg)) ? sArg : "--" + sSwitch;
+            if (sArg == "/?") sKey = "--help";
+            switch (sKey) {
+                case "--h": case "--help":
                     printHelp();
                     return 0;
-                case "-v": case "--version":
+                case "--version":
                     Console.WriteLine(sProgramName + " " + sProgramVersion);
                     return 0;
-                case "-g": case "--gui-mode":
+                case "--d": case "--default-settings": case "--defaults":
+                    configManager.eraseAll();
+                    Console.WriteLine("Default settings restored.");
+                    return 0;
+                case "--g": case "--gui-mode":
                     bGuiMode = true; break;
-                case "-e": case "--file-extensions": case "--extensions":
+                case "--e": case "--file-extensions": case "--extensions":
                     if (i + 1 >= aArgs.Length) { Console.Error.WriteLine("Missing value after " + sArg); return 2; }
                     sExtensions = aArgs[++i]; bExtensionsFromCli = true; break;
-                case "-o": case "--output-dir": case "--output-folder":
+                case "--o": case "--output-directory": case "--output-dir": case "--output-folder": case "--output":
                     if (i + 1 >= aArgs.Length) { Console.Error.WriteLine("Missing value after " + sArg); return 2; }
                     sOutputDir = aArgs[++i]; bOutputDirFromCli = true; break;
-                case "-f": case "--force":
+                case "--f": case "--force-replacements": case "--force":
                     bForce = true; bForceFromCli = true; break;
-                case "-i": case "--invisible":
+                case "--i": case "--invisible-browser": case "--invisible":
                     bInvisible = true; bInvisibleFromCli = true; break;
-                case "-a": case "--authenticate":
+                case "--a": case "--authenticate-credentials": case "--authenticate":
                     bAuthenticate = true; bAuthenticateFromCli = true; break;
-                case "-m": case "--main-profile":
+                case "--m": case "--main-profile":
                     bMainProfile = true; bMainProfileFromCli = true; break;
-                case "-u": case "--use-configuration":
+                case "--u": case "--use-configuration":
                     bUseConfig = true; break;
-                case "-l": case "--log":
-                    bLog = true; bLogFromCli = true; break;
-                case "--view-output":
+                case "--v": case "--view-output-directory": case "--view-output": case "--view":
                     bViewOutput = true; bViewOutputFromCli = true; break;
                 default:
-                    if (sArg.StartsWith("-")) {
+                    if (sSwitch != "" && sKey != sArg) {
                         Console.Error.WriteLine("Unknown option: " + sArg);
                         Console.Error.WriteLine(sUsage);
                         return 2;
@@ -445,31 +454,32 @@ static class program {
             " — download files from web pages by extension, using real Microsoft Edge.");
         Console.WriteLine(sUsage);
         Console.WriteLine();
-        Console.WriteLine("Options:");
-        Console.WriteLine("  -e, --file-extensions <list>  File extensions to download, separated by");
-        Console.WriteLine("                             commas or spaces. A leading dot is optional:");
-        Console.WriteLine("                             \"pdf\", \".pdf\", and \"*.pdf\" all work.");
-        Console.WriteLine("                             Default: " + sDefaultExtensions);
-        Console.WriteLine("  -o, --output-dir <dir>     Directory that receives the downloaded files.");
-        Console.WriteLine("                             Default: the current directory.");
-        Console.WriteLine("  -g, --gui-mode             Show the parameter dialog instead of using");
-        Console.WriteLine("                             command-line values alone.");
-        Console.WriteLine("  -f, --force                Overwrite existing files instead of creating");
-        Console.WriteLine("                             uniquely numbered names.");
-        Console.WriteLine("  -i, --invisible            Run Edge with no visible window (headless).");
-        Console.WriteLine("  -a, --authenticate         Pause at the first url of each domain so you");
-        Console.WriteLine("                             can sign in, accept cookies, or complete 2FA");
-        Console.WriteLine("                             in the visible Edge window, then continue.");
-        Console.WriteLine("                             Overrides --invisible.");
-        Console.WriteLine("  -m, --main-profile         Use your real Edge profile so saved logins and");
-        Console.WriteLine("                             cookies apply. Requires Edge to be fully closed.");
-        Console.WriteLine("  -u, --use-configuration    Load saved settings from");
-        Console.WriteLine("                             %LOCALAPPDATA%\\urlFido\\configs\\" + sConfigFileName + ".");
-        Console.WriteLine("  -l, --log                  Also write " + sLogFileName + " to the output directory.");
-        Console.WriteLine("                             A session log is always kept in");
-        Console.WriteLine("                             %LOCALAPPDATA%\\urlFido\\logs.");
-        Console.WriteLine("  --view-output              Open the output directory when done.");
-        Console.WriteLine("  -h, --help                 Show this help. -v, --version shows the version.");
+        Console.WriteLine("Switches, written /switch, -switch or --switch, in any case. Each long switch");
+        Console.WriteLine("is a label in the dialog, and each letter is that control's Alt letter:");
+        Console.WriteLine("  -e, --file-extensions <list>     File extensions to download, separated by");
+        Console.WriteLine("                                   commas or spaces. A leading dot is optional:");
+        Console.WriteLine("                                   \"pdf\", \".pdf\", and \"*.pdf\" all work.");
+        Console.WriteLine("                                   Default: " + sDefaultExtensions);
+        Console.WriteLine("  -a, --authenticate-credentials   Pause at the first url of each domain so you");
+        Console.WriteLine("                                   can sign in, accept cookies, or complete 2FA");
+        Console.WriteLine("                                   in the visible Edge window, then continue.");
+        Console.WriteLine("                                   Overrides --invisible-browser.");
+        Console.WriteLine("  -i, --invisible-browser          Run Edge with no visible window (headless).");
+        Console.WriteLine("  -m, --main-profile               Use your real Edge profile so saved logins and");
+        Console.WriteLine("                                   cookies apply. Requires Edge to be fully closed.");
+        Console.WriteLine("  -o, --output-directory <dir>     Directory that receives the downloaded files.");
+        Console.WriteLine("                                   Default: the current directory.");
+        Console.WriteLine("  -f, --force-replacements         Fetch again a file already there, replacing it;");
+        Console.WriteLine("                                   without it, that file is skipped and kept.");
+        Console.WriteLine("  -u, --use-configuration          Load saved settings from");
+        Console.WriteLine("                                   %LOCALAPPDATA%\\urlFido\\configs\\" + sConfigFileName + ".");
+        Console.WriteLine("  -v, --view-output-directory      Open the output directory when done.");
+        Console.WriteLine("  -d, --default-settings           Forget the saved settings and exit.");
+        Console.WriteLine("  -g, --gui-mode                   Show the dialog, starting from these values.");
+        Console.WriteLine("  -h, --help                       Show this help. --version shows the version.");
+        Console.WriteLine();
+        Console.WriteLine("Logging is automatic: every run writes");
+        Console.WriteLine("%LOCALAPPDATA%\\urlFido\\logs\\urlFido-yyyyMMdd-HHmmss.log.");
         Console.WriteLine();
         Console.WriteLine("Each source may be a url, a local .htm/.html file, or a text file listing");
         Console.WriteLine("one url per line. For each source, urlFido downloads every linked file");
@@ -2423,95 +2433,39 @@ static class httpFallback {
 // In CLI mode every method is a no-op for the window but STILL logs, so a
 // -l log is equally detailed either way.
 // ===========================================================================
+// guiProgress is now the kit's LaunchProgress (23 October 2026, help\LaunchDialog.md
+// in HomerDev), the one progress window of every Homer launch app: "urlFido, <status>"
+// in its title, a status box that holds the focus, Cancel with no letter (Escape), speech
+// only while urlFido is the window in front, and the message pump. The StatusBar-role
+// label described above was not reliably spoken, and its Cancel carried Alt+C.
+// In command-line mode every method still logs, and shows nothing.
 static class guiProgress {
-    static Form frm = null;
-    static Label lblStatus = null;
+    static LaunchProgress oProgress = null;
     static string sLastLogged = "";
-    public static volatile bool bCancelled = false;
-
+    public static bool bCancelled { get { return oProgress != null && oProgress.cancelled; } }
     public static void open() {
-        bCancelled = false;
         logger.info("Run started.");
         if (!program.bGuiMode) return;
-        try {
-            frm = new Form();
-            frm.Text = program.sProgramName + " — working";
-            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
-            frm.StartPosition = FormStartPosition.CenterScreen;
-            frm.MaximizeBox = false;
-            frm.MinimizeBox = false;
-            frm.ControlBox = false;
-            frm.ShowInTaskbar = true;
-            frm.ClientSize = new System.Drawing.Size(480, 128);
-            frm.Font = System.Drawing.SystemFonts.MessageBoxFont;
-
-            var lblIntro = new Label();
-            lblIntro.Text = "Downloading files. Please wait...";
-            lblIntro.AutoSize = false;
-            lblIntro.Location = new System.Drawing.Point(14, 14);
-            lblIntro.Size = new System.Drawing.Size(452, 22);
-            lblIntro.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            frm.Controls.Add(lblIntro);
-
-            lblStatus = new Label();
-            lblStatus.Text = "Starting...";
-            lblStatus.AutoSize = false;
-            lblStatus.Location = new System.Drawing.Point(14, 42);
-            lblStatus.Size = new System.Drawing.Size(452, 22);
-            lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            lblStatus.AccessibleName = "Download status";
-            lblStatus.AccessibleRole = AccessibleRole.StatusBar;
-            frm.Controls.Add(lblStatus);
-
-            // urlFido runs are network-bound and can be far longer than a
-            // local file conversion, so unlike 2htm and extCheck this form
-            // offers a way out. The button does not disturb the status
-            // label or its accessible role.
-            var btnCancel = new Button();
-            btnCancel.Text = "&Cancel";
-            btnCancel.Location = new System.Drawing.Point(356, 76);
-            btnCancel.Size = new System.Drawing.Size(110, 28);
-            btnCancel.TabIndex = 0;
-            btnCancel.UseVisualStyleBackColor = true;
-            btnCancel.Click += (o, e) => {
-                bCancelled = true;
-                status("Cancelling — finishing the current file...");
-            };
-            frm.Controls.Add(btnCancel);
-
-            frm.Show();
-            Application.DoEvents();
-        } catch (Exception ex) {
-            logger.warn("Could not open the progress window: " + ex.Message);
-            frm = null; lblStatus = null;
-        }
+        try { oProgress = new LaunchProgress(program.sProgramName, "Starting", delegate(string sLine) { logger.info(sLine); }); }
+        catch (Exception ex) { logger.warn("Could not open the progress window: " + ex.Message); oProgress = null; }
     }
-
     // A phase with no denominator.
     public static void status(string sText) {
         if (string.IsNullOrEmpty(sText)) return;
+        if (oProgress != null) { oProgress.status(sText); return; }
         if (sText != sLastLogged) { logger.info("Status: " + sText); sLastLogged = sText; }
-        if (frm == null || lblStatus == null) return;
-        try { lblStatus.Text = sText; Application.DoEvents(); } catch { }
     }
-
-    // A phase with a known total. iIndex is 1-based; the count and percent
-    // show work DONE, matching 2htm and extCheck.
+    // A phase with a known total. iIndex is 1-based; the count says work DONE.
     public static void update(string sBase, int iIndex, int iTotal) {
-        int iCompleted = iIndex - 1;
-        int iPercent = iTotal > 0 ? (iCompleted * 100 / iTotal) : 0;
-        string sText = sBase + " \u2014 " + iCompleted + " of " + iTotal + ", " + iPercent + "%";
+        if (oProgress != null) { oProgress.step(sBase, iIndex - 1, iTotal); return; }
+        string sText = sBase + ", " + (iIndex - 1) + " of " + iTotal + " done";
         if (sText != sLastLogged) { logger.info("Status: " + sText); sLastLogged = sText; }
-        if (frm == null || lblStatus == null) return;
-        try { lblStatus.Text = sText; Application.DoEvents(); } catch { }
     }
-
     public static void close() {
         logger.info("Run finished.");
-        if (frm == null) return;
-        try { frm.Close(); frm.Dispose(); } catch { }
-        frm = null; lblStatus = null;
-        try { Application.DoEvents(); } catch { }
+        if (oProgress == null) return;
+        oProgress.Dispose();
+        oProgress = null;
     }
 }
 
@@ -2634,8 +2588,7 @@ static class results {
         }
         if (iSkip > 0) {
             program.notify("");
-            program.notify("Skipped " + Util.stringPlural("file", iSkip) +
-                ". Check \"Force overwrite\" to replace existing files.");
+            program.notify(LaunchDialog.keptLine(iSkip, "file"));
             if (bGui) foreach (string sName in lsSkipped) program.notify(sName);
         }
         if (iSourceFailures > 0) {
@@ -2721,75 +2674,65 @@ static class bark {
 //   Alt+Apostrophe   Say Clipboard
 //   Shift+F1         Focus Tip -- speaks the tip passed to each adder below
 //
-// The dialog Form is an LbcForm, so Control+Enter clicks OK from ANY
-// control, and LbcDialog itself supplies the Help button (Alt+H / F1) whose
-// text is generated from the field labels and their tips.
-//
-// LbcDialog lays out one control per row in a vertical stack, so the
-// browse buttons cannot sit beside their text fields as they did in the
-// hand-built version. They become dialog buttons instead: pressing one
-// closes the dialog, runs the picker, and reopens the dialog with the
-// chosen value filled in and every other field preserved. run() loops
-// until OK or Cancel.
+// The dialog is the kit's LaunchDialog, whose Help button (Alt+H or F1)
+// lists the fields with their tips. Each picker button sits beside its box
+// in the same band and fills it in place; run() loops only for Default
+// settings and for an output directory that is declined.
 // ===========================================================================
 public static class guiDialog {
+    // THE DIALOG IS THE KIT'S LAUNCH DIALOG (23 October 2026, help\LaunchDialog.md in
+    // HomerDev), the one every Homer launch app shows: Source paths and Browse local
+    // source; urlFido's own File extensions with Test fetch, then Authenticate
+    // credentials, Invisible browser and Main profile; Output directory and Choose output
+    // directory; Force replacements, Use configuration and View output directory; Default
+    // settings and Help; then OK and Cancel alone. Control+Enter is OK and Escape is
+    // Cancel from any control, F1 is Help and F11 checks the web for a newer urlFido.
+    // There is no Log session checkbox: Help says where the automatic logs are.
     public static bool show(ref string sSource, ref string sExtensions, ref string sOutputDir,
             ref bool bAuth, ref bool bMain, ref bool bInvisible,
-            ref bool bForce, ref bool bView, ref bool bLog, ref bool bUseCfg) {
+            ref bool bForce, ref bool bView, ref bool bUseCfg) {
         while (true) {
             string sButton;
-            using (var dlg = new LbcDialog(program.sProgramName, null)) {
-                // Three bands, each a label, its edit box, and -- where one
-                // applies -- the button that fills it in, sharing a row. This
-                // is LbC's band concept: related controls belong together on
-                // one horizontal run, so Tab moves from a field straight to
-                // the way of changing it rather than past everything else.
-                dlg.addBand();
-                TextBox tbSource = dlg.addInputBox("&Source urls:", sSource,
+            using (var oLaunch = new LaunchDialog(program.sProgramName)) {
+                oLaunch.sourcePick = "list";
+                oLaunch.sourceFilter =
+                    "Web pages and url lists (*.htm;*.html;*.txt)|*.htm;*.html;*.txt|" +
+                    "HTML pages (*.htm;*.html)|*.htm;*.html|" +
+                    "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                TextBox tbSource = oLaunch.addSourceBand(sSource,
                     "One or more urls, local web pages, or text files listing one url per line, " +
-                    "separated by spaces. Put double quotes around any item containing a space.");
-                Button btnBrowse = dlg.addButton("&Browse source...",
-                    "Choose a local web page or a text file of urls.");
+                    "separated by spaces. Put double quotes around any item containing a space.",
+                    "Choose a local web page or a text file of urls. It opens where Source paths points, else in Documents.");
 
-                dlg.addBand();
-                TextBox tbExt = dlg.addInputBox("File &extensions:", sExtensions,
+                // urlFido's own choices: what to fetch, then how the browser runs.
+                oLaunch.dialog.addBand();
+                TextBox tbExt = oLaunch.dialog.addInputBox("File &extensions:", sExtensions,
                     "What to download, separated by spaces or commas. Bare extensions and " +
                     "cmd.exe wildcard patterns both work, for example pdf, *.pdf, or *newsletter*.pdf.");
-
-                Button btnTest = dlg.addButton("&Test fetch...",
+                Button btnTest = oLaunch.dialog.addButton("&Test fetch",
                     "Report what would be downloaded, without downloading anything.");
+                oLaunch.dialog.endBand();
+                oLaunch.dialog.addBand();
+                CheckBox cbAuth = oLaunch.dialog.addCheckBox("&Authenticate credentials", bAuth,
+                    "Pause at the first page of each site so you can sign in, accept cookies, " +
+                    "or complete two-factor in the Edge window, then continue. Overrides Invisible browser.");
+                CheckBox cbInvisible = oLaunch.dialog.addCheckBox("&Invisible browser", bInvisible,
+                    "Run Edge with no visible window. Ignored when Authenticate credentials is checked.");
+                CheckBox cbMain = oLaunch.dialog.addCheckBox("&Main profile", bMain,
+                    "Use your real Edge profile so existing logins apply. Edge must be fully closed.");
+                oLaunch.dialog.endBand();
 
-                dlg.addBand();
-                TextBox tbOut = dlg.addInputBox("&Output directory:", sOutputDir,
+                TextBox tbOut = oLaunch.addOutputBand(sOutputDir,
                     "The parent directory. Each source gets its own folder inside it, " +
-                    "named after the page title.");
-                Button btnChoose = dlg.addButton("&Choose output...",
+                    "named after the page title.",
                     "Choose the directory to download into.");
-                dlg.endBand();
 
-                // F11: is there a newer urlFido on the web? (Elevate sounds
-                // like eleven.) Claimed before any control sees the key. When
-                // the setup program starts, this copy steps aside.
-                dlg.commandKey = k => {
-                    if (k != Keys.F11) return false;
-                    logger.info("F11: checking the web for a newer version");
-                    if (Elevate.offer(dlg.form)) {
-                        logger.info("F11: the setup program was started; closing the dialog");
-                        dlg.form.DialogResult = DialogResult.Cancel;
-                        dlg.form.Close();
-                    }
-                    return true;
-                };
+                oLaunch.addOperationBands(bForce, "",
+                    bUseCfg, "Load settings at startup and save them on OK, in " + program.sConfigFileName + ".",
+                    bView, "Open the output directory in File Explorer when the run finishes.");
 
                 bark.ready();
 
-                btnBrowse.Click += (o, e) => {
-                    string sPicked = tbSource.Text;
-                    if (browseSourceInto(ref sPicked)) {
-                        tbSource.Text = sPicked;
-                        tbSource.Focus();
-                    }
-                };
                 btnTest.Click += (o, e) => {
                     // Run the real pipeline against the values on screen, but
                     // with bSimulate set so nothing is written. The dialog
@@ -2806,18 +2749,18 @@ public static class guiDialog {
                         var lTest = urlHelper.expandSources(
                                 program.splitSourceField(tbSource.Text).ToList());
                         if (lTest.Count == 0) {
-                            MessageBox.Show(dlg.form, "No sources to test.",
+                            MessageBox.Show(oLaunch.dialog.form, "No sources to test.",
                                 program.sProgramName + " - Test fetch",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                         } else {
                             downloadEngine.runAll(lTest,
                                 patternParser.parse(program.sExtensions));
-                            MessageBox.Show(dlg.form, results.capturedText(),
+                            MessageBox.Show(oLaunch.dialog.form, results.capturedText(),
                                 program.sProgramName + " - Test fetch",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     } catch (Exception ex) {
-                        MessageBox.Show(dlg.form, "Test fetch failed: " + ex.Message,
+                        MessageBox.Show(oLaunch.dialog.form, "Test fetch failed: " + ex.Message,
                             program.sProgramName + " - Test fetch",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     } finally {
@@ -2830,59 +2773,24 @@ public static class guiDialog {
                     }
                 };
 
-                btnChoose.Click += (o, e) => {
-                    using (var dlgFolder = new FolderBrowserDialog()) {
-                        dlgFolder.Description = "Choose the output directory";
-                        dlgFolder.ShowNewFolderButton = true;
-                        try { dlgFolder.SelectedPath = getInitialBrowseDir(tbOut.Text); } catch { }
-                        if (dlgFolder.ShowDialog(dlg.form) == DialogResult.OK) {
-                            tbOut.Text = dlgFolder.SelectedPath;
-                            tbOut.Focus();
-                            Say.say("Output directory set");
-                        }
-                    }
-                };
-
-                dlg.addSeparator();
-                CheckBox cbAuth = dlg.addCheckBox("&Authenticate credentials", bAuth,
-                    "Pause at the first page of each site so you can sign in, accept cookies, " +
-                    "or complete two-factor in the Edge window, then continue. Overrides Invisible.");
-                CheckBox cbMain = dlg.addCheckBox("&Main profile", bMain,
-                    "Use your real Edge profile so existing logins apply. Edge must be fully closed.");
-                CheckBox cbInvisible = dlg.addCheckBox("&Invisible browser", bInvisible,
-                    "Run Edge with no visible window. Ignored when Authenticate is checked.");
-                CheckBox cbForce = dlg.addCheckBox("&Force overwrite", bForce,
-                    "Overwrite existing files instead of adding a numeric suffix such as _001.");
-                CheckBox cbView = dlg.addCheckBox("&View output", bView,
-                    "Open the output directory in File Explorer when the run finishes.");
-                CheckBox cbLog = dlg.addCheckBox("&Log session", bLog,
-                    "Also write " + program.sLogFileName + " to the output directory. A session log is always kept in %LOCALAPPDATA%\\urlFido\\logs.");
-                CheckBox cbUseCfg = dlg.addCheckBox("&Use configuration", bUseCfg,
-                    "Load settings at startup and save them on OK, in " + program.sConfigFileName + ".");
-
-                sButton = dlg.runWithButtons(new string[] {
-                    "OK", "Default settings", "Cancel" });
+                sButton = oLaunch.run();
 
                 // Harvest every field before the dialog is disposed, so a
-                // browse round trip preserves whatever else was typed.
+                // return to the dialog preserves whatever else was typed.
                 sSource      = (tbSource.Text ?? "").Trim();
                 sExtensions  = (tbExt.Text ?? "").Trim();
                 sOutputDir   = (tbOut.Text ?? "").Trim();
                 bAuth        = cbAuth.Checked;
                 bMain        = cbMain.Checked;
                 bInvisible   = cbInvisible.Checked;
-                bForce       = cbForce.Checked;
-                bView        = cbView.Checked;
-                bLog         = cbLog.Checked;
-                bUseCfg      = cbUseCfg.Checked;
+                bForce       = oLaunch.forceBox.Checked;
+                bView        = oLaunch.viewOutputBox.Checked;
+                bUseCfg      = oLaunch.useConfigBox.Checked;
             }
 
-            if (string.Equals(sButton, "Cancel", StringComparison.OrdinalIgnoreCase) ||
-                    string.IsNullOrEmpty(sButton)) {
-                return false;
-            }
+            if (sButton == "Cancel") return false;
 
-            if (string.Equals(sButton, "Default settings", StringComparison.OrdinalIgnoreCase)) {
+            if (sButton == "Default settings") {
                 // Restore the defaults, rather than emptying the fields and
                 // relying on something else to fill them in later: the seeding
                 // happens once before the dialog opens, so a blanked field
@@ -2891,7 +2799,7 @@ public static class guiDialog {
                 sExtensions = program.sDefaultExtensions;
                 sOutputDir = program.defaultOutputDirForGui();
                 bAuth = false; bMain = false; bInvisible = false;
-                bForce = false; bView = false; bLog = false; bUseCfg = false;
+                bForce = false; bView = false; bUseCfg = false;
                 configManager.eraseAll();
                 Say.say("Default settings restored");
                 continue;
@@ -2899,28 +2807,6 @@ public static class guiDialog {
 
             // OK: validate the output directory, offering to create it.
             if (!confirmOutputDir(sOutputDir)) continue;
-            return true;
-        }
-    }
-
-    // Pick a local HTML page or a url-list text file.
-    // Fill the source field from a file picker. Called from the Browse source
-    // button on the first band, so it works against the live text box rather
-    // than closing and reopening the dialog.
-    static bool browseSourceInto(ref string sSource) {
-        using (var dialog = new OpenFileDialog()) {
-            dialog.Title = "Choose a local HTML page or a url-list text file";
-            dialog.Filter =
-                "Web pages and url lists (*.htm;*.html;*.txt)|*.htm;*.html;*.txt|" +
-                "HTML pages (*.htm;*.html)|*.htm;*.html|" +
-                "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-            dialog.CheckFileExists = true;
-            dialog.RestoreDirectory = true;
-            try { dialog.InitialDirectory = getInitialBrowseDir(sSource); } catch { }
-            if (dialog.ShowDialog() != DialogResult.OK) return false;
-            string sPicked = dialog.FileName;
-            sSource = sPicked.Contains(" ") ? "\"" + sPicked + "\"" : sPicked;
-            Say.say("Source set");
             return true;
         }
     }
@@ -2944,17 +2830,6 @@ public static class guiDialog {
         }
     }
 
-    static string getInitialBrowseDir(string sFieldText) {
-        try {
-            string s = (sFieldText ?? "").Trim().Trim('"');
-            if (s.Length > 0) {
-                string sDir = Directory.Exists(s) ? s : Path.GetDirectoryName(s);
-                if (!string.IsNullOrEmpty(sDir) && Directory.Exists(sDir)) return sDir;
-            }
-        } catch { }
-        try { return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments); }
-        catch { return Directory.GetCurrentDirectory(); }
-    }
 }
 
 // ===========================================================================
@@ -3033,9 +2908,9 @@ public static class logger {
 
     static void write(string sLevel, string sMsg) {
         if (writer == null) {
-            if (program.bLog && lPending.Count < 200)
-                lPending.Add(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff") +
-                    " [" + sLevel + "] " + sMsg);
+            // Nothing is held for a file now: urlFido.log beside the output went with
+            // the Log session checkbox (23 October 2026), and every line is already in
+            // the session log.
             return;
         }
         try { writer.WriteLine(stamp(sLevel) + " " + sMsg); } catch { }
@@ -3149,11 +3024,10 @@ public static class configManager {
         if (!program.bInvisibleFromCli)    program.bInvisible    = getBool(d, "Invisible");
         if (!program.bForceFromCli)        program.bForce        = getBool(d, "Force");
         if (!program.bViewOutputFromCli)   program.bViewOutput   = getBool(d, "ViewOutput");
-        if (!program.bLogFromCli)          program.bLog          = getBool(d, "LogSession");
     }
 
     public static void save(string sSource, string sExtensions, string sOutputDir,
-            bool bAuth, bool bMain, bool bInvisible, bool bForce, bool bView, bool bLog) {
+            bool bAuth, bool bMain, bool bInvisible, bool bForce, bool bView) {
         string sDir = getConfigDir();
         string sPath = getConfigPath();
         try {
@@ -3171,7 +3045,6 @@ public static class configManager {
             InixCodec.writeValue(sPath, sSettingsSection, "Invisible",       yn(bInvisible));
             InixCodec.writeValue(sPath, sSettingsSection, "Force",           yn(bForce));
             InixCodec.writeValue(sPath, sSettingsSection, "ViewOutput",      yn(bView));
-            InixCodec.writeValue(sPath, sSettingsSection, "LogSession",      yn(bLog));
             logger.info("Saved configuration to " + sPath);
             retireLegacy();
         } catch (Exception ex) {

@@ -27,7 +27,7 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
 
-Say=I put a new page's address in Source urls and press Enter.
+Say=I put a new page's address in Source paths and press Enter.
 Key=Enter
 Hear=Testing VPAT, Information Technology Industry Council
 Note=Confirm the wording with a live run: buildTutorials -live.
@@ -122,7 +122,7 @@ Key=
 
 [step]
 
-Say=After a test, Up Arrow in Source urls brings the same pages back, ready for the real run.
+Say=After a test, Up Arrow in Source paths brings the same pages back, ready for the real run.
 Key=Up Arrow
 Hear=https colon slash slash www dot itic dot org slash policy slash accessibility slash vpat
 Note=Confirm the wording with a live run: buildTutorials -live.

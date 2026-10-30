@@ -2136,9 +2136,9 @@ static class downloadEngine {
         // and reported, and every download, kept or not, goes into the folder's receipt.
         if (iBytes >= 0) {
             string sGot = Path.Combine(program.sTargetDir, sName);
-            string sProblem = "";
+            string sProblem = "", sUnchecked = "";
             try { sProblem = downloadCheck.problemWith(sGot); }
-            catch (Exception oError) { logger.info("Could not check " + sName + ": " + oError.Message); }
+            catch (Exception oError) { sUnchecked = oError.Message; logger.info("Could not check " + sName + ": " + oError.Message); }
             if (sProblem != "") {
                 logger.info("Rejected " + sName + " from " + sFileUrl + ": " + sProblem);
                 try { File.Delete(sGot); } catch { }
@@ -2148,7 +2148,17 @@ static class downloadEngine {
                 return;
             }
             string sSha = "";
-            try { sSha = Homer.Util.fileSha256(sGot); } catch (Exception oError) { logger.info("Could not fingerprint " + sName + ": " + oError.Message); }
+            try { sSha = Homer.Util.fileSha256(sGot); } catch (Exception oError) { if (sUnchecked == "") sUnchecked = oError.Message; logger.info("Could not fingerprint " + sName + ": " + oError.Message); }
+            // NOT CHECKED IS NOT COMPLETE (30 October 2026, from an audit by another AI). A file whose check or
+            // fingerprint could not be made was still recorded complete and counted a success, and a run with no
+            // failures retires the earlier folder. Now it stays on disk for a look, is recorded unchecked, and counts
+            // as a failure, so the earlier folder is kept.
+            if (sUnchecked != "") {
+                downloadCheck.record(program.sTargetDir, sName, sFileUrl, iBytes, sSha, "unchecked: " + sUnchecked);
+                results.addFailure(sName, "downloaded but could not be checked: " + sUnchecked);
+                program.notify("  NOT CHECKED: " + sName + ": " + sUnchecked);
+                return;
+            }
             downloadCheck.record(program.sTargetDir, sName, sFileUrl, iBytes, sSha, "complete");
         }
         if (iBytes >= 0) {

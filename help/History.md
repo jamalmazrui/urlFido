@@ -5,6 +5,10 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 30 October 2026 -- fixes from an audit by another AI
+
+- **A download that could not be checked is not counted complete.** When checking or fingerprinting a file failed, it was still recorded complete, and a run with no failures replaces the earlier folder. It is now recorded as unchecked and counted a failure, so the earlier folder stays; the file is kept for a look.
+
 ## 24 October 2026
 
 - **The build uses the newest Homer kit it finds,** logging each one: your HomerDev variable, C:\HomerDev and the folders above. The variable named an older installed kit, which stopped BatCon's build.

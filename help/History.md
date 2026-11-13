@@ -5,6 +5,11 @@ author: "Jamal Mazrui"
 
 # urlFido History
 
+## 12 November 2026 -- The same words as every launch app
+
+- **Browse local source, Choose output directory, Use configuration and View output directory** now say the same sentence as in every Homer launch app, from the kit; the kit's check keeps it so.
+- **The switches -f, -u, -v, -d and -h** are described in the same words as every launch app's.
+
 ## 30 October 2026 -- fixes from an audit by another AI
 
 - **A download that could not be checked is not counted complete.** When checking or fingerprinting a file failed, it was still recorded complete, and a run with no failures replaces the earlier folder. It is now recorded as unchecked and counted a failure, so the earlier folder stays; the file is kept for a look.

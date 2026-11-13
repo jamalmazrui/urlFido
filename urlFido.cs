@@ -469,14 +469,17 @@ static class program {
         Console.WriteLine("                                   cookies apply. Requires Edge to be fully closed.");
         Console.WriteLine("  -o, --output-directory <dir>     Directory that receives the downloaded files.");
         Console.WriteLine("                                   Default: the current directory.");
-        Console.WriteLine("  -f, --force-replacements         Fetch again a file already there, replacing it;");
-        Console.WriteLine("                                   without it, that file is skipped and kept.");
-        Console.WriteLine("  -u, --use-configuration          Load saved settings from");
-        Console.WriteLine("                                   %LOCALAPPDATA%\\urlFido\\configs\\" + sConfigFileName + ".");
-        Console.WriteLine("  -v, --view-output-directory      Open the output directory when done.");
-        Console.WriteLine("  -d, --default-settings           Forget the saved settings and exit.");
+        Console.WriteLine("  -f, --force-replacements         Do the work again for a source whose result");
+        Console.WriteLine("                                   is already there, replacing the old result;");
+        Console.WriteLine("                                   without it, that source is skipped and its");
+        Console.WriteLine("                                   result kept.");
+        Console.WriteLine("  -u, --use-configuration          Load the saved settings at startup, and in");
+        Console.WriteLine("                                   the dialog save them when you press OK.");
+        Console.WriteLine("  -v, --view-output-directory      Open the output directory in File Explorer");
+        Console.WriteLine("                                   when the run is done.");
+        Console.WriteLine("  -d, --default-settings           Forget the saved settings and stop.");
         Console.WriteLine("  -g, --gui-mode                   Show the dialog, starting from these values.");
-        Console.WriteLine("  -h, --help                       Show this help. --version shows the version.");
+        Console.WriteLine("  -h, --help                       Show these switches and stop. --version shows the version.");
         Console.WriteLine();
         Console.WriteLine("Logging is automatic: every run writes");
         Console.WriteLine("%LOCALAPPDATA%\\urlFido\\logs\\urlFido-yyyyMMdd-HHmmss.log.");
@@ -2712,7 +2715,7 @@ public static class guiDialog {
                 TextBox tbSource = oLaunch.addSourceBand(sSource,
                     "One or more urls, local web pages, or text files listing one url per line, " +
                     "separated by spaces. Put double quotes around any item containing a space.",
-                    "Choose a local web page or a text file of urls. It opens where Source paths points, else in Documents.");
+                    "");
 
                 // urlFido's own choices: what to fetch, then how the browser runs.
                 oLaunch.dialog.addBand();
@@ -2735,11 +2738,11 @@ public static class guiDialog {
                 TextBox tbOut = oLaunch.addOutputBand(sOutputDir,
                     "The parent directory. Each source gets its own folder inside it, " +
                     "named after the page title.",
-                    "Choose the directory to download into.");
+                    "");
 
                 oLaunch.addOperationBands(bForce, "",
-                    bUseCfg, "Load settings at startup and save them on OK, in " + program.sConfigFileName + ".",
-                    bView, "Open the output directory in File Explorer when the run finishes.");
+                    bUseCfg, "",
+                    bView, "");
 
                 bark.ready();
 

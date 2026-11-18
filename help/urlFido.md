@@ -59,7 +59,7 @@ Download `urlFido_setup.exe` from the [urlFido releases page](https://github.com
 - Adds a desktop shortcut with the hotkey **Alt+Control+U**, which opens the parameter dialog from anywhere in Windows.
 - Requires 64-bit Windows 10 or later.
 
-The last page offers two checkboxes. **Launch urlFido now** is checked; **Open the user guide** is not. When you press Finish, a short results box says what was installed and where the logs are. urlFido starts after you close that box, so the box is never hidden behind it.
+The last page offers two checkboxes. **Launch urlFido now** is marked; **Open the user guide** is not. When you press Finish, a short results box says what was installed and where the logs are. urlFido starts after you close that box, so the box is never hidden behind it.
 
 The program itself is in the `exec` folder of the installation, and this guide and the other documents are in the `help` folder. `ReadMe.htm` and `License.htm` are at the top, beside `urlFido.cmd`, which runs the program from a command prompt in that folder.
 
@@ -167,9 +167,9 @@ It is the one dialog every Homer launch app shows, in rows called bands that rea
 14. **Help** (Alt+H or F1) — describes every field with its tip, the dialog keys and where the logs are kept, and ends with the version check described under [Updating](#updating).
 15. **OK** and **Cancel**, alone at the bottom right — Control+Enter is OK and Escape is Cancel, from any control. **F11** runs the version check from any control, too.
 
-Every field carries a focus tip describing it; press **Shift+F1** to hear the tip for the field you are on.
+Every field carries a tip describing it. **Shift+F1**, What This Does, says what the control with focus does, and **Control+Slash**, Where Am I, says where you are, what has focus and its keys; both work in every dialog and message, and pressed twice, each shows what it said in a window.
 
-Every run ends with the urlFido Results box. Its only button is OK, so Enter, Space or Escape closes it; then the output directory opens if View output directory is checked, and urlFido closes. A long report shows its first 15 lines and names a file with the rest.
+Every run ends with the urlFido Results box. Its only button is OK, so Enter, Space or Escape closes it; then the output directory opens if View output directory is marked, and urlFido closes. A long report shows its first 15 lines and names a file with the rest.
 
 The two picker buttons fill their box in place, with everything else you typed kept.
 
@@ -196,7 +196,8 @@ Because the dialog is built from Lbc primitives, every text field offers the sha
 - Alt+F8 — Read All
 - Alt+Y — Say Yield: line and character counts
 - Alt+Apostrophe — Say Clipboard
-- Shift+F1 — Say the focus tip for this field
+- Shift+F1 — What This Does: say what the control with focus does
+- Control+Slash — Where Am I: say where you are, what has focus and its keys
 
 ## Command-Line Options
 
@@ -215,14 +216,14 @@ urlFido [options] <url, local html file, or url-list text file> [...]
 - `-e, --file-extensions <list>` — what to download, comma- or space-separated. Bare extensions and cmd.exe wildcard patterns both work: `pdf`, `.pdf`, `*.pdf`, `*newsletter*.pdf`. Case-insensitive. Default: `docx pdf zip`. (`--extensions` is still accepted, as version 1.0.0 used that name.)
 - `-o, --output-directory <dir>` — output directory. Default: the current directory.
 - `-g, --gui-mode` — show the parameter dialog.
-- `-f, --force-replacements` — do the work again for a source whose result is already there, replacing it; without it, that source is skipped and its result kept.
+- `-f, --force-replacements` — Do the work again for a source whose result is already there, replacing the old result; without it, that source is skipped and its result kept.
 - `-i, --invisible-browser` — run Edge headless (no visible window).
 - `-a, --authenticate-credentials` — pause at the first url of each site to sign in. Overrides `-i`.
 - `-m, --main-profile` — use your real Edge profile. Requires Edge closed.
-- `-u, --use-configuration` — load and save settings in `configs\urlFido.inix`. See [Saved Settings](#saved-settings).
-- `-v, --view-output-directory` — open the output directory when done.
-- `-d, --default-settings` — forget the saved settings and exit.
-- `-h, --help` — show help. `--version` shows the version.
+- `-u, --use-configuration` — Load the saved settings at startup, and in the dialog save them when you press OK. See [Saved Settings](#saved-settings).
+- `-v, --view-output-directory` — Open the output directory in File Explorer when the run is done.
+- `-d, --default-settings` — Forget the saved settings and stop.
+- `-h, --help` — Show these switches and stop. `--version` shows the version.
 
 Switches may be written with /, - or --, in any case; each long switch is a label in the dialog, and each letter is that control's Alt letter. The older names, such as `--force`, `--invisible` and `--output-dir`, still work.
 
@@ -394,7 +395,7 @@ A note on Main profile: recent versions of Edge may refuse to expose their autom
 
 urlFido names each downloaded file using the shared web-download helper that FileDir's Web Download command uses. The name comes from the last part of the url when that is a proper file name. When the url does not end in a usable file name — as with `example.com/download?id=42` — urlFido asks the server, taking the name from the Content-Disposition header or deriving the extension from the MIME type, and falls back to a sanitized name built from the url itself. Ordinary links that already end in a file name cost no extra network request.
 
-If a file of the same name is already in the output directory, urlFido reports it as skipped and leaves it alone. Check **Force replacements** to replace it instead.
+If a file of the same name is already in the output directory, urlFido reports it as skipped and leaves it alone. Mark **Force replacements** to replace it instead.
 
 ## Configuration and Logging
 
@@ -426,7 +427,7 @@ At the end of a run urlFido prints a structured summary, following the same conv
 
 In GUI mode the summary is what the final message box shows, and the file names are listed under each heading. In command-line mode the names have already scrolled past during the run, so the headings appear without repeating the lists.
 
-A file is reported as **Skipped** when a file of the same name is already in the output directory; check **Force replacements** to replace it instead.
+A file is reported as **Skipped** when a file of the same name is already in the output directory; mark **Force replacements** to replace it instead.
 
 ## Hotkey Summary
 
@@ -438,18 +439,19 @@ A file is reported as **Skipped** when a file of the same name is already in the
 - Alt+C — Choose output directory
 - Alt+D — Default settings
 - Alt+H or F1 — Help, which ends with the version check
-- F11 — check the web for a newer version of urlFido
-- Shift+F1 — say the focus tip for the current field
+- F11 — Elevate Version: download and install the latest urlFido
+- Shift+F1 — What This Does: say what the control with focus does
+- Control+Slash — Where Am I: say where you are, what has focus and its keys
 
 Every key is listed in Hotkeys, in this folder, sorted three ways. The text-field editing keys are also listed under [Dialog Editing Keys](#dialog-editing-keys).
 
 ## Saved Settings
 
-urlFido can remember the dialog's contents between runs, in `urlFido.inix` under `%LOCALAPPDATA%\urlFido\configs`. Tick **Use configuration** and press Enter; the next time the dialog opens, it comes back the way you left it.
+urlFido can remember the dialog's contents between runs, in `urlFido.inix` under `%LOCALAPPDATA%\urlFido\configs`. Mark **Use configuration** and press Enter; the next time the dialog opens, it comes back the way you left it.
 
 The behavior differs between the two modes, deliberately:
 
-- **In the dialog**, an existing settings file is loaded automatically. You do not need to pass anything on the command line — ticking the box once is enough, and it stays that way.
+- **In the dialog**, an existing settings file is loaded automatically. You do not need to pass anything on the command line — marking the box once is enough, and it stays that way.
 - **On the command line**, `-u` is required. A script picks up no state it did not ask for, so a command means the same thing wherever it runs.
 
 Clearing the checkbox deletes the stored settings. That matters because of the automatic loading above: if the file were left behind, the next run in the dialog would find it and load it again, and the setting could never be switched off.

@@ -510,7 +510,7 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 7: Alt+V
 
-And tick View output directory, to land in the folder at the end.
+And mark View output directory, to land in the folder at the end.
 
 Screen reader:
 
@@ -944,7 +944,7 @@ Confirm the wording with a live run: buildTutorials -live.
 
 ### Step 7
 
-Logging is automatic, so there is no box to tick for it. Every run's log is kept in the program's logs folder, under your local application data, and Help names that folder.
+Logging is automatic, so there is no box to mark for it. Every run's log is kept in the program's logs folder, under your local application data, and Help names that folder.
 
 Confirm the wording with a live run: buildTutorials -live.
 

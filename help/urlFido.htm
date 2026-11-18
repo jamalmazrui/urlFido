@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc 3.12.1" />
+  <meta name="generator" content="pandoc 3.14" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Jamal Mazrui" />
   <title>urlFido</title>
@@ -36,27 +36,6 @@
       }
       h1 {
         font-size: 1.8em;
-      }
-    }
-    @media print {
-      html {
-        color-scheme: light only;
-      }
-      html, body, pre, code {
-        background-color: transparent;
-      }
-      body, a, a:visited, blockquote {
-        color: black;
-      }
-      pre, code {
-        padding: 0;
-      }
-      p, h2, h3 {
-        orphans: 3;
-        widows: 3;
-      }
-      h2, h3, h4 {
-        page-break-after: avoid;
       }
     }
     p {
@@ -164,6 +143,12 @@
       text-decoration: none;
     }
     span.smallcaps{font-variant: small-caps;}
+    em, em em em, em em em em em {
+      font-style: italic;
+    }
+    em em, em em em em {
+      font-style: normal;
+    }
     div.columns{display: flex; gap: 1.5em;}
     div.column{flex: auto;}
     @media screen {
@@ -180,7 +165,27 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-  </style>
+    @media print {
+      html {
+        color-scheme: light only;
+      }
+      html, body, pre, code {
+        background-color: transparent;
+      }
+      body, a, a:visited, blockquote {
+        color: black;
+      }
+      pre, code {
+        padding: 0;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }  </style>
 </head>
 <body>
 <header id="title-block-header">
@@ -316,7 +321,7 @@ anywhere in Windows.</li>
 <li>Requires 64-bit Windows 10 or later.</li>
 </ul>
 <p>The last page offers two checkboxes. <strong>Launch urlFido
-now</strong> is checked; <strong>Open the user guide</strong> is not.
+now</strong> is marked; <strong>Open the user guide</strong> is not.
 When you press Finish, a short results box says what was installed and
 where the logs are. urlFido starts after you close that box, so the box
 is never hidden behind it.</p>
@@ -481,12 +486,15 @@ version check described under <a href="#updating">Updating</a>.</li>
 right — Control+Enter is OK and Escape is Cancel, from any control.
 <strong>F11</strong> runs the version check from any control, too.</li>
 </ol>
-<p>Every field carries a focus tip describing it; press
-<strong>Shift+F1</strong> to hear the tip for the field you are on.</p>
+<p>Every field carries a tip describing it. <strong>Shift+F1</strong>,
+What This Does, says what the control with focus does, and
+<strong>Control+Slash</strong>, Where Am I, says where you are, what has
+focus and its keys; both work in every dialog and message, and pressed
+twice, each shows what it said in a window.</p>
 <p>Every run ends with the urlFido Results box. Its only button is OK,
 so Enter, Space or Escape closes it; then the output directory opens if
-View output directory is checked, and urlFido closes. A long report
-shows its first 15 lines and names a file with the rest.</p>
+View output directory is marked, and urlFido closes. A long report shows
+its first 15 lines and names a file with the rest.</p>
 <p>The two picker buttons fill their box in place, with everything else
 you typed kept.</p>
 <p>While a run is in progress, urlFido shows a small status window. Its
@@ -520,7 +528,9 @@ selected</li>
 <li>Alt+F8 — Read All</li>
 <li>Alt+Y — Say Yield: line and character counts</li>
 <li>Alt+Apostrophe — Say Clipboard</li>
-<li>Shift+F1 — Say the focus tip for this field</li>
+<li>Shift+F1 — What This Does: say what the control with focus does</li>
+<li>Control+Slash — Where Am I: say where you are, what has focus and
+its keys</li>
 </ul>
 <h2 id="command-line-options">Command-Line Options</h2>
 <p>Sources are <strong>positional and repeating</strong>: list as many
@@ -548,24 +558,24 @@ as version 1.0.0 used that name.)</li>
 <li><code>-o, --output-directory &lt;dir&gt;</code> — output directory.
 Default: the current directory.</li>
 <li><code>-g, --gui-mode</code> — show the parameter dialog.</li>
-<li><code>-f, --force-replacements</code> — do the work again for a
-source whose result is already there, replacing it; without it, that
-source is skipped and its result kept.</li>
+<li><code>-f, --force-replacements</code> — Do the work again for a
+source whose result is already there, replacing the old result; without
+it, that source is skipped and its result kept.</li>
 <li><code>-i, --invisible-browser</code> — run Edge headless (no visible
 window).</li>
 <li><code>-a, --authenticate-credentials</code> — pause at the first url
 of each site to sign in. Overrides <code>-i</code>.</li>
 <li><code>-m, --main-profile</code> — use your real Edge profile.
 Requires Edge closed.</li>
-<li><code>-u, --use-configuration</code> — load and save settings in
-<code>configs\urlFido.inix</code>. See <a href="#saved-settings">Saved
-Settings</a>.</li>
-<li><code>-v, --view-output-directory</code> — open the output directory
-when done.</li>
-<li><code>-d, --default-settings</code> — forget the saved settings and
-exit.</li>
-<li><code>-h, --help</code> — show help. <code>--version</code> shows
-the version.</li>
+<li><code>-u, --use-configuration</code> — Load the saved settings at
+startup, and in the dialog save them when you press OK. See <a
+href="#saved-settings">Saved Settings</a>.</li>
+<li><code>-v, --view-output-directory</code> — Open the output directory
+in File Explorer when the run is done.</li>
+<li><code>-d, --default-settings</code> — Forget the saved settings and
+stop.</li>
+<li><code>-h, --help</code> — Show these switches and stop.
+<code>--version</code> shows the version.</li>
 </ul>
 <p>Switches may be written with /, - or –, in any case; each long switch
 is a label in the dialog, and each letter is that control’s Alt letter.
@@ -855,7 +865,7 @@ extension from the MIME type, and falls back to a sanitized name built
 from the url itself. Ordinary links that already end in a file name cost
 no extra network request.</p>
 <p>If a file of the same name is already in the output directory,
-urlFido reports it as skipped and leaves it alone. Check <strong>Force
+urlFido reports it as skipped and leaves it alone. Mark <strong>Force
 replacements</strong> to replace it instead.</p>
 <h2 id="configuration-and-logging">Configuration and Logging</h2>
 <p>With <strong>Use configuration</strong> (<code>-u</code>), urlFido
@@ -905,7 +915,7 @@ file names are listed under each heading. In command-line mode the names
 have already scrolled past during the run, so the headings appear
 without repeating the lists.</p>
 <p>A file is reported as <strong>Skipped</strong> when a file of the
-same name is already in the output directory; check <strong>Force
+same name is already in the output directory; mark <strong>Force
 replacements</strong> to replace it instead.</p>
 <h2 id="hotkey-summary">Hotkey Summary</h2>
 <ul>
@@ -918,8 +928,10 @@ desktop shortcut)</li>
 <li>Alt+C — Choose output directory</li>
 <li>Alt+D — Default settings</li>
 <li>Alt+H or F1 — Help, which ends with the version check</li>
-<li>F11 — check the web for a newer version of urlFido</li>
-<li>Shift+F1 — say the focus tip for the current field</li>
+<li>F11 — Elevate Version: download and install the latest urlFido</li>
+<li>Shift+F1 — What This Does: say what the control with focus does</li>
+<li>Control+Slash — Where Am I: say where you are, what has focus and
+its keys</li>
 </ul>
 <p>Every key is listed in Hotkeys, in this folder, sorted three ways.
 The text-field editing keys are also listed under <a
@@ -927,14 +939,14 @@ href="#dialog-editing-keys">Dialog Editing Keys</a>.</p>
 <h2 id="saved-settings">Saved Settings</h2>
 <p>urlFido can remember the dialog’s contents between runs, in
 <code>urlFido.inix</code> under
-<code>%LOCALAPPDATA%\urlFido\configs</code>. Tick <strong>Use
+<code>%LOCALAPPDATA%\urlFido\configs</code>. Mark <strong>Use
 configuration</strong> and press Enter; the next time the dialog opens,
 it comes back the way you left it.</p>
 <p>The behavior differs between the two modes, deliberately:</p>
 <ul>
 <li><strong>In the dialog</strong>, an existing settings file is loaded
 automatically. You do not need to pass anything on the command line —
-ticking the box once is enough, and it stays that way.</li>
+marking the box once is enough, and it stays that way.</li>
 <li><strong>On the command line</strong>, <code>-u</code> is required. A
 script picks up no state it did not ask for, so a command means the same
 thing wherever it runs.</li>

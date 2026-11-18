@@ -210,7 +210,7 @@ static class program {
         // IMPLICIT in GUI mode whenever a config file already exists. That
         // asymmetry is the convention established by 2htm and followed by
         // extCheck and urlCheck, and it is what makes the dialog checkbox
-        // mean what a user expects: tick "Use configuration" once, and the
+        // mean what a user expects: mark "Use configuration" once, and the
         // next time the dialog opens it comes back the way you left it.
         //
         // Without this, checking the box saved settings that were never read
@@ -469,17 +469,14 @@ static class program {
         Console.WriteLine("                                   cookies apply. Requires Edge to be fully closed.");
         Console.WriteLine("  -o, --output-directory <dir>     Directory that receives the downloaded files.");
         Console.WriteLine("                                   Default: the current directory.");
-        Console.WriteLine("  -f, --force-replacements         Do the work again for a source whose result");
-        Console.WriteLine("                                   is already there, replacing the old result;");
-        Console.WriteLine("                                   without it, that source is skipped and its");
-        Console.WriteLine("                                   result kept.");
-        Console.WriteLine("  -u, --use-configuration          Load the saved settings at startup, and in");
-        Console.WriteLine("                                   the dialog save them when you press OK.");
-        Console.WriteLine("  -v, --view-output-directory      Open the output directory in File Explorer");
-        Console.WriteLine("                                   when the run is done.");
-        Console.WriteLine("  -d, --default-settings           Forget the saved settings and stop.");
+        // THE KIT'S WORDS FOR THE STANDARD SWITCHES (18 November 2026), the same in every launch app.
+        Console.WriteLine("  -f, --force-replacements         " + LaunchDialog.forceSwitch);
+        Console.WriteLine("  -u, --use-configuration          " + LaunchDialog.useConfigSwitch);
+        Console.WriteLine("                                   The settings are in %LOCALAPPDATA%\\urlFido\\configs\\" + sConfigFileName + ".");
+        Console.WriteLine("  -v, --view-output-directory      " + LaunchDialog.viewOutputSwitch);
+        Console.WriteLine("  -d, --default-settings           " + LaunchDialog.defaultSettingsSwitch);
         Console.WriteLine("  -g, --gui-mode                   Show the dialog, starting from these values.");
-        Console.WriteLine("  -h, --help                       Show these switches and stop. --version shows the version.");
+        Console.WriteLine("  -h, --help                       " + LaunchDialog.helpSwitch + " --version shows the version.");
         Console.WriteLine();
         Console.WriteLine("Logging is automatic: every run writes");
         Console.WriteLine("%LOCALAPPDATA%\\urlFido\\logs\\urlFido-yyyyMMdd-HHmmss.log.");
@@ -2060,21 +2057,12 @@ static class downloadEngine {
         Thread.Sleep(program.iAuthPostConfirmSettleDelayMs);
     }
 
-    // Owner form is created TopMost so the prompt appears in front of Edge
-    // rather than behind it (urlCheck lesson: without an owner, the
-    // MessageBox belongs to whatever window has focus — usually Edge).
+    // In front of Edge, where the person is signing in: the kit's LbcMessage.showOnTop, an Lbc dialog that answers
+    // Shift+F1 and Control+Slash (kit 1.258.0, 18 November 2026); it replaced a Windows message box with a hidden,
+    // topmost owner, the lesson urlCheck taught. Without a window, the console asks instead.
     static void showTopmostPrompt(string sMsg, string sTitle) {
         try {
-            using (var oOwner = new Form()) {
-                oOwner.TopMost = true;
-                oOwner.ShowInTaskbar = false;
-                oOwner.FormBorderStyle = FormBorderStyle.None;
-                oOwner.StartPosition = FormStartPosition.CenterScreen;
-                oOwner.Size = new System.Drawing.Size(1, 1);
-                oOwner.Show();
-                MessageBox.Show(oOwner, sMsg, sTitle,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            LbcMessage.showOnTop(sMsg, sTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         } catch {
             Console.WriteLine(sMsg);
             Console.ReadLine();
@@ -2730,7 +2718,7 @@ public static class guiDialog {
                     "Pause at the first page of each site so you can sign in, accept cookies, " +
                     "or complete two-factor in the Edge window, then continue. Overrides Invisible browser.");
                 CheckBox cbInvisible = oLaunch.dialog.addCheckBox("&Invisible browser", bInvisible,
-                    "Run Edge with no visible window. Ignored when Authenticate credentials is checked.");
+                    "Run Edge with no visible window. Ignored when Authenticate credentials is marked.");
                 CheckBox cbMain = oLaunch.dialog.addCheckBox("&Main profile", bMain,
                     "Use your real Edge profile so existing logins apply. Edge must be fully closed.");
                 oLaunch.dialog.endBand();
@@ -2740,6 +2728,8 @@ public static class guiDialog {
                     "named after the page title.",
                     "");
 
+                // THE KIT'S SENTENCES (18 November 2026): Browse local source, Choose output directory, Use configuration and View output
+                // directory say the same in every launch app, so each takes the kit's tip, passed as "".
                 oLaunch.addOperationBands(bForce, "",
                     bUseCfg, "",
                     bView, "");
@@ -2762,18 +2752,18 @@ public static class guiDialog {
                         var lTest = urlHelper.expandSources(
                                 program.splitSourceField(tbSource.Text).ToList());
                         if (lTest.Count == 0) {
-                            MessageBox.Show(oLaunch.dialog.form, "No sources to test.",
+                            LbcMessage.show(oLaunch.dialog.form, "No sources to test.",
                                 program.sProgramName + " - Test fetch",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                         } else {
                             downloadEngine.runAll(lTest,
                                 patternParser.parse(program.sExtensions));
-                            MessageBox.Show(oLaunch.dialog.form, results.capturedText(),
+                            LbcMessage.show(oLaunch.dialog.form, results.capturedText(),
                                 program.sProgramName + " - Test fetch",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     } catch (Exception ex) {
-                        MessageBox.Show(oLaunch.dialog.form, "Test fetch failed: " + ex.Message,
+                        LbcMessage.show(oLaunch.dialog.form, "Test fetch failed: " + ex.Message,
                             program.sProgramName + " - Test fetch",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     } finally {
@@ -2824,23 +2814,10 @@ public static class guiDialog {
         }
     }
 
-    // Offer to create a non-existent output directory. Returns false to send
-    // the user back to the dialog.
+    // Offer to create a non-existent output directory -- the kit's question, the same in every launch app (kit
+    // 1.258.0, 18 November 2026). Returns false to send the user back to the dialog.
     static bool confirmOutputDir(string sOutputDir) {
-        string s = (sOutputDir ?? "").Trim();
-        if (s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"')
-            s = s.Substring(1, s.Length - 2).Trim();
-        if (s.Length == 0) return true;
-        try { if (Directory.Exists(s)) return true; } catch { return true; }
-        DialogResult dr = MessageBox.Show("Create " + s + "?", program.sProgramName,
-            MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-        if (dr != DialogResult.Yes) return false;
-        try { Directory.CreateDirectory(s); return true; }
-        catch (Exception ex) {
-            MessageBox.Show("Could not create directory:\r\n" + s + "\r\n\r\n" + ex.Message,
-                program.sProgramName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return false;
-        }
+        return LaunchDialog.confirmOutput(program.sProgramName, sOutputDir);
     }
 
 }
@@ -3012,7 +2989,7 @@ public static class configManager {
             Console.Error.WriteLine(sMsg);
             logger.warn("Could not read configuration: " + ex.Message);
             if (program.bGuiMode) {
-                try { MessageBox.Show(sMsg, program.sProgramName + " — Configuration not loaded",
+                try { LbcMessage.show(sMsg, program.sProgramName + " — Configuration not loaded",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning); } catch { }
             }
         }
@@ -3065,7 +3042,7 @@ public static class configManager {
             Console.Error.WriteLine(sMsg);
             logger.warn("Could not save configuration: " + ex.Message);
             if (program.bGuiMode) {
-                try { MessageBox.Show(sMsg, program.sProgramName + " — Configuration not saved",
+                try { LbcMessage.show(sMsg, program.sProgramName + " — Configuration not saved",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning); } catch { }
             }
         }

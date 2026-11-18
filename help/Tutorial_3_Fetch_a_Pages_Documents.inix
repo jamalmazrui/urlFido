@@ -47,7 +47,7 @@ Note=Confirm the wording with a live run: buildTutorials -live.
 
 [step]
 
-Say=And tick View output directory, to land in the folder at the end.
+Say=And mark View output directory, to land in the folder at the end.
 Key=Alt+V
 Hear=View output directory check box, checked
 Note=Confirm the wording with a live run: buildTutorials -live.

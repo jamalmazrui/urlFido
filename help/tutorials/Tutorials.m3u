@@ -1,9 +1,9 @@
 #EXTM3U
 #EXTINF:120,0 - Overview
 0_Overview.mp3
-#EXTINF:209,1 - User Interface
+#EXTINF:206,1 - User Interface
 1_User_Interface.mp3
-#EXTINF:162,2 - Install and Launch
+#EXTINF:161,2 - Install and Launch
 2_Install_and_Launch.mp3
 #EXTINF:162,3 - Fetch a Page's Documents
 3_Fetch_a_Pages_Documents.mp3
@@ -11,11 +11,11 @@
 4_Choose_What_to_Fetch.mp3
 #EXTINF:149,5 - Try First with Test Fetch
 5_Try_First_with_Test_Fetch.mp3
-#EXTINF:148,6 - Fetch from Several Pages
+#EXTINF:149,6 - Fetch from Several Pages
 6_Fetch_from_Several_Pages.mp3
-#EXTINF:137,7 - Fetch from Pages Behind a Sign In
+#EXTINF:136,7 - Fetch from Pages Behind a Sign In
 7_Fetch_from_Pages_Behind_a_Sign_In.mp3
 #EXTINF:145,8 - Fetch from the Command Line
 8_Fetch_from_the_Command_Line.mp3
-#EXTINF:89,9 - Conclusion
+#EXTINF:86,9 - Conclusion
 9_Conclusion.mp3
